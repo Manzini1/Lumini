@@ -2,39 +2,41 @@ using Godot;
 
 public partial class ElementIcon : AnimatedSprite2D
 {
-	protected bool isActive = false;
-	protected ElementController controller;
+	[Export] public ElementType ElementType;
 
+	[Export] public string AnimIdle = "idle";
+	[Export] public string AnimActive = "activate";
+
+	[Export] private NodePath ElementControllerPath;
+	public ElementController _controller;
+	
 	public override void _Ready()
 	{
-		controller = GetNode<ElementController>("../../ElementController");
-		Play("idle");
+		_controller = GetNode<ElementController>("../../ElementController");
+		Play(AnimIdle);
 	}
 
-	public void TryActivate()
-	{
-		if (isActive)
-			return;
-
-		if (!controller.CanActivate())
-			return;
-
-		controller.ActivateElement(this);
+	public override void _Process(double delta)
+	{ 
+		// Você já tem input map por elemento; aqui é só exemplo se quiser.
 	}
 
-	public void SetActive(bool value)
+	public void SetActive(bool active)
 	{
-		isActive = value;
-
-		if (isActive)
-			Play("activate");
-		else
-			Play("idle");
+		Play(active ? AnimActive : AnimIdle);
 	}
 
 	public void ResetElement()
 	{
-		isActive = false;
-		Play("idle");
+		Play(AnimIdle);
+	}
+
+	// Você chama isso pelo seu input handling atual (quando tecla do elemento é apertada)
+	public void TryActivate()
+	{
+		if (_controller == null) return;
+		if (!_controller.CanActivate()) return;
+
+		_controller.ActivateElement(this);
 	}
 }

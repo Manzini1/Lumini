@@ -3,128 +3,175 @@ using System.Collections.Generic;
 
 public partial class TargetController : Node
 {
-	private List<Enemy> _enemies = new();
-	private int _currentIndex = 0;
+	private readonly List<Enemy> _enemies = new();
+	private int _currentIndex = -1;
 
-	public Enemy CurrentTarget { get; private set; }
-
-	// Ajuste no Inspector se seu grupo for "enemies" ou "Enemies"
-	[Export] public string EnemyGroupName = "enemies";
+	public Enemy CurrentTarget =>
+		(_currentIndex >= 0 && _currentIndex < _enemies.Count)
+		? _enemies[_currentIndex]
+		: null;
 
 	public override void _Ready()
 	{
 		GD.Print("TargetController iniciado");
-		RebuildEnemyList();
 
-		if (_enemies.Count > 0)
-			SelectEnemy(0);
-		else
-			GD.Print($"Nenhum inimigo encontrado no grupo '{EnemyGroupName}'.");
+		// ✅ Rastreia inimigos que entram/saem da árvore (spawn/despawn)
+		GetTree().NodeAdded += OnNodeAdded;
+		GetTree().NodeRemoved += OnNodeRemoved;
+
+		// ✅ Pega os que já existem (depois de 1 frame)
+		CallDeferred(nameof(InitialScan));
+	}
+
+	private void InitialScan()
+	{
+		_enemies.Clear();
+
+		foreach (Node n in GetTree().GetNodesInGroup("Enemies"))
+		{
+			if (n is Enemy e && IsAlive(e))
+				_enemies.Add(e);
+		}
+
+		GD.Print($"Inimigos encontrados: {_enemies.Count}");
+
+		if (_enemies.Count > 0 && CurrentTarget == null)
+			SelectIndex(0);
+	}
+
+	public override void _ExitTree()
+	{
+		// limpa handlers ao sair
+		if (GetTree() != null)
+		{
+			GetTree().NodeAdded -= OnNodeAdded;
+			GetTree().NodeRemoved -= OnNodeRemoved;
+		}
 	}
 
 	public override void _Process(double delta)
 	{
-		// ✅ Se o alvo morreu/foi removido, seleciona automaticamente outro
-		if (!IsAlive(CurrentTarget))
+		if (Input.IsActionJustPressed("next_target"))
 		{
-			RebuildEnemyList();
+			if (_enemies.Count == 0)
+			{
+				GD.Print("Nenhum inimigo encontrado!");
+				return;
+			}
 
+			SelectNext();
+		}
+
+		// ✅ Se o alvo morreu/foi removido, auto-seleciona outro
+		if (CurrentTarget != null && !IsAlive(CurrentTarget))
+		{
+			RemoveInvalids();
 			if (_enemies.Count > 0)
-			{
-				// tenta manter o índice, mas garante que está dentro do range
-				_currentIndex = Mathf.Clamp(_currentIndex, 0, _enemies.Count - 1);
-				SelectEnemy(_currentIndex);
-			}
+				SelectIndex(Mathf.Clamp(_currentIndex, 0, _enemies.Count - 1));
 			else
-			{
-				CurrentTarget = null;
-			}
+				_currentIndex = -1;
 		}
 	}
 
-	public override void _Input(InputEvent e)
+	private void OnNodeAdded(Node n)
 	{
-		if (e is InputEventKey key && key.Pressed && !key.Echo)
+		// O NodeAdded dispara antes do _Ready do node às vezes.
+		// Então fazemos a inserção “deferred” para garantir que o Enemy já se colocou no grupo.
+		if (n is Enemy)
+			CallDeferred(nameof(TryAddEnemy), n);
+	}
+
+	private void TryAddEnemy(Node n)
+	{
+		if (n is not Enemy e) return;
+		if (!IsAlive(e)) return;
+
+		// Só pega os que estão no grupo "Enemies" (e o Enemy.cs garante isso)
+		if (!e.IsInGroup("Enemies")) return;
+
+		if (_enemies.Contains(e)) return;
+
+		_enemies.Add(e);
+		GD.Print($"Enemy registrado: {e.Name} (total: {_enemies.Count})");
+
+		// Se não tem alvo, seleciona o primeiro
+		if (CurrentTarget == null)
+			SelectIndex(0);
+	}
+
+	private void OnNodeRemoved(Node n)
+	{
+		if (n is Enemy e)
 		{
-			if (key.Keycode == Key.Tab)
-				SelectNext();
+			int idx = _enemies.IndexOf(e);
+			if (idx >= 0)
+			{
+				bool wasSelected = (idx == _currentIndex);
+				_enemies.RemoveAt(idx);
+
+				if (_enemies.Count == 0)
+				{
+					_currentIndex = -1;
+					return;
+				}
+
+				if (idx < _currentIndex)
+					_currentIndex--;
+
+				if (wasSelected)
+				{
+					_currentIndex = Mathf.Clamp(_currentIndex, 0, _enemies.Count - 1);
+					SelectIndex(_currentIndex);
+				}
+			}
 		}
 	}
 
 	private void SelectNext()
 	{
-		RebuildEnemyList();
-		if (_enemies.Count == 0)
-		{
-			CurrentTarget = null;
-			return;
-		}
+		ClearHighlight();
 
-		// se o índice atual está fora, corrige
-		if (_currentIndex < 0 || _currentIndex >= _enemies.Count)
+		_currentIndex++;
+		if (_currentIndex >= _enemies.Count)
 			_currentIndex = 0;
 
-		int next = (_currentIndex + 1) % _enemies.Count;
-		SelectEnemy(next);
+		ApplyHighlight();
 	}
 
-	private void SelectEnemy(int index)
+	private void SelectIndex(int index)
 	{
-		RebuildEnemyList();
-		if (_enemies.Count == 0)
-		{
-			CurrentTarget = null;
-			return;
-		}
+		if (_enemies.Count == 0) return;
 
-		index = Mathf.Clamp(index, 0, _enemies.Count - 1);
+		ClearHighlight();
 
-		// desmarca todos válidos
-		foreach (var enemy in _enemies)
-		{
-			if (IsAlive(enemy))
-				enemy.SetSelected(false);
-		}
-
-		_currentIndex = index;
-		CurrentTarget = _enemies[_currentIndex];
-
-		if (IsAlive(CurrentTarget))
-			CurrentTarget.SetSelected(true);
-
-		GD.Print($"Alvo atual: {CurrentTarget?.Name}");
+		_currentIndex = Mathf.Clamp(index, 0, _enemies.Count - 1);
+		ApplyHighlight();
 	}
 
-	private void RebuildEnemyList()
+	private void ApplyHighlight()
 	{
-		_enemies.Clear();
-
-		// Busca no grupo configurado
-		var nodes = GetTree().GetNodesInGroup(EnemyGroupName);
-
-		// Fallback automático caso alguém tenha criado o grupo com caixa diferente
-		if (nodes.Count == 0)
+		var t = CurrentTarget;
+		if (t != null && IsAlive(t))
 		{
-			var alt = (EnemyGroupName == "enemies") ? "Enemies" : "enemies";
-			var altNodes = GetTree().GetNodesInGroup(alt);
-
-			if (altNodes.Count > 0)
-			{
-				GD.Print($"Grupo '{EnemyGroupName}' vazio, mas encontrei inimigos em '{alt}'. Vou usar '{alt}'.");
-				EnemyGroupName = alt;
-				nodes = altNodes;
-			}
+			t.SetSelected(true);
+			GD.Print($"Alvo atual: {t.Name}");
 		}
+	}
 
-		foreach (var node in nodes)
+	private void ClearHighlight()
+	{
+		var t = CurrentTarget;
+		if (t != null && IsAlive(t))
+			t.SetSelected(false);
+	}
+
+	private void RemoveInvalids()
+	{
+		for (int i = _enemies.Count - 1; i >= 0; i--)
 		{
-			if (node is Enemy enemy && IsAlive(enemy))
-				_enemies.Add(enemy);
+			if (!IsAlive(_enemies[i]))
+				_enemies.RemoveAt(i);
 		}
-
-		// Se o alvo atual não está mais na lista, zera seleção
-		if (CurrentTarget != null && !_enemies.Contains(CurrentTarget))
-			CurrentTarget = null;
 	}
 
 	private bool IsAlive(Enemy e)

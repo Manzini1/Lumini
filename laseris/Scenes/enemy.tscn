@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3 uid="uid://dwn0an3ojvbe5"]
+[gd_scene load_steps=4 format=3 uid="uid://dwn0an3ojvbe5"]
 
 [ext_resource type="Script" uid="uid://gnuiiocp0v8" path="res://Scripts/Enemies/Enemy.cs" id="1_1f0kj"]
 [ext_resource type="Script" uid="uid://bp3qw2meo27gj" path="res://Scripts/Combat/HealthComponent.cs" id="2_afpow"]
+[ext_resource type="Script" uid="uid://b302xqic18mmp" path="res://Scripts/Combat/ShieldComponent.cs" id="3_afpow"]
 
 [node name="Enemy" type="Node2D"]
 script = ExtResource("1_1f0kj")
@@ -10,3 +11,8 @@ script = ExtResource("1_1f0kj")
 
 [node name="Health" type="Node" parent="."]
 script = ExtResource("2_afpow")
+
+[node name="Shield" type="Node" parent="."]
+script = ExtResource("3_afpow")
+
+[node name="Selected" type="Sprite2D" parent="."]
