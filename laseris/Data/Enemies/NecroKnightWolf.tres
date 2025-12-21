@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3 uid="uid://bhtiktj6x1i3a"]
+
+[ext_resource type="Script" uid="uid://cr8f8fsvx2wy" path="res://Scripts/Enemies/EnemyData.cs" id="1_tta2k"]
+
+[resource]
+script = ExtResource("1_tta2k")
+MaxHp = 1000
+metadata/_custom_type_script = "uid://cr8f8fsvx2wy"

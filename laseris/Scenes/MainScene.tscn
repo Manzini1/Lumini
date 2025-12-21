@@ -1,34 +1,35 @@
-[gd_scene load_steps=52 format=3 uid="uid://cuomhl8b13h4p"]
+[gd_scene load_steps=60 format=3 uid="uid://cuomhl8b13h4p"]
 
+[ext_resource type="Texture2D" uid="uid://csl8f12i57vjl" path="res://Sprites/Backgrounds/gigapixel-f55da7f3-0c37-48bb-9de1-91ca2329e545 (1) (1).png" id="1_nd2ry"]
 [ext_resource type="Texture2D" uid="uid://cfrtue5o0yhl3" path="res://Sprites/sprites.png" id="1_tr2i4"]
-[ext_resource type="Script" uid="uid://dn2ck0dorcyk" path="res://Scenes/Mage.cs" id="2_nhkr4"]
-[ext_resource type="Script" uid="uid://d38tcj1sixajg" path="res://Scenes/ElementController.cs" id="3_nd2ry"]
+[ext_resource type="Script" uid="uid://dn2ck0dorcyk" path="res://Scripts/Mage.cs" id="2_nhkr4"]
+[ext_resource type="Script" uid="uid://d38tcj1sixajg" path="res://Scripts/Controllers/ElementController.cs" id="3_nd2ry"]
 [ext_resource type="Texture2D" uid="uid://cixu4np5a1npu" path="res://Sprites/Element Stones - Sheets-20251216T032321Z-3-001/Element Stones - Sheets/FIRESTONE1.png" id="4_qxria"]
 [ext_resource type="Texture2D" uid="uid://t1ip0ec7qou1" path="res://Sprites/Element Stones - Sheets-20251216T032321Z-3-001/Element Stones - Sheets/FIRESTONE2.png" id="5_f140w"]
 [ext_resource type="Texture2D" uid="uid://o66xaatxi8xb" path="res://Sprites/Element Stones - Sheets-20251216T032321Z-3-001/Element Stones - Sheets/FIRESTONE3.png" id="6_0iob3"]
 [ext_resource type="Texture2D" uid="uid://c2iovvsb8rp1d" path="res://Sprites/Element Stones - Sheets-20251216T032321Z-3-001/Element Stones - Sheets/FIRESTONE4.png" id="7_4b75m"]
-[ext_resource type="Script" uid="uid://0t5wbod8iwgt" path="res://Scenes/FireIcon.cs" id="9_0iob3"]
+[ext_resource type="Script" uid="uid://0t5wbod8iwgt" path="res://Scripts/Combat/Elements/FireIcon.cs" id="9_0iob3"]
 [ext_resource type="Texture2D" uid="uid://cwdtdcrkabowf" path="res://Sprites/Element Stones - Sheets-20251216T032321Z-3-001/Element Stones - Sheets/SHADOWSTONE2.png" id="9_6t1o7"]
 [ext_resource type="Texture2D" uid="uid://b8ff1ieiymopv" path="res://Sprites/Element Stones - Sheets-20251216T032321Z-3-001/Element Stones - Sheets/SHADOWSTONE3.png" id="10_5qxwa"]
 [ext_resource type="Texture2D" uid="uid://der03nxhcemcc" path="res://Sprites/Element Stones - Sheets-20251216T032321Z-3-001/Element Stones - Sheets/SHADOWSTONE4.png" id="11_xc4hf"]
 [ext_resource type="Texture2D" uid="uid://bv12egn54axl" path="res://Sprites/Element Stones - Sheets-20251216T032321Z-3-001/Element Stones - Sheets/SHADOWSTONE1.png" id="12_6rnll"]
-[ext_resource type="Script" uid="uid://df2tpqrj08mb8" path="res://Scenes/ShadowAnimation.cs" id="13_enc0b"]
+[ext_resource type="Script" uid="uid://df2tpqrj08mb8" path="res://Scripts/Combat/Elements/ShadowAnimation.cs" id="13_enc0b"]
 [ext_resource type="Texture2D" uid="uid://cmqforhr7pt6" path="res://Sprites/Element Stones - Sheets-20251216T032321Z-3-001/Element Stones - Sheets/LIGHTNINGSTONE2.PNG" id="14_hx8n4"]
 [ext_resource type="Texture2D" uid="uid://w0qipp1peciq" path="res://Sprites/Element Stones - Sheets-20251216T032321Z-3-001/Element Stones - Sheets/LIGHTNINGSTONE3.PNG" id="15_i0j58"]
 [ext_resource type="Texture2D" uid="uid://d3uxr0xc4qma0" path="res://Sprites/Element Stones - Sheets-20251216T032321Z-3-001/Element Stones - Sheets/LIGHTNINGSTONE4.PNG" id="16_c1ier"]
 [ext_resource type="Texture2D" uid="uid://dysbxabp84ugl" path="res://Sprites/Element Stones - Sheets-20251216T032321Z-3-001/Element Stones - Sheets/LIGHTNINGSTONE1.PNG" id="17_gyaec"]
-[ext_resource type="Script" uid="uid://dqvt58u316vd8" path="res://Scenes/lightningicon.cs" id="18_bpy1e"]
+[ext_resource type="Script" uid="uid://dqvt58u316vd8" path="res://Scripts/Combat/Elements/lightningicon.cs" id="18_bpy1e"]
 [ext_resource type="Texture2D" uid="uid://caf2imbxp7idt" path="res://Sprites/Element Stones - Sheets-20251216T032321Z-3-001/Element Stones - Sheets/WATERSTONE1.PNG" id="19_3va76"]
 [ext_resource type="Texture2D" uid="uid://bxpar4vq61bem" path="res://Sprites/Element Stones - Sheets-20251216T032321Z-3-001/Element Stones - Sheets/WATERSTONE2.PNG" id="19_r0vnq"]
 [ext_resource type="Texture2D" uid="uid://b2o22y2uhx07l" path="res://Sprites/Element Stones - Sheets-20251216T032321Z-3-001/Element Stones - Sheets/WATERSTONE3.PNG" id="20_c3pre"]
-[ext_resource type="Script" uid="uid://8nb7unxbkpli" path="res://Scenes/GeloSprite.cs" id="20_mymud"]
+[ext_resource type="Script" uid="uid://8nb7unxbkpli" path="res://Scripts/Combat/Elements/GeloSprite.cs" id="20_mymud"]
 [ext_resource type="Texture2D" uid="uid://c04iqtvse3djm" path="res://Sprites/Element Stones - Sheets-20251216T032321Z-3-001/Element Stones - Sheets/EARTHSTONE2.png" id="20_wmecs"]
 [ext_resource type="Texture2D" uid="uid://y7832cc3hl6b" path="res://Sprites/Element Stones - Sheets-20251216T032321Z-3-001/Element Stones - Sheets/EARTHSTONE3.png" id="21_mymud"]
 [ext_resource type="Texture2D" uid="uid://cemrh1tne18xs" path="res://Sprites/Element Stones - Sheets-20251216T032321Z-3-001/Element Stones - Sheets/WATERSTONE4.PNG" id="21_u5v48"]
 [ext_resource type="Texture2D" uid="uid://fjspacvsxxyo" path="res://Sprites/Element Stones - Sheets-20251216T032321Z-3-001/Element Stones - Sheets/EARTHSTONE4.png" id="22_4sso6"]
 [ext_resource type="Texture2D" uid="uid://c8answqqxc3ts" path="res://Sprites/Element Stones - Sheets-20251216T032321Z-3-001/Element Stones - Sheets/EARTHSTONE1.png" id="23_r0vnq"]
-[ext_resource type="Script" uid="uid://bn71hlaj7mfgv" path="res://Scenes/TerraSprite.cs" id="24_c3pre"]
-[ext_resource type="Script" uid="uid://b2a5if0gsocom" path="res://Scenes/VentoSprite.cs" id="29_c3pre"]
+[ext_resource type="Script" uid="uid://bn71hlaj7mfgv" path="res://Scripts/Combat/Elements/TerraSprite.cs" id="24_c3pre"]
+[ext_resource type="Script" uid="uid://b2a5if0gsocom" path="res://Scripts/Combat/Elements/VentoSprite.cs" id="29_c3pre"]
 [ext_resource type="Texture2D" uid="uid://2kckge8c2l8f" path="res://Sprites/Element Stones - Sheets-20251216T032321Z-3-001/Element Stones - Sheets/WINDSTONE2.png" id="29_rmfi2"]
 [ext_resource type="Texture2D" uid="uid://cuwln6r40l70p" path="res://Sprites/Element Stones - Sheets-20251216T032321Z-3-001/Element Stones - Sheets/WINDSTONE3.png" id="30_sl126"]
 [ext_resource type="Texture2D" uid="uid://dmi7yfxqp4lge" path="res://Sprites/Element Stones - Sheets-20251216T032321Z-3-001/Element Stones - Sheets/WINDSTONE4.png" id="31_ergw4"]
@@ -37,12 +38,19 @@
 [ext_resource type="Texture2D" uid="uid://doj8h057sirnb" path="res://Sprites/Element Stones - Sheets-20251216T032321Z-3-001/Element Stones - Sheets/POISONSTONE3.png" id="35_jkhus"]
 [ext_resource type="Texture2D" uid="uid://b5nglytq2ir21" path="res://Sprites/Element Stones - Sheets-20251216T032321Z-3-001/Element Stones - Sheets/POISONSTONE4.png" id="36_nd2ry"]
 [ext_resource type="Texture2D" uid="uid://bkuaq5vv8r8cu" path="res://Sprites/Element Stones - Sheets-20251216T032321Z-3-001/Element Stones - Sheets/POISONSTONE1.png" id="37_xot12"]
-[ext_resource type="Script" uid="uid://da5qaq3tsscwj" path="res://Scenes/VenenoSprite.cs" id="38_usjqs"]
+[ext_resource type="Script" uid="uid://da5qaq3tsscwj" path="res://Scripts/Combat/Elements/VenenoSprite.cs" id="38_usjqs"]
 [ext_resource type="Texture2D" uid="uid://bmtlp27bxsuc2" path="res://Sprites/Element Stones - Sheets-20251216T032321Z-3-001/Element Stones - Sheets/LUZ2.png" id="39_oo3wg"]
 [ext_resource type="Texture2D" uid="uid://bsjbo7ipyl1xq" path="res://Sprites/Element Stones - Sheets-20251216T032321Z-3-001/Element Stones - Sheets/LUZ3.png" id="40_jkhus"]
 [ext_resource type="Texture2D" uid="uid://va4sk6vk6scv" path="res://Sprites/Element Stones - Sheets-20251216T032321Z-3-001/Element Stones - Sheets/LUZ.png" id="41_nd2ry"]
 [ext_resource type="Texture2D" uid="uid://caolax34dbptb" path="res://Sprites/Element Stones - Sheets-20251216T032321Z-3-001/Element Stones - Sheets/LUZ1.png" id="42_xot12"]
-[ext_resource type="Script" uid="uid://dvkjn1afs8b1o" path="res://Scenes/LuzSprite.cs" id="43_jkhus"]
+[ext_resource type="Script" uid="uid://dvkjn1afs8b1o" path="res://Scripts/Combat/Elements/LuzSprite.cs" id="43_jkhus"]
+[ext_resource type="Texture2D" uid="uid://dfhco00d1s2o" path="res://Sprites/Monsters/darkknight-Photoroom.png" id="45_xot12"]
+[ext_resource type="AudioStream" uid="uid://b4pm4jvn2fllq" path="res://SoundEffects/BackgroundMusic/Shadowfire's Dance.mp3" id="46_usjqs"]
+[ext_resource type="PackedScene" uid="uid://dwn0an3ojvbe5" path="res://Scenes/enemy.tscn" id="47_uuu6x"]
+[ext_resource type="Resource" uid="uid://cg1ca1nltvah8" path="res://Data/Enemies/NecroKnight.tres" id="48_hkvke"]
+[ext_resource type="Resource" uid="uid://bhtiktj6x1i3a" path="res://Data/Enemies/NecroKnightWolf.tres" id="49_20cv7"]
+[ext_resource type="Script" uid="uid://da3bj42sd1s37" path="res://Scripts/Controllers/TargetController.cs" id="49_hkvke"]
+[ext_resource type="Texture2D" uid="uid://8e2oowayd4id" path="res://Sprites/Monsters/spectralwolf.png" id="51_ywy86"]
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_8ju71"]
 animations = [{
@@ -246,18 +254,33 @@ animations = [{
 
 [node name="Main" type="Node2D"]
 
+[node name="Background" type="Sprite2D" parent="."]
+position = Vector2(944, 520.00006)
+scale = Vector2(0.64583325, 0.55078125)
+texture = ExtResource("1_nd2ry")
+
 [node name="Mage" type="Sprite2D" parent="."]
-position = Vector2(467, 588)
+position = Vector2(576, 656)
 scale = Vector2(0.5, 0.5)
 texture = ExtResource("1_tr2i4")
 region_enabled = true
 region_rect = Rect2(139.95592, 149.2, 367.39996, 491.7)
 script = ExtResource("2_nhkr4")
 
+[node name="TargetController" type="Node" parent="." groups=["enemies"]]
+script = ExtResource("49_hkvke")
+
+[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("46_usjqs")
+volume_db = -18.439
+autoplay = true
+parameters/looping = true
+
 [node name="HUD" type="CanvasLayer" parent="."]
 
 [node name="ElementController" type="Node2D" parent="HUD"]
 script = ExtResource("3_nd2ry")
+TargetControllerPath = NodePath("../../TargetController")
 
 [node name="ElementHUD" type="Control" parent="HUD"]
 layout_mode = 3
@@ -331,3 +354,23 @@ scale = Vector2(0.7, 0.7)
 sprite_frames = SubResource("SpriteFrames_usjqs")
 animation = &"idle"
 script = ExtResource("43_jkhus")
+
+[node name="DeathKnight" parent="." groups=["enemies"] instance=ExtResource("47_uuu6x")]
+Data = ExtResource("48_hkvke")
+
+[node name="Sprite" parent="DeathKnight" index="0"]
+position = Vector2(1296, 600.00006)
+scale = Vector2(0.38, 0.358)
+texture = ExtResource("45_xot12")
+flip_h = true
+
+[node name="DKWolf" parent="." groups=["enemies"] instance=ExtResource("47_uuu6x")]
+Data = ExtResource("49_20cv7")
+
+[node name="Sprite" parent="DKWolf" index="0"]
+position = Vector2(1488, 712)
+scale = Vector2(0.34, 0.34)
+texture = ExtResource("51_ywy86")
+
+[editable path="DeathKnight"]
+[editable path="DKWolf"]
