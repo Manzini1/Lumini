@@ -4,7 +4,7 @@ public partial class VentoSprite : ElementIcon
 {
 	public override void _Process(double delta)
 	{
-		 if (Input.IsActionJustPressed("Wind"))
+		 if (Input.IsActionJustPressed("Air"))
 		{
 			TryActivate();
 		}

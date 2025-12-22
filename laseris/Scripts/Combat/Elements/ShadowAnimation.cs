@@ -4,7 +4,7 @@ public partial class ShadowAnimation : ElementIcon
 {
 	public override void _Process(double delta)
 	{
-		 if (Input.IsActionJustPressed("Darkness"))
+		 if (Input.IsActionJustPressed("Shadow"))
 		{
 			TryActivate();
 		}

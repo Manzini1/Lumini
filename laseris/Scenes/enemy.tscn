@@ -1,8 +1,20 @@
-[gd_scene load_steps=4 format=3 uid="uid://dwn0an3ojvbe5"]
+[gd_scene load_steps=6 format=3 uid="uid://dwn0an3ojvbe5"]
 
 [ext_resource type="Script" uid="uid://gnuiiocp0v8" path="res://Scripts/Enemies/Enemy.cs" id="1_1f0kj"]
 [ext_resource type="Script" uid="uid://bp3qw2meo27gj" path="res://Scripts/Combat/HealthComponent.cs" id="2_afpow"]
 [ext_resource type="Script" uid="uid://b302xqic18mmp" path="res://Scripts/Combat/ShieldComponent.cs" id="3_afpow"]
+[ext_resource type="Texture2D" uid="uid://cn8pn2hhjl6fr" path="res://Sprites/Spells/thunder.png" id="4_287tu"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_0830c"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("4_287tu")
+}],
+"loop": false,
+"name": &"play",
+"speed": 5.0
+}]
 
 [node name="Enemy" type="Node2D"]
 script = ExtResource("1_1f0kj")
@@ -16,3 +28,11 @@ script = ExtResource("2_afpow")
 script = ExtResource("3_afpow")
 
 [node name="Selected" type="Sprite2D" parent="."]
+
+[node name="Vfx" type="Node2D" parent="."]
+
+[node name="LightningVfx" type="AnimatedSprite2D" parent="Vfx"]
+position = Vector2(1288, 368)
+scale = Vector2(2.375, 3)
+sprite_frames = SubResource("SpriteFrames_0830c")
+animation = &"play"

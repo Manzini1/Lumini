@@ -3,35 +3,38 @@ using Godot;
 [GlobalClass]
 public partial class EnemyData : Resource
 {
+	[ExportCategory("Core")]
 	[Export] public string DisplayName = "Enemy";
 	[Export] public int MaxHp = 100;
 	[Export] public bool IsFlying = false;
 
-	[Export(PropertyHint.Range, "0,1,0.05")] public float FreezeResist = 0.0f;
-	[Export(PropertyHint.Range, "0,1,0.05")] public float PetrifyResist = 0.0f;
+	// ✅ Offset onde o VFX deve nascer (ex: cabeça)
+	// Normalmente algo tipo (0, -30) ou (0, -50)
+	[Export] public Vector2 VfxOffset = new Vector2(0, -30);
 
-	[Export] public float FireMultiplier = 1.0f;
-	[Export] public float IceMultiplier = 1.0f;
-	[Export] public float LightningMultiplier = 1.0f;
-	[Export] public float PoisonMultiplier = 1.0f;
-	[Export] public float EarthMultiplier = 1.0f;
-	[Export] public float AirMultiplier = 1.0f;
-	[Export] public float LightMultiplier = 1.0f;
-	[Export] public float ShadowMultiplier = 1.0f;
+	[ExportCategory("Element Multipliers (1 = normal)")]
+	[Export] public float MultFire = 1f;
+	[Export] public float MultIce = 1f;
+	[Export] public float MultLightning = 1f;
+	[Export] public float MultPoison = 1f;
+	[Export] public float MultEarth = 1f;
+	[Export] public float MultAir = 1f;
+	[Export] public float MultLight = 1f;
+	[Export] public float MultShadow = 1f;
 
 	public float GetElementMultiplier(ElementType element)
 	{
 		return element switch
 		{
-			ElementType.Fire => FireMultiplier,
-			ElementType.Ice => IceMultiplier,
-			ElementType.Lightning => LightningMultiplier,
-			ElementType.Poison => PoisonMultiplier,
-			ElementType.Earth => EarthMultiplier,
-			ElementType.Air => AirMultiplier,
-			ElementType.Light => LightMultiplier,
-			ElementType.Shadow => ShadowMultiplier,
-			_ => 1.0f
+			ElementType.Fire => MultFire,
+			ElementType.Ice => MultIce,
+			ElementType.Lightning => MultLightning,
+			ElementType.Poison => MultPoison,
+			ElementType.Earth => MultEarth,
+			ElementType.Air => MultAir,
+			ElementType.Light => MultLight,
+			ElementType.Shadow => MultShadow,
+			_ => 1f
 		};
 	}
 }

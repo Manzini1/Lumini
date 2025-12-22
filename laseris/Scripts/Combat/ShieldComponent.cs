@@ -5,11 +5,24 @@ public partial class ShieldComponent : Node
 {
 	[Signal] public delegate void ShieldsChangedEventHandler();
 
+	public enum ShieldBehavior
+	{
+		TimedRotate = 0,        // Tipo 1
+		OnDamagedRotate = 1,    // Tipo 2
+		OnDamagedMirrorCast = 2 // Tipo 3
+	}
+
+	[Export] public ShieldBehavior BehaviorType = ShieldBehavior.TimedRotate;
+
+	// Só usado no TimedRotate
 	[Export] public float IntervalSeconds = 2.0f;
 
+	// Quantos elementos o escudo pode ter (1 ou 2 normalmente)
 	[Export(PropertyHint.Range, "1,8,1")]
 	public int ShieldCount = 1;
 
+	// Cura base (% do MaxHP) quando for "100% heal"
+	// matches=2 -> 100%, matches=1 -> 50%
 	[Export(PropertyHint.Range, "0,1,0.01")]
 	public float HealPercentOfMaxHp = 0.20f;
 
@@ -35,21 +48,27 @@ public partial class ShieldComponent : Node
 
 	public override void _Ready()
 	{
-		RollShields();
+		RollRandomShields();
 	}
 
 	public override void _Process(double delta)
 	{
-		_timer += delta;
+		if (BehaviorType != ShieldBehavior.TimedRotate) return;
 
+		_timer += delta;
 		if (_timer >= IntervalSeconds)
 		{
 			_timer = 0;
-			RollShields();
+			RollRandomShields();
 		}
 	}
 
-	public void RollShields()
+	private void LogActive()
+	{
+		GD.Print($"[{OwnerName}] [Shield] Ativos: {string.Join(", ", _active)} (Mode={BehaviorType})");
+	}
+
+	public void RollRandomShields()
 	{
 		_active.Clear();
 
@@ -61,10 +80,41 @@ public partial class ShieldComponent : Node
 			_active.Add(_pool[idx]);
 		}
 
-		GD.Print($"[{OwnerName}] [Shield] Ativos: {string.Join(", ", _active)}");
+		_timer = 0; // reseta timer no roll
+		LogActive();
 		EmitSignal(SignalName.ShieldsChanged);
 	}
 
+	public void SetShieldsToCast(IReadOnlyList<ElementType> castElements)
+	{
+		_active.Clear();
+
+		// pega únicos e mantém ordem simples
+		HashSet<ElementType> unique = new();
+		foreach (var e in castElements)
+		{
+			if (!unique.Contains(e))
+				unique.Add(e);
+		}
+
+		// no seu escopo atual (1 ou 2 elementos), isso fica perfeito:
+		foreach (var e in unique)
+		{
+			_active.Add(e);
+			if (_active.Count >= 2) break; // você pode mudar pra ShieldCount se quiser
+		}
+
+		_timer = 0;
+		LogActive();
+		EmitSignal(SignalName.ShieldsChanged);
+	}
+
+	/// <summary>
+	/// Regra:
+	/// - Se qualquer elemento do cast bater com qualquer ativo -> absorve (nega dano)
+	/// - 1 match -> Heal50
+	/// - 2 matches -> Heal100
+	/// </summary>
 	public ShieldAbsorbResult EvaluateAbsorb(IReadOnlyList<ElementType> castElements)
 	{
 		if (_active.Count == 0) return ShieldAbsorbResult.NoAbsorb;
@@ -75,28 +125,46 @@ public partial class ShieldComponent : Node
 			uniqueCast.Add(e);
 
 		int matches = 0;
-		List<ElementType> matched = new();
-
 		foreach (var e in uniqueCast)
 		{
 			if (_active.Contains(e))
-			{
 				matches++;
-				matched.Add(e);
-			}
 		}
 
-		if (matches == 0)
-			return ShieldAbsorbResult.NoAbsorb;
+		if (matches == 0) return ShieldAbsorbResult.NoAbsorb;
 
-		// Consome os acertados
-		foreach (var m in matched)
-			_active.Remove(m);
-
-		GD.Print($"[{OwnerName}] [Shield] ABSORVEU {string.Join(", ", matched)} (matches={matches})");
-		EmitSignal(SignalName.ShieldsChanged);
+		// ✅ Sempre que ABSORVER: troca imediatamente (sem esperar o tick)
+		GD.Print($"[{OwnerName}] [Shield] ABSORVEU cast (matches={matches}) -> trocando escudo AGORA");
+		RollRandomShields();
 
 		return (matches >= 2) ? ShieldAbsorbResult.AbsorbHeal100 : ShieldAbsorbResult.AbsorbHeal50;
+	}
+
+	/// <summary>
+	/// Chamado quando o inimigo tomou DANO (hit passou).
+	/// </summary>
+	public void OnTookDamage(IReadOnlyList<ElementType> castElements)
+	{
+		if (castElements == null || castElements.Count == 0) return;
+
+		switch (BehaviorType)
+		{
+			case ShieldBehavior.TimedRotate:
+				// Tipo 1: não muda ao tomar dano (só no tempo / absorção)
+				break;
+
+			case ShieldBehavior.OnDamagedRotate:
+				// Tipo 2: ao tomar dano, troca imediatamente
+				GD.Print($"[{OwnerName}] [Shield] TOMOU DANO -> trocando escudo AGORA (Mode=OnDamagedRotate)");
+				RollRandomShields();
+				break;
+
+			case ShieldBehavior.OnDamagedMirrorCast:
+				// Tipo 3: ao tomar dano, escudo vira os elementos do cast
+				GD.Print($"[{OwnerName}] [Shield] TOMOU DANO -> escudo vira elementos do cast (Mode=OnDamagedMirrorCast)");
+				SetShieldsToCast(castElements);
+				break;
+		}
 	}
 }
 

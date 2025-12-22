@@ -9,6 +9,8 @@ public partial class ElementController : Node
 	private const int MAX_ELEMENTS = 2;
 	private readonly List<ElementIcon> activeElements = new();
 
+	private bool _inputEnabled = true;
+
 	public override void _Ready()
 	{
 		if (TargetControllerPath != null)
@@ -19,14 +21,27 @@ public partial class ElementController : Node
 
 	public override void _Process(double delta)
 	{
+		if (!_inputEnabled) return;
+
 		if (Input.IsActionJustPressed("cast"))
 			Cast();
 	}
 
-	public bool CanActivate() => activeElements.Count < MAX_ELEMENTS;
+	public void SetInputEnabled(bool enabled)
+	{
+		_inputEnabled = enabled;
+	}
+
+	public bool CanActivate()
+	{
+		if (!_inputEnabled) return false;
+		return activeElements.Count < MAX_ELEMENTS;
+	}
 
 	public void ActivateElement(ElementIcon element)
 	{
+		if (!_inputEnabled) return;
+
 		if (activeElements.Contains(element)) return;
 		if (activeElements.Count >= MAX_ELEMENTS) return;
 
@@ -38,6 +53,7 @@ public partial class ElementController : Node
 
 	public void Cast()
 	{
+		if (!_inputEnabled) return;
 		if (activeElements.Count == 0) return;
 
 		var target = _targetController?.CurrentTarget;
@@ -54,7 +70,7 @@ public partial class ElementController : Node
 
 		var spell = SpellResolver.Resolve(castElements);
 
-		GD.Print($"CAST! -> {spell.Name} ({string.Join(" + ", spell.Elements)}) Targeting={spell.Targeting} Dmg={spell.Damage}");
+		GD.Print($"CAST! -> {spell.Name} ({string.Join(" + ", spell.Elements)})");
 
 		target.TakeSpellHit(spell);
 

@@ -4,7 +4,7 @@ public partial class lightningicon : ElementIcon
 {
 	public override void _Process(double delta)
 	{
-		if (Input.IsActionJustPressed("lightning"))
+		if (Input.IsActionJustPressed("Lightning"))
 		{
 			TryActivate();
 		}
