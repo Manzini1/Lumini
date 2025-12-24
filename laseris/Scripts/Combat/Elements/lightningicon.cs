@@ -12,6 +12,7 @@ public partial class lightningicon : ElementIcon
 		if (Input.IsActionJustPressed("cast"))
 		{
 			_controller.Cast();
+			
 		}
 	}
 }

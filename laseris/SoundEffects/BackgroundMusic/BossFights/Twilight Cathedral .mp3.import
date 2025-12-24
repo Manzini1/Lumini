@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://bj8eq73dgrhb"
+path="res://.godot/imported/Twilight Cathedral .mp3-afd41e60a67e9035f90a5fdc933cf9e1.mp3str"
+
+[deps]
+
+source_file="res://SoundEffects/BackgroundMusic/BossFights/Twilight Cathedral .mp3"
+dest_files=["res://.godot/imported/Twilight Cathedral .mp3-afd41e60a67e9035f90a5fdc933cf9e1.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

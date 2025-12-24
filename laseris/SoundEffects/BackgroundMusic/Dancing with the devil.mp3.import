@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://c53mnrqg0uu0a"
+path="res://.godot/imported/Dancing with the devil.mp3-0663c1a003e1fe8cd8da67b929d7ae91.mp3str"
+
+[deps]
+
+source_file="res://SoundEffects/BackgroundMusic/Dancing with the devil.mp3"
+dest_files=["res://.godot/imported/Dancing with the devil.mp3-0663c1a003e1fe8cd8da67b929d7ae91.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

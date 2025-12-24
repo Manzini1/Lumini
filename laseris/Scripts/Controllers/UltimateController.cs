@@ -7,31 +7,38 @@ public partial class UltimateController : Node
 	[Export] public NodePath UltimateHudPath;
 	[Export] public NodePath ElementControllerPath;
 	[Export] public NodePath TargetControllerPath;
+	[Export] public NodePath SfxPlayerPath;
+	[Export] public NodePath VfxPlayerPath;
 
 	[ExportCategory("Ultimate Settings")]
-	[Export] public float AutoTriggerEverySeconds = 1000000f;  // teste automático
-	[Export] public float TimeLimitSeconds = 10.0f;        // tempo total do QTE
-	[Export] public int SequenceLength = 5;              // ex: ice fire lightning fire ice
+	[Export] public float TimeLimitSeconds = 10.0f;
+	[Export] public int SequenceLength = 5;
+
+	[Export] public string UltimateSpellId = "ult_test";
+	[Export] public string UltimateSpellName = "ULTIMATE TEST";
+	[Export] public int UltimateDamage = 250;
+	[Export] public SpellTargeting UltimateTargeting = SpellTargeting.Both;
 
 	private UltimateHud _hud;
 	private ElementController _elementController;
 	private TargetController _targetController;
+	private SfxPlayer _sfxPlayer;
+	private VfxPlayer _vfxPlayer;
 
 	private bool _active = false;
-	private float _cooldown = 0f;
 	private float _timeLeft = 0f;
 
 	private List<ElementType> _sequence = new();
 	private int _index = 0;
 
-	// ✅ Mapa: ACTION NAME -> ElementType
+	public bool UltimateUnlocked { get; set; } = false;
+
 	private static readonly Dictionary<string, ElementType> _actionMap = new()
 	{
 		{ "Fire", ElementType.Fire },
 		{ "Ice", ElementType.Ice },
 		{ "Lightning", ElementType.Lightning },
 		{ "Venom", ElementType.Poison },
-
 		{ "Earth", ElementType.Earth },
 		{ "Light", ElementType.Light },
 		{ "Shadow", ElementType.Shadow },
@@ -46,51 +53,50 @@ public partial class UltimateController : Node
 
 	public override void _Ready()
 	{
+				GD.Print("=== VFX DEBUG ===");
+				GD.Print("Node:", Name);
+				GD.Print("Path:", GetPath());
+				GD.Print("VfxPlayerPath:", VfxPlayerPath);
+
+				var vfx = GetNodeOrNull<Node>(VfxPlayerPath);
+				GD.Print("Resolved node:", vfx);
+
 		_hud = GetNodeOrNull<UltimateHud>(UltimateHudPath);
 		_elementController = GetNodeOrNull<ElementController>(ElementControllerPath);
 		_targetController = GetNodeOrNull<TargetController>(TargetControllerPath);
+		_sfxPlayer = GetNodeOrNull<SfxPlayer>(SfxPlayerPath);
+		_vfxPlayer = GetNodeOrNull<VfxPlayer>(VfxPlayerPath);
 
-		if (_hud == null)
-			GD.PushError("UltimateController: UltimateHudPath não está setado ou não encontrei o node.");
+		if (_hud == null) GD.PushWarning("UltimateController: UltimateHudPath não setado.");
+		if (_elementController == null) GD.PushError("UltimateController: ElementControllerPath não setado.");
+		if (_targetController == null) GD.PushWarning("UltimateController: TargetControllerPath não setado.");
+		if (_sfxPlayer == null) GD.PushWarning("UltimateController: SfxPlayerPath não setado.");
+		if (_vfxPlayer == null) GD.PushWarning("UltimateController: VfxPlayerPath não setado.");
 
-		if (_elementController == null)
-			GD.PushError("UltimateController: ElementControllerPath não está setado ou não encontrei o node.");
-
-		if (_targetController == null)
-			GD.PushWarning("UltimateController: TargetControllerPath não setado (ok por enquanto, mas a ultimate não vai dar dano).");
-
-		// Checagem opcional: avisa se alguma action não existe
 		foreach (var action in _actionMap.Keys)
-		{
 			if (!InputMap.HasAction(action))
-				GD.PushWarning($"UltimateController: action '{action}' não existe no Input Map.");
-		}
+				GD.PushWarning($"UltimateController: action '{action}' não existe no InputMap.");
 
 		_hud?.HideHud();
 	}
 
 	public override void _Process(double delta)
 	{
-		// Manual (sua action já existe)
 		if (!_active && Input.IsActionJustPressed("ultimate"))
 		{
-			StartUltimate("manual");
-			return;
-		}
-
-		// Auto trigger (teste)
-		if (!_active)
-		{
-			_cooldown += (float)delta;
-			if (_cooldown >= AutoTriggerEverySeconds)
+			if (!UltimateUnlocked)
 			{
-				StartUltimate("auto");
+				GD.Print("[ULT] ainda não destravada.");
 				return;
 			}
+
+			StartUltimate();
 			return;
 		}
 
-		// QTE ativo: tempo + input
+		if (!_active)
+			return;
+
 		_timeLeft -= (float)delta;
 		_hud?.SetTimer(_timeLeft);
 
@@ -103,14 +109,12 @@ public partial class UltimateController : Node
 		HandleRuneInput();
 	}
 
-	private void StartUltimate(string reason)
+	private void StartUltimate()
 	{
 		if (_hud == null || _elementController == null)
 			return;
 
 		_active = true;
-		_cooldown = 0f;
-
 		_timeLeft = TimeLimitSeconds;
 		_index = 0;
 
@@ -120,10 +124,9 @@ public partial class UltimateController : Node
 		_hud.SetSequence(_sequence);
 		_hud.SetTimer(_timeLeft);
 
-		// trava runas normais
 		_elementController.SetInputEnabled(false);
 
-		GD.Print($"[ULT] START ({reason}) -> {string.Join(", ", _sequence)}");
+		GD.Print($"[ULT] START -> {string.Join(", ", _sequence)}");
 	}
 
 	private List<ElementType> GenerateSequence(int length)
@@ -137,18 +140,14 @@ public partial class UltimateController : Node
 		return seq;
 	}
 
-	// ✅ agora lê ações do InputMap (configurável)
 	private void HandleRuneInput()
 	{
 		foreach (var kv in _actionMap)
 		{
-			string action = kv.Key;
-			ElementType element = kv.Value;
-
-			if (Input.IsActionJustPressed(action))
+			if (Input.IsActionJustPressed(kv.Key))
 			{
-				OnRunePressed(element);
-				return; // 1 input por frame, evita “duplo”
+				OnRunePressed(kv.Value);
+				return;
 			}
 		}
 	}
@@ -196,13 +195,7 @@ public partial class UltimateController : Node
 
 	private void CastUltimate()
 	{
-		if (_targetController == null)
-		{
-			GD.Print("[ULT] sem TargetController (não vai aplicar dano ainda).");
-			return;
-		}
-
-		var target = _targetController.CurrentTarget;
+		var target = _targetController?.CurrentTarget;
 		if (target == null || !GodotObject.IsInstanceValid(target))
 		{
 			GD.Print("[ULT] sem alvo selecionado.");
@@ -210,15 +203,20 @@ public partial class UltimateController : Node
 		}
 
 		var elements = new List<ElementType> { ElementType.Ice, ElementType.Fire, ElementType.Lightning };
-		var targeting = SpellTargeting.Ground | SpellTargeting.Air;
 
 		var spell = new SpellDefinition(
-			name: "ULTIMATE TEST",
+			id: UltimateSpellId,
+			name: UltimateSpellName,
 			elements: elements,
-			damage: 250,
-			targeting: targeting
+			damage: UltimateDamage,
+			targeting: UltimateTargeting
 		);
 
-		target.TakeSpellHit(spell);
+		_sfxPlayer?.PlaySpell(spell);
+		_vfxPlayer?.PlaySpell(spell);
+
+		// ✅ FIX DEFINITIVO
+		var outcome = target.TakeSpellHit(spell);
+		GD.Print($"[ULT] outcome = {outcome}");
 	}
 }

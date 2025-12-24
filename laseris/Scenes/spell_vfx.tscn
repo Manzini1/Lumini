@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3 uid="uid://tu7pi0t41us4"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_0lms5"]
+
+[node name="SpellVfx" type="Node2D"]
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+sprite_frames = SubResource("SpriteFrames_0lms5")
+
+[node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="."]

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="SpellVfxBank" load_steps=5 format=3 uid="uid://bpdqe75qdl8pk"]
+
+[ext_resource type="Script" uid="uid://d2dnrbhqyhxhc" path="res://Scripts/VFX/SpellVfxEntry.cs" id="1_tw0os"]
+[ext_resource type="Script" uid="uid://cmk56jevkg36j" path="res://Scripts/VFX/SpellVfxBank.cs" id="2_rhh4v"]
+[ext_resource type="PackedScene" uid="uid://bvmtv7cwww2do" path="res://Scenes/GenericSpellVfx.tscn" id="2_v41ij"]
+
+[sub_resource type="Resource" id="Resource_83hh2"]
+script = ExtResource("1_tw0os")
+VfxScene = ExtResource("2_v41ij")
+SpawnPoint = 5
+metadata/_custom_type_script = "uid://d2dnrbhqyhxhc"
+
+[resource]
+script = ExtResource("2_rhh4v")
+Entries = Array[ExtResource("1_tw0os")]([SubResource("Resource_83hh2")])
+metadata/_custom_type_script = "uid://cmk56jevkg36j"

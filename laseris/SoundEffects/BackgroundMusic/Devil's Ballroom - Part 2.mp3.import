@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://dodceuc7xkmhe"
+path="res://.godot/imported/Devil's Ballroom - Part 2.mp3-aa60ad5e77e65f989647570443cbbae8.mp3str"
+
+[deps]
+
+source_file="res://SoundEffects/BackgroundMusic/Devil's Ballroom - Part 2.mp3"
+dest_files=["res://.godot/imported/Devil's Ballroom - Part 2.mp3-aa60ad5e77e65f989647570443cbbae8.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

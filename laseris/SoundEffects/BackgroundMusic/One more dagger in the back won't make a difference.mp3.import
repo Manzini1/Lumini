@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://dh840wfjvc0jr"
+path="res://.godot/imported/One more dagger in the back won't make a difference.mp3-7840618ef030cff15a5a3d2e647ad9b0.mp3str"
+
+[deps]
+
+source_file="res://SoundEffects/BackgroundMusic/One more dagger in the back won't make a difference.mp3"
+dest_files=["res://.godot/imported/One more dagger in the back won't make a difference.mp3-7840618ef030cff15a5a3d2e647ad9b0.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

@@ -1,0 +1,18 @@
+[gd_resource type="SpriteFrames" load_steps=3 format=3 uid="uid://cklpmnhqdscnm"]
+
+[ext_resource type="Texture2D" uid="uid://cn8pn2hhjl6fr" path="res://Sprites/Spells/thunder.png" id="1_sytad"]
+[ext_resource type="Texture2D" uid="uid://ddo1l2pgu4yd3" path="res://Sprites/Spells/thunder2.png" id="2_skmjn"]
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_sytad")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_skmjn")
+}],
+"loop": true,
+"name": &"play",
+"speed": 5.0
+}]

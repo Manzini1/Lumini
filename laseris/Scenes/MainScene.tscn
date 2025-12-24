@@ -1,4 +1,4 @@
-[gd_scene load_steps=64 format=3 uid="uid://cuomhl8b13h4p"]
+[gd_scene load_steps=71 format=3 uid="uid://cuomhl8b13h4p"]
 
 [ext_resource type="Texture2D" uid="uid://csl8f12i57vjl" path="res://Sprites/Backgrounds/gigapixel-f55da7f3-0c37-48bb-9de1-91ca2329e545 (1) (1).png" id="1_nd2ry"]
 [ext_resource type="Texture2D" uid="uid://cfrtue5o0yhl3" path="res://Sprites/sprites.png" id="1_tr2i4"]
@@ -48,13 +48,18 @@
 [ext_resource type="AudioStream" uid="uid://b4pm4jvn2fllq" path="res://SoundEffects/BackgroundMusic/Shadowfire's Dance.mp3" id="46_usjqs"]
 [ext_resource type="Script" uid="uid://bjjqp6ccqr8it" path="res://Scripts/UI/UltimateHud.cs" id="47_oqotn"]
 [ext_resource type="PackedScene" uid="uid://dwn0an3ojvbe5" path="res://Scenes/enemy.tscn" id="47_uuu6x"]
-[ext_resource type="Resource" uid="uid://cg1ca1nltvah8" path="res://Data/Enemies/NecroKnight.tres" id="48_hkvke"]
-[ext_resource type="Resource" uid="uid://bhtiktj6x1i3a" path="res://Data/Enemies/NecroKnightWolf.tres" id="49_20cv7"]
 [ext_resource type="Script" uid="uid://da3bj42sd1s37" path="res://Scripts/Controllers/TargetController.cs" id="49_hkvke"]
 [ext_resource type="Texture2D" uid="uid://8e2oowayd4id" path="res://Sprites/Monsters/spectralwolf.png" id="51_ywy86"]
-[ext_resource type="Resource" uid="uid://da1arp2uchhxv" path="res://Data/Enemies/Hawk.tres" id="52_fqfjr"]
 [ext_resource type="Texture2D" uid="uid://834qkxlplna" path="res://Sprites/Monsters/legendarybird.png" id="52_goiu7"]
 [ext_resource type="Script" uid="uid://mqxjj3lmq5qu" path="res://Scripts/Controllers/UltimateController.cs" id="55_eebff"]
+[ext_resource type="Script" uid="uid://bai7gdkxga4d1" path="res://Scripts/VFX/VfxPlayer.cs" id="56_e2ql2"]
+[ext_resource type="Script" uid="uid://dggycs3si3qky" path="res://Scripts/Audio/SfxPlayer.cs" id="56_qtnps"]
+[ext_resource type="Resource" uid="uid://bow6ypetr1cpg" path="res://Data/Audio/SpellAudioBank.tres" id="57_b420t"]
+[ext_resource type="Script" uid="uid://d2dnrbhqyhxhc" path="res://Scripts/VFX/SpellVfxEntry.cs" id="57_e2ql2"]
+[ext_resource type="PackedScene" uid="uid://bvmtv7cwww2do" path="res://Scenes/GenericSpellVfx.tscn" id="57_obop7"]
+[ext_resource type="SpriteFrames" uid="uid://cklpmnhqdscnm" path="res://VFX/SpriteFrames/Lightning.tres" id="58_dn1w2"]
+[ext_resource type="Script" uid="uid://cua0b55ha7wsm" path="res://Scenes/UltimateGaugeController.cs" id="58_obop7"]
+[ext_resource type="Script" uid="uid://cmk56jevkg36j" path="res://Scripts/VFX/SpellVfxBank.cs" id="60_pa4y5"]
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_8ju71"]
 animations = [{
@@ -256,6 +261,20 @@ animations = [{
 "speed": 5.0
 }]
 
+[sub_resource type="Resource" id="Resource_jnakw"]
+script = ExtResource("57_e2ql2")
+SpellId = "spell_lightning"
+VfxScene = ExtResource("57_obop7")
+Frames = ExtResource("58_dn1w2")
+SpawnPoint = 9
+FollowAnchor = false
+metadata/_custom_type_script = "uid://d2dnrbhqyhxhc"
+
+[sub_resource type="Resource" id="Resource_a7b38"]
+script = ExtResource("60_pa4y5")
+Entries = Array[ExtResource("57_e2ql2")]([SubResource("Resource_jnakw")])
+metadata/_custom_type_script = "uid://cmk56jevkg36j"
+
 [node name="Main" type="Node2D"]
 
 [node name="Background" type="Sprite2D" parent="."]
@@ -285,6 +304,8 @@ parameters/looping = true
 [node name="ElementController" type="Node2D" parent="HUD"]
 script = ExtResource("3_nd2ry")
 TargetControllerPath = NodePath("../../TargetController")
+SfxPlayerPath = NodePath("../../SFXPlayer")
+VfxPlayerPath = NodePath("../../ScreenVfx/VfxPlayer")
 
 [node name="ElementHUD" type="Control" parent="HUD"]
 layout_mode = 3
@@ -310,7 +331,6 @@ script = ExtResource("9_0iob3")
 
 [node name="SombraSprite" type="AnimatedSprite2D" parent="HUD/ElementHUD"]
 position = Vector2(522, 355)
-scale = Vector2(0.3, 0.3)
 sprite_frames = SubResource("SpriteFrames_hx8n4")
 animation = &"activate"
 frame = 1
@@ -374,6 +394,7 @@ offset_top = 64.0
 offset_right = 72.0
 offset_bottom = 104.0
 pivot_offset = Vector2(16, 16)
+size_flags_stretch_ratio = 0.71
 script = ExtResource("47_oqotn")
 FireTex = ExtResource("4_qxria")
 IceTex = ExtResource("32_75tun")
@@ -395,11 +416,12 @@ offset_bottom = -1.0
 
 [node name="RuneRow" type="HBoxContainer" parent="HUD/UltimateHUD"]
 layout_mode = 0
-offset_left = 208.0
-offset_top = 80.0
-offset_right = 248.0
-offset_bottom = 120.0
-theme_override_constants/separation = 1
+offset_left = 216.0
+offset_top = -63.999996
+offset_right = 256.0
+offset_bottom = -23.999996
+scale = Vector2(0.7, 0.7)
+theme_override_constants/separation = 6
 
 [node name="Slot1" type="TextureRect" parent="HUD/UltimateHUD/RuneRow"]
 layout_mode = 2
@@ -422,7 +444,6 @@ layout_mode = 2
 stretch_mode = 5
 
 [node name="DeathKnight" parent="." groups=["Enemies"] instance=ExtResource("47_uuu6x")]
-Data = ExtResource("48_hkvke")
 
 [node name="Sprite" parent="DeathKnight" index="0"]
 position = Vector2(1296, 600.00006)
@@ -434,12 +455,10 @@ flip_h = true
 IntervalSeconds = 7.0
 HealPercentOfMaxHp = 0.01
 
-[node name="LightningVfx" parent="DeathKnight/Vfx" index="0"]
-position = Vector2(1336, 268)
-scale = Vector2(3.1249995, 4.5625)
+[node name="CollisionShape2D" parent="DeathKnight/ClickArea" index="0"]
+position = Vector2(1296, 600)
 
 [node name="Wolf" parent="." groups=["Enemies"] instance=ExtResource("47_uuu6x")]
-Data = ExtResource("49_20cv7")
 
 [node name="Sprite" parent="Wolf" index="0"]
 position = Vector2(1488, 712)
@@ -450,12 +469,10 @@ texture = ExtResource("51_ywy86")
 IntervalSeconds = 10.0
 ShieldCount = 2
 
-[node name="LightningVfx" parent="Wolf/Vfx" index="0"]
-position = Vector2(1576, 328)
-scale = Vector2(3.7499993, 5.3125)
+[node name="CollisionShape2D" parent="Wolf/ClickArea" index="0"]
+position = Vector2(1504, 752)
 
-[node name="Hawk" parent="." instance=ExtResource("47_uuu6x")]
-Data = ExtResource("52_fqfjr")
+[node name="Hawk" parent="." groups=["Enemies"] instance=ExtResource("47_uuu6x")]
 
 [node name="Sprite" parent="Hawk" index="0"]
 position = Vector2(1184, 320)
@@ -465,14 +482,51 @@ texture = ExtResource("52_goiu7")
 [node name="Shield" parent="Hawk" index="2"]
 IntervalSeconds = 10.0
 
-[node name="LightningVfx" parent="Hawk/Vfx" index="0"]
-position = Vector2(1168, 160)
+[node name="CollisionShape2D" parent="Hawk/ClickArea" index="0"]
+position = Vector2(1180, 298.75)
 
 [node name="UltimateController" type="Node" parent="."]
 script = ExtResource("55_eebff")
 UltimateHudPath = NodePath("../HUD/UltimateHUD")
 ElementControllerPath = NodePath("../HUD/ElementController")
 TargetControllerPath = NodePath("../TargetController")
+SfxPlayerPath = NodePath("../SFXPlayer")
+VfxPlayerPath = NodePath("../ScreenVfx/VfxPlayer")
+SequenceLength = 10
+
+[node name="SFXPlayer" type="AudioStreamPlayer" parent="." node_paths=PackedStringArray("Player")]
+volume_db = 5.891
+playback_type = 1
+script = ExtResource("56_qtnps")
+Bank = ExtResource("57_b420t")
+Player = NodePath("../AudioStreamPlayer")
+
+[node name="UltimateGaugeController" type="Node" parent="."]
+script = ExtResource("58_obop7")
+ElementControllerPath = NodePath("../HUD/ElementController")
+UltimateControllerPath = NodePath("../UltimateController")
+BaseHitsToFill = 1
+
+[node name="UltimateGauge" type="ProgressBar" parent="."]
+offset_left = 176.0
+offset_top = 64.0
+offset_right = 180.0
+offset_bottom = 91.0
+
+[node name="UltimateLabel" type="Label" parent="."]
+offset_left = 88.0
+offset_top = 64.0
+offset_right = 160.0
+offset_bottom = 87.0
+text = "Ultimate:"
+
+[node name="ScreenVfx" type="CanvasLayer" parent="."]
+
+[node name="VfxPlayer" type="Node" parent="ScreenVfx"]
+script = ExtResource("56_e2ql2")
+Bank = SubResource("Resource_a7b38")
+MagePath = NodePath("../../Mage")
+TargetControllerPath = NodePath("../../TargetController")
 
 [editable path="DeathKnight"]
 [editable path="Wolf"]
