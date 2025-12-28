@@ -5,7 +5,7 @@ public partial class SceneRouter : Node
 	// Caminhos oficiais das cenas (mantém estável)
 	public const string SCENE_MAIN_MENU = "res://Scenes/UI/MainMenu.tscn";
 	public const string SCENE_OPTIONS   = "res://Scenes/UI/OptionsMenu.tscn";
-	public const string SCENE_TRAINING  = "res://Scenes/Game/Training.tscn";
+	public const string SCENE_TRAINING  = "res://Scenes/Training.tscn";
 	public const string SCENE_RUN_GAME  = "res://Scenes/Game/RunGame.tscn";
 
 	// Acesso fácil ao autoload

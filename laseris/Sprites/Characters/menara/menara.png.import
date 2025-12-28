@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://37r30wt3cnuj"
-path="res://.godot/imported/blocking.png-66ee1fa9f5754d244b76da567e9a5d3f.ctex"
+uid="uid://r6v4cch57ac2"
+path="res://.godot/imported/menara.png-64023724f189f766caf58cd68586ddc1.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Sprites/Characters/mainchar/blocking.png"
-dest_files=["res://.godot/imported/blocking.png-66ee1fa9f5754d244b76da567e9a5d3f.ctex"]
+source_file="res://Sprites/Characters/menara/menara.png"
+dest_files=["res://.godot/imported/menara.png-64023724f189f766caf58cd68586ddc1.ctex"]
 
 [params]
 

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dpgwym37aioxr"
-path="res://.godot/imported/magespin.png-2894af3b66afe8c44a6814b12ed03b32.ctex"
+uid="uid://p6xwj4r5fixr"
+path="res://.godot/imported/menara.png-6771cad7033f26d0ccfb107f6c907e01.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Sprites/Characters/mainchar/magespin.png"
-dest_files=["res://.godot/imported/magespin.png-2894af3b66afe8c44a6814b12ed03b32.ctex"]
+source_file="res://Sprites/Monsters/menara.png"
+dest_files=["res://.godot/imported/menara.png-6771cad7033f26d0ccfb107f6c907e01.ctex"]
 
 [params]
 

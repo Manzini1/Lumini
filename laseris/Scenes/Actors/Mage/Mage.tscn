@@ -1,0 +1,118 @@
+[gd_scene load_steps=17 format=3 uid="uid://nvoxx5jrd2g3"]
+
+[ext_resource type="Texture2D" uid="uid://dokuag2wx3vw3" path="res://Sprites/Characters/mainchar/magebase.png" id="1_7neqo"]
+[ext_resource type="Texture2D" uid="uid://f42am8f0i3xr" path="res://Sprites/Characters/mainchar/spellreleased.png" id="1_l83py"]
+[ext_resource type="Texture2D" uid="uid://ci552qleddsny" path="res://Sprites/Characters/mainchar/magecasting.png" id="2_ygjit"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_csqk0"]
+atlas = ExtResource("1_l83py")
+region = Rect2(0, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_rlrpk"]
+atlas = ExtResource("1_l83py")
+region = Rect2(128, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_kt2yc"]
+atlas = ExtResource("1_l83py")
+region = Rect2(0, 128, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_5q2c3"]
+atlas = ExtResource("1_l83py")
+region = Rect2(128, 128, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_4p1us"]
+atlas = ExtResource("2_ygjit")
+region = Rect2(0, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ff2e1"]
+atlas = ExtResource("2_ygjit")
+region = Rect2(128, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_v63oi"]
+atlas = ExtResource("2_ygjit")
+region = Rect2(128, 128, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_kg0qs"]
+atlas = ExtResource("2_ygjit")
+region = Rect2(0, 128, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_m5fq5"]
+atlas = ExtResource("1_7neqo")
+region = Rect2(0, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_l83py"]
+atlas = ExtResource("1_7neqo")
+region = Rect2(0, 128, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ygjit"]
+atlas = ExtResource("1_7neqo")
+region = Rect2(128, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_3b1lc"]
+atlas = ExtResource("1_7neqo")
+region = Rect2(128, 128, 128, 128)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_csqk0"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_csqk0")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_rlrpk")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_kt2yc")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_5q2c3")
+}],
+"loop": false,
+"name": &"cast",
+"speed": 6.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_4p1us")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ff2e1")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_v63oi")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_kg0qs")
+}],
+"loop": true,
+"name": &"casting",
+"speed": 4.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_m5fq5")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_l83py")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ygjit")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_3b1lc")
+}],
+"loop": true,
+"name": &"default",
+"speed": 4.0
+}]
+
+[node name="Mage" type="CharacterBody2D"]
+
+[node name="Sprite" type="AnimatedSprite2D" parent="."]
+position = Vector2(624, 744)
+scale = Vector2(2.4, 2.4)
+sprite_frames = SubResource("SpriteFrames_csqk0")
+
+[node name="VfxCast" type="Marker2D" parent="."]
+
+[node name="Hitbox" type="Area2D" parent="."]

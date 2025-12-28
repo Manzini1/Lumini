@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dokuag2wx3vw3"
-path="res://.godot/imported/magebase.png-77076af0eefd4ea924174f7145c56dbc.ctex"
+uid="uid://8vh8eatrbjy1"
+path="res://.godot/imported/resized_FIRESTONE2.png-da6054af558de61d5248385551468e46.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Sprites/Characters/mainchar/magebase.png"
-dest_files=["res://.godot/imported/magebase.png-77076af0eefd4ea924174f7145c56dbc.ctex"]
+source_file="res://Sprites/Element Stones - Sheets-20251216T032321Z-3-001/Element Stones - Sheets/resized_FIRESTONE2.png"
+dest_files=["res://.godot/imported/resized_FIRESTONE2.png-da6054af558de61d5248385551468e46.ctex"]
 
 [params]
 

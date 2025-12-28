@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c63a2gv3bxtsd"
-path="res://.godot/imported/magespellreleased.png-3f8494c9cc0f715f209713ca3639f4ca.ctex"
+uid="uid://4lwdexkkbsx8"
+path="res://.godot/imported/tg1.png-5d6a01d7267c1088c53702f19d6ade4c.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Sprites/Characters/mainchar/magespellreleased.png"
-dest_files=["res://.godot/imported/magespellreleased.png-3f8494c9cc0f715f209713ca3639f4ca.ctex"]
+source_file="res://Sprites/Backgrounds/TrainingGrounds/tg1.png"
+dest_files=["res://.godot/imported/tg1.png-5d6a01d7267c1088c53702f19d6ade4c.ctex"]
 
 [params]
 

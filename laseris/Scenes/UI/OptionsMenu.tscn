@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://bdyya1d138dlw"]
+[gd_scene load_steps=3 format=3 uid="uid://bdyya1d138dlw"]
 
 [ext_resource type="Script" uid="uid://dbbbx52u3uikh" path="res://Scripts/UI/OptionsMenu.cs" id="1_xihfp"]
+[ext_resource type="Texture2D" uid="uid://1x6kj6nw8574" path="res://Sprites/Backgrounds/Menu/menu3.png" id="2_s4qwj"]
 
 [node name="OptionsMenu" type="Control"]
 layout_mode = 3
@@ -19,18 +20,30 @@ BtnRebindNextTargetPath = NodePath("Panel/MarginContainer/RootMargin/BindsSectio
 BtnRebindUltimatePath = NodePath("Panel/MarginContainer/RootMargin/BindsSection/BindUltRow/BtnBindUltimate")
 BackButtonPath = NodePath("Panel/MarginContainer/RootMargin/BackButton")
 
+[node name="Background" type="Sprite2D" parent="."]
+position = Vector2(959.9998, 540)
+scale = Vector2(1.25, 1.0546875)
+texture = ExtResource("2_s4qwj")
+
 [node name="Panel" type="Panel" parent="."]
-layout_mode = 0
-offset_right = 40.0
-offset_bottom = 40.0
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 0.096
+anchor_bottom = 0.156
+offset_left = 904.0
+offset_top = 264.00003
+offset_right = 775.68
+offset_bottom = 143.52002
+scale = Vector2(1.7276342, 1.5473827)
 
 [node name="MarginContainer" type="MarginContainer" parent="Panel"]
 layout_mode = 0
-offset_right = 40.0
-offset_bottom = 40.0
+offset_right = 109.0
+offset_bottom = 276.0
 
 [node name="RootMargin" type="VBoxContainer" parent="Panel/MarginContainer"]
 layout_mode = 2
+theme_override_constants/separation = 15
 
 [node name="AudioSection" type="VBoxContainer" parent="Panel/MarginContainer/RootMargin"]
 layout_mode = 2
@@ -62,16 +75,6 @@ step = 0.01
 
 [node name="HSeparator2" type="HSeparator" parent="Panel/MarginContainer/RootMargin/AudioSection"]
 layout_mode = 2
-
-[node name="Keybindings" type="Label" parent="Panel/MarginContainer/RootMargin/AudioSection"]
-layout_mode = 2
-
-[node name="HSeparator3" type="HSeparator" parent="Panel/MarginContainer/RootMargin/AudioSection"]
-layout_mode = 2
-
-[node name="BtnBack" type="Button" parent="Panel/MarginContainer/RootMargin/AudioSection"]
-layout_mode = 2
-text = "Back"
 
 [node name="BindsSection" type="VBoxContainer" parent="Panel/MarginContainer/RootMargin"]
 layout_mode = 2

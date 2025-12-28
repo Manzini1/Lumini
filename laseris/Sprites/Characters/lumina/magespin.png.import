@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://6qbqbp67dxo1"
-path="res://.godot/imported/attack.png-a32ba389180c449ffb05365cf4f0c495.ctex"
+uid="uid://dpgwym37aioxr"
+path="res://.godot/imported/magespin.png-034ca5017877bdd2ce1853a05c83734e.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Sprites/Characters/mainchar/attack.png"
-dest_files=["res://.godot/imported/attack.png-a32ba389180c449ffb05365cf4f0c495.ctex"]
+source_file="res://Sprites/Characters/lumina/magespin.png"
+dest_files=["res://.godot/imported/magespin.png-034ca5017877bdd2ce1853a05c83734e.ctex"]
 
 [params]
 
