@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://dua0hlevoay1o"
+path="res://.godot/imported/Dark Meets the Sky.ogg-7f72198667253f9c0ff4ef192d5acd06.oggvorbisstr"
+
+[deps]
+
+source_file="res://Audio/Battle/Dark Meets the Sky.ogg"
+dest_files=["res://.godot/imported/Dark Meets the Sky.ogg-7f72198667253f9c0ff4ef192d5acd06.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

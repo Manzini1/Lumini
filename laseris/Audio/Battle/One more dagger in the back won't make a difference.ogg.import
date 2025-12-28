@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://bc6j36k3ab4pp"
+path="res://.godot/imported/One more dagger in the back won't make a difference.ogg-e3c89e73f142a30ed3ef9b42d2ff3c53.oggvorbisstr"
+
+[deps]
+
+source_file="res://Audio/Battle/One more dagger in the back won't make a difference.ogg"
+dest_files=["res://.godot/imported/One more dagger in the back won't make a difference.ogg-e3c89e73f142a30ed3ef9b42d2ff3c53.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

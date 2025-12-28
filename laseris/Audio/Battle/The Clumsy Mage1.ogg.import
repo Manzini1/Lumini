@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://3js152b1lghr"
+path="res://.godot/imported/The Clumsy Mage1.ogg-412c24ab137cd5459bf8821b0167de95.oggvorbisstr"
+
+[deps]
+
+source_file="res://Audio/Battle/The Clumsy Mage1.ogg"
+dest_files=["res://.godot/imported/The Clumsy Mage1.ogg-412c24ab137cd5459bf8821b0167de95.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

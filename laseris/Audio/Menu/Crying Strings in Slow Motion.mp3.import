@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://cug0plpoo558j"
+path="res://.godot/imported/Crying Strings in Slow Motion.mp3-79aae1fa5693a4890025dba1b13248c8.mp3str"
+
+[deps]
+
+source_file="res://Audio/Menu/Crying Strings in Slow Motion.mp3"
+dest_files=["res://.godot/imported/Crying Strings in Slow Motion.mp3-79aae1fa5693a4890025dba1b13248c8.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

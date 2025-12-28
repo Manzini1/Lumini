@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://ycgmakihv6g"
+path="res://.godot/imported/Bird on the Windowsill.mp3-80c905da52f0724ccf8df9f3a61145f5.mp3str"
+
+[deps]
+
+source_file="res://SoundEffects/BackgroundMusic/Bird on the Windowsill.mp3"
+dest_files=["res://.godot/imported/Bird on the Windowsill.mp3-80c905da52f0724ccf8df9f3a61145f5.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

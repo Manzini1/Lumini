@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://b506p5x5j6cq5"
+path="res://.godot/imported/Crimson Lake.ogg-e3116fe5b916660ecdd8aeeb891498df.oggvorbisstr"
+
+[deps]
+
+source_file="res://Audio/Battle/Crimson Lake.ogg"
+dest_files=["res://.godot/imported/Crimson Lake.ogg-e3116fe5b916660ecdd8aeeb891498df.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

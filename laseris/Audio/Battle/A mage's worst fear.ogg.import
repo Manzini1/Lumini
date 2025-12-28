@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://udgru38ccpvr"
+path="res://.godot/imported/A mage's worst fear.ogg-885604c0601a98cf3fa50088e7790865.oggvorbisstr"
+
+[deps]
+
+source_file="res://Audio/Battle/A mage's worst fear.ogg"
+dest_files=["res://.godot/imported/A mage's worst fear.ogg-885604c0601a98cf3fa50088e7790865.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

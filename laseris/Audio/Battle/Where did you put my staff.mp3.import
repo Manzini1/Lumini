@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://divqk7mg4465q"
+path="res://.godot/imported/Where did you put my staff.mp3-b3e505ba1af3144736d3cb9268886f40.mp3str"
+
+[deps]
+
+source_file="res://Audio/Battle/Where did you put my staff.mp3"
+dest_files=["res://.godot/imported/Where did you put my staff.mp3-b3e505ba1af3144736d3cb9268886f40.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

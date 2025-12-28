@@ -11,9 +11,17 @@ config_version=5
 [application]
 
 config/name="Laseris"
-run/main_scene="uid://cuomhl8b13h4p"
+run/main_scene="uid://cga7b81yspq58"
 config/features=PackedStringArray("4.5", "C#", "Forward Plus")
 config/icon="res://icon.svg"
+
+[autoload]
+
+SceneRouter="*res://Scripts/Autoload/SceneRouter.cs"
+SettingsService="*res://Scripts/Autoload/SettingsService.cs"
+AudioManager="*res://Scripts/Autoload/AudioManager.cs"
+MusicPlayer="*res://Scenes/Autoload/MusicPlayer.tscn"
+MusicService="*res://Scripts/Autoload/MusicService.cs"
 
 [display]
 

@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://c3lb1f0l45uq5"
+path="res://.godot/imported/Where did you put my staff.ogg-e281dc2142978b8d65f2e31771e213cb.oggvorbisstr"
+
+[deps]
+
+source_file="res://Audio/Battle/Where did you put my staff.ogg"
+dest_files=["res://.godot/imported/Where did you put my staff.ogg-e281dc2142978b8d65f2e31771e213cb.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://d3ivt1u1l4tt3"
+path="res://.godot/imported/This potion does what.ogg-49bc202a9652d554ead9dc9bdc682a1a.oggvorbisstr"
+
+[deps]
+
+source_file="res://Audio/Battle/This potion does what.ogg"
+dest_files=["res://.godot/imported/This potion does what.ogg-49bc202a9652d554ead9dc9bdc682a1a.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

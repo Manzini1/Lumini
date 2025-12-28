@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://dmh402ajms7p8"]
+
+[ext_resource type="Script" uid="uid://d025l1d56h6kf" path="res://Scripts/Autoload/MusicPlayer.cs" id="1_xwelq"]
+
+[node name="MusicPlayer" type="AudioStreamPlayer"]
+bus = &"Music"
+script = ExtResource("1_xwelq")

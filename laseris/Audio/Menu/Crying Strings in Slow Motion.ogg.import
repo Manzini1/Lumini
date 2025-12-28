@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://87qwtu3vmyqm"
+path="res://.godot/imported/Crying Strings in Slow Motion.ogg-f729e83e26b917a12f642dca306656ae.oggvorbisstr"
+
+[deps]
+
+source_file="res://Audio/Menu/Crying Strings in Slow Motion.ogg"
+dest_files=["res://.godot/imported/Crying Strings in Slow Motion.ogg-f729e83e26b917a12f642dca306656ae.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

@@ -1,0 +1,63 @@
+[gd_scene load_steps=6 format=3 uid="uid://cga7b81yspq58"]
+
+[ext_resource type="Script" uid="uid://1iixkwy8s3j7" path="res://Scripts/UI/MainMenu/MainMenu.cs" id="1_g18y6"]
+[ext_resource type="Texture2D" uid="uid://1x6kj6nw8574" path="res://Sprites/Backgrounds/Menu/menu3.png" id="2_mjmdf"]
+[ext_resource type="Texture2D" uid="uid://c4vlbh6q8p7u5" path="res://Sprites/MenuComponents/Logos/1.png" id="3_72sra"]
+[ext_resource type="Script" uid="uid://duv5emrf07r8a" path="res://Scripts/UI/MusicOnEnter.cs" id="4_t6w0q"]
+[ext_resource type="Script" uid="uid://dy0wedpl3a1o6" path="res://Scripts/Audio/SceneMusicTag.cs" id="5_k8um8"]
+
+[node name="MainMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 928.0
+offset_top = 528.0
+offset_right = 928.0
+offset_bottom = 528.0
+script = ExtResource("1_g18y6")
+BtnStartPath = NodePath("VBoxContainer/Start")
+BtnTrainingPath = NodePath("VBoxContainer/Training")
+BtnOptionsPath = NodePath("VBoxContainer/Config")
+BtnQuitPath = NodePath("VBoxContainer/Quit")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(31.999863, 11.999947)
+scale = Vector2(1.25, 1.0546874)
+texture = ExtResource("2_mjmdf")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 0
+offset_left = -128.0
+offset_top = -192.0
+offset_right = 224.0
+offset_bottom = 85.0
+alignment = 1
+
+[node name="Start" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+text = "Start"
+metadata/_edit_use_anchors_ = true
+
+[node name="Config" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+text = "Configuration"
+
+[node name="Training" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+text = "Training"
+
+[node name="Quit" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+text = "Quit
+"
+
+[node name="Sprite2D2" type="Sprite2D" parent="."]
+position = Vector2(63.999985, -328)
+scale = Vector2(0.384375, 0.3609375)
+texture = ExtResource("3_72sra")
+
+[node name="MusicOnEnter" type="Node" parent="."]
+script = ExtResource("4_t6w0q")
+Domain = 0
+
+[node name="SceneConfig" type="Node" parent="."]
+script = ExtResource("5_k8um8")

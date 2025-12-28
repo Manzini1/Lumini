@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://jokc6n6f1hjw"
+path="res://.godot/imported/The sweet goblin's sister.ogg-b8c5e4b3ac1d02ef92a31eefe0dbceb0.oggvorbisstr"
+
+[deps]
+
+source_file="res://Audio/Battle/The sweet goblin's sister.ogg"
+dest_files=["res://.godot/imported/The sweet goblin's sister.ogg-b8c5e4b3ac1d02ef92a31eefe0dbceb0.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4
