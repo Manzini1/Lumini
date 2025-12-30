@@ -6,9 +6,12 @@ public partial class TrainingController : Node
 {
 	[ExportCategory("Refs")]
 	[Export] public NodePath TargetControllerPath;   // World/TargetController
-	[Export] public NodePath ElementControllerPath;  // HUD/ElementHUD/ElementController (ajuste conforme seu node)
-	[Export] public NodePath EnemiesRootPath;        // World/Enemies
-	[Export] public NodePath EnemyScene;             // PackedScene opcional (Enemy.tscn)
+	[Export] public NodePath ElementControllerPath;  // HUD/ElementController (ajuste)
+	[Export] public NodePath EnemiesRootPath;        // World/Enemies (Node2D)
+
+	[ExportCategory("Enemy Scene")]
+	[Export(PropertyHint.File, "*.tscn")]
+	public string EnemyScenePath = "res://Scenes/enemy.tscn"; // ajuste se precisar
 
 	[ExportCategory("UI")]
 	[Export] public NodePath TargetLabelPath;
@@ -26,7 +29,11 @@ public partial class TrainingController : Node
 
 	[ExportCategory("Training Settings")]
 	[Export] public int DefaultHp = 1000;
-	[Export] public bool StartWithShieldOn = false;
+	[Export] public bool StartWithShieldOn = true;
+
+	[ExportCategory("Layout")]
+	[Export] public Vector2 SpawnCenter = new(960, 540);
+	[Export] public float SpawnSpacing = 220f;
 
 	private TargetController _targetController;
 	private ElementController _elementController;
@@ -69,21 +76,25 @@ public partial class TrainingController : Node
 		_btnSpawn3 = GetNodeOrNull<Button>(BtnSpawn3Path);
 		_btnBack = GetNodeOrNull<Button>(BtnBackPath);
 
-		if (EnemyScene != null && !EnemyScene.IsEmpty)
-			_enemyPacked = GD.Load<PackedScene>(EnemyScene);
-
 		if (_targetController == null) GD.PushError("TrainingController: TargetControllerPath inválido.");
 		if (_elementController == null) GD.PushError("TrainingController: ElementControllerPath inválido.");
 		if (_enemiesRoot == null) GD.PushError("TrainingController: EnemiesRootPath inválido.");
 
+		if (!string.IsNullOrWhiteSpace(EnemyScenePath))
+			_enemyPacked = GD.Load<PackedScene>(EnemyScenePath);
+
+		if (_enemyPacked == null)
+			GD.PushError($"TrainingController: não consegui carregar EnemyScenePath: '{EnemyScenePath}'");
+
 		WireButtons();
 
-		// Escuta casts resolvidos (pra atualizar UI com HIT/MISS/ABSORB etc)
 		if (_elementController != null)
 			_elementController.CastResolved += OnCastResolved;
 
-		// Atualiza UI inicial
 		CallDeferred(nameof(RefreshUi));
+
+		// opcional: já spawnar 3 no começo pra treino ficar vivo
+		// SpawnCount(3);
 	}
 
 	public override void _ExitTree()
@@ -94,9 +105,10 @@ public partial class TrainingController : Node
 
 	private void WireButtons()
 	{
-		if (_btnResetHp != null) _btnResetHp.Pressed += () => ResetHp();
-		if (_btnToggleFlying != null) _btnToggleFlying.Pressed += () => ToggleFlying();
-		if (_btnToggleShield != null) _btnToggleShield.Pressed += () => ToggleShield();
+		if (_btnResetHp != null) _btnResetHp.Pressed += ResetHp;
+		if (_btnToggleFlying != null) _btnToggleFlying.Pressed += ToggleFlying;
+		if (_btnToggleShield != null) _btnToggleShield.Pressed += ToggleShield;
+
 		if (_btnSpawn1 != null) _btnSpawn1.Pressed += () => SpawnCount(1);
 		if (_btnSpawn2 != null) _btnSpawn2.Pressed += () => SpawnCount(2);
 		if (_btnSpawn3 != null) _btnSpawn3.Pressed += () => SpawnCount(3);
@@ -121,6 +133,15 @@ public partial class TrainingController : Node
 		if (_outcomeLabel != null)
 			_outcomeLabel.Text = $"Outcome: {outcome}";
 
+		// ✅ se você quiser que o shield reaja ao resultado do cast, é aqui:
+		// (isso mantém o shield “oficial” ligado ao combate)
+		if (target != null && GodotObject.IsInstanceValid(target))
+		{
+			var shield = target.Shield;
+			if (shield != null)
+				shield.NotifySpellResolved(spell, outcome);
+		}
+
 		RefreshUi();
 	}
 
@@ -134,7 +155,14 @@ public partial class TrainingController : Node
 		if (_hpLabel != null)
 		{
 			if (t == null) _hpLabel.Text = "HP: -";
-			else _hpLabel.Text = $"HP: {t.Hp}/{t.MaxHp} | Flying={t.IsFlying} | ShieldOn={_shieldOn}";
+			else
+			{
+				string shieldTxt = "-";
+				if (t.Shield != null && t.Shield.Active != null && t.Shield.Active.Count > 0)
+					shieldTxt = string.Join(", ", t.Shield.Active);
+
+				_hpLabel.Text = $"HP: {t.Hp}/{t.MaxHp} | Flying={t.IsFlying} | ShieldOn={_shieldOn} | Shield=[{shieldTxt}]";
+			}
 		}
 	}
 
@@ -143,10 +171,9 @@ public partial class TrainingController : Node
 		var t = _targetController?.CurrentTarget;
 		if (t == null || !GodotObject.IsInstanceValid(t)) return;
 
-		// Forma simples e limpa: recria o alvo com HP default (evita mexer em setter privado do Hp)
-		// Então, no training, a forma “oficial” é: respawn do boneco.
-		// (Sem gambiarra de reflection / set privado)
-		SpawnCount(_enemiesRoot != null ? _enemiesRoot.GetChildCount() : 1);
+		// sem mexer no setter privado: cura até o máximo
+		t.Heal(int.MaxValue);
+		RefreshUi();
 	}
 
 	private void ToggleFlying()
@@ -162,17 +189,21 @@ public partial class TrainingController : Node
 	{
 		_shieldOn = !_shieldOn;
 
-		// aqui a gente “liga/desliga” shield de forma central:
-		// por enquanto, só alterna se ShieldActive terá algo ou ficará vazio.
-		// Depois você pluga no seu ShieldController real.
 		foreach (var e in GetAllEnemies())
 		{
-			if (e == null) continue;
-			e.ShieldActive.Clear();
+			var shield = e.Shield;
+			if (shield == null) continue;
+
 			if (_shieldOn)
 			{
-				// exemplo: shield básico pra testar
-				e.ShieldActive.Add(ElementType.Fire);
+				// liga: gera escudo válido
+				shield.RefreshRandom();
+			}
+			else
+			{
+				// desliga: limpa
+				shield.Active.Clear();
+				// (o visual só vai sumir se seu ShieldVisual tratar lista vazia)
 			}
 		}
 
@@ -189,52 +220,52 @@ public partial class TrainingController : Node
 			if (child is Enemy e && GodotObject.IsInstanceValid(e))
 				list.Add(e);
 		}
+
 		return list;
 	}
 
 	private void SpawnCount(int count)
 	{
 		if (_enemiesRoot == null) return;
+		if (_enemyPacked == null) return;
 
-		// Remove existentes
+		// remove antigos
 		foreach (var child in _enemiesRoot.GetChildren())
 		{
 			if (child is Node n)
 				n.QueueFree();
 		}
 
-		// Se não tiver PackedScene setado, tenta achar Enemy.tscn no caminho padrão
-		if (_enemyPacked == null)
-		{
-			// Ajuste esse caminho se seu Enemy.tscn estiver em outro lugar
-			_enemyPacked = GD.Load<PackedScene>("res://Scenes/Enemies/Enemy.tscn");
-		}
-
-		if (_enemyPacked == null)
-		{
-			GD.PushError("TrainingController: EnemyScene não setado e não encontrei res://Scenes/Enemies/Enemy.tscn");
-			return;
-		}
-
-		// Spawns
+		// spawn novos
 		for (int i = 0; i < count; i++)
 		{
 			var inst = _enemyPacked.Instantiate<Enemy>();
 			inst.Name = $"Dummy_{i + 1}";
 			_enemiesRoot.AddChild(inst);
 
-			// posições simples e simétricas
-			inst.GlobalPosition = new Vector2(960 + (i - (count - 1) * 0.5f) * 220f, 540);
+			// posição (centralizado)
+			float offset = (i - (count - 1) * 0.5f) * SpawnSpacing;
+			inst.GlobalPosition = SpawnCenter + new Vector2(offset, 0);
 
-			// HP default
+			// stats básicos
 			inst.MaxHp = DefaultHp;
-
-			// shield on/off
-			inst.ShieldActive.Clear();
-			if (_shieldOn) inst.ShieldActive.Add(ElementType.Fire);
+			inst.IsFlying = false;
 		}
 
-		// dá 1 frame pro TargetController registrar e selecionar
+		// espera 1 frame pro TargetController registrar e selecionar
+		CallDeferred(nameof(ApplyShieldStateAfterSpawn));
 		CallDeferred(nameof(RefreshUi));
+	}
+
+	private void ApplyShieldStateAfterSpawn()
+	{
+		foreach (var e in GetAllEnemies())
+		{
+			var shield = e.Shield;
+			if (shield == null) continue;
+
+			if (_shieldOn) shield.RefreshRandom();
+			else shield.Active.Clear();
+		}
 	}
 }

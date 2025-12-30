@@ -1,19 +1,22 @@
-[gd_scene load_steps=15 format=3 uid="uid://y8elah67a2l5"]
+[gd_scene load_steps=18 format=3 uid="uid://y8elah67a2l5"]
 
 [ext_resource type="Texture2D" uid="uid://4lwdexkkbsx8" path="res://Sprites/Backgrounds/TrainingGrounds/tg1.png" id="1_iessl"]
 [ext_resource type="Script" uid="uid://da3bj42sd1s37" path="res://Scripts/Controllers/TargetController.cs" id="1_nd45q"]
 [ext_resource type="PackedScene" uid="uid://dwn0an3ojvbe5" path="res://Scenes/enemy.tscn" id="1_pxb5y"]
 [ext_resource type="Script" uid="uid://ba3i2p5b5n7jm" path="res://Scripts/Training/TrainingController.cs" id="5_qfe5b"]
-[ext_resource type="PackedScene" uid="uid://bknd2e4805bjq" path="res://Scenes/mage.tscn" id="5_t0jee"]
 [ext_resource type="Script" uid="uid://6t1dg057fu1l" path="res://Scripts/UI/MusicDomainOnEnter.cs" id="6_q1qh0"]
 [ext_resource type="PackedScene" uid="uid://bhq41r88ibllx" path="res://Scenes/UI/ElementHUD/ElementHUD.tscn" id="6_qfe5b"]
 [ext_resource type="PackedScene" uid="uid://dmh402ajms7p8" path="res://Scenes/Autoload/MusicPlayer.tscn" id="9_f1ff0"]
+[ext_resource type="Script" uid="uid://bai7gdkxga4d1" path="res://Scripts/VFX/VfxPlayer.cs" id="9_n2qsq"]
 [ext_resource type="PackedScene" uid="uid://tu7pi0t41us4" path="res://Scenes/spell_vfx.tscn" id="10_6lcev"]
 [ext_resource type="PackedScene" uid="uid://nvoxx5jrd2g3" path="res://Scenes/Actors/Mage/Mage.tscn" id="11_6lcev"]
+[ext_resource type="Resource" uid="uid://bpdqe75qdl8pk" path="res://Data/SpellVfxBank.tres" id="11_lqmdg"]
 [ext_resource type="Script" uid="uid://dujkfevgl677r" path="res://Scripts/Controllers/CombatController.cs" id="12_lcyyg"]
 [ext_resource type="Script" uid="uid://cg1xcebur56j" path="res://Scripts/Controllers/EnemySpawner.cs" id="13_jh4eh"]
 [ext_resource type="Script" uid="uid://cr8f8fsvx2wy" path="res://Scripts/Enemies/EnemyData.cs" id="14_lqmdg"]
 [ext_resource type="Resource" uid="uid://10x6ls6i6x31" path="res://Data/Enemies/TargetDummy.tres" id="15_kijot"]
+[ext_resource type="PackedScene" uid="uid://djfgdh73ic5jb" path="res://Scenes/Audio/SfxPlayer.tscn" id="16_kijot"]
+[ext_resource type="Script" uid="uid://dggycs3si3qky" path="res://Scripts/Audio/SfxPlayer.cs" id="17_kux0e"]
 
 [node name="Training" type="Node2D"]
 
@@ -26,11 +29,39 @@ texture = ExtResource("1_iessl")
 
 [node name="Enemies" type="Node2D" parent="World"]
 
+[node name="Mage" parent="World" instance=ExtResource("11_6lcev")]
+scale = Vector2(0.9938471, 0.98769855)
+VisualPath = NodePath("Sprite")
+AnimPath = NodePath("Sprite")
+ElementControllerPath = NodePath("../../HUD/ElementHUD/ElementController")
+CastPointPath = NodePath("VfxCast")
+
+[node name="CombatController" type="Node" parent="World"]
+script = ExtResource("12_lcyyg")
+MagePath = NodePath("../Mage")
+ElementControllerPath = NodePath("../../HUD/ElementHUD/ElementController")
+TargetControllerPath = NodePath("../TargetController")
+
 [node name="TargetController" type="Node" parent="World"]
 script = ExtResource("1_nd45q")
 
-[node name="Mage" parent="World" instance=ExtResource("5_t0jee")]
-visible = false
+[node name="TrainingController" type="Node" parent="World"]
+script = ExtResource("5_qfe5b")
+TargetControllerPath = NodePath("../TargetController")
+ElementControllerPath = NodePath("../../HUD/ElementHUD/ElementController")
+EnemiesRootPath = NodePath("../Enemies")
+EnemyScenePath = "uid://dwn0an3ojvbe5"
+TargetLabelPath = NodePath("../../HUD/TrainingHud/Panel/VBoxContainer/TargetLabel")
+HpLabelPath = NodePath("../../HUD/TrainingHud/Panel/VBoxContainer/HpLabel")
+LastSpellLabelPath = NodePath("../../HUD/TrainingHud/Panel/VBoxContainer/LastSpellLabel")
+OutcomeLabelPath = NodePath("../../HUD/TrainingHud/Panel/VBoxContainer/OutcomeLabel")
+BtnResetHpPath = NodePath("../../HUD/TrainingHud/Panel/VBoxContainer/Buttons/BtnResetHp")
+BtnToggleFlyingPath = NodePath("../../HUD/TrainingHud/Panel/VBoxContainer/Buttons/BtnToggleFlying")
+BtnToggleShieldPath = NodePath("../../HUD/TrainingHud/Panel/VBoxContainer/Buttons/BtnToggleShield")
+BtnSpawn1Path = NodePath("../../HUD/TrainingHud/Panel/VBoxContainer/HBoxContainer/BtnSpawn1")
+BtnSpawn2Path = NodePath("../../HUD/TrainingHud/Panel/VBoxContainer/HBoxContainer/BtnSpawn2")
+BtnSpawn3Path = NodePath("../../HUD/TrainingHud/Panel/VBoxContainer/HBoxContainer/BtnSpawn3")
+BtnBackPath = NodePath("../../HUD/TrainingHud/Panel/VBoxContainer/Button")
 
 [node name="HUD" type="CanvasLayer" parent="."]
 
@@ -114,31 +145,13 @@ text = "Back"
 [node name="ElementHUD" parent="HUD" instance=ExtResource("6_qfe5b")]
 
 [node name="HBoxContainer" parent="HUD/ElementHUD" index="0"]
-offset_top = 680.0
-offset_bottom = 720.0
+offset_top = 656.0
+offset_bottom = 696.0
 
 [node name="ElementController" parent="HUD/ElementHUD" index="1"]
 TargetControllerPath = NodePath("../../../World/TargetController")
-SfxPlayerPath = NodePath("../../../MusicPlayer")
-VfxPlayerPath = NodePath("../../../SpellVfx")
-
-[node name="TrainingController" type="Node" parent="."]
-script = ExtResource("5_qfe5b")
-TargetControllerPath = NodePath("../World/TargetController")
-ElementControllerPath = NodePath("../HUD/ElementHUD/ElementController")
-EnemiesRootPath = NodePath("../World/Enemies")
-EnemyScene = NodePath("")
-TargetLabelPath = NodePath("../HUD/TrainingHud/Panel/VBoxContainer/TargetLabel")
-HpLabelPath = NodePath("../HUD/TrainingHud/Panel/VBoxContainer/HpLabel")
-LastSpellLabelPath = NodePath("../HUD/TrainingHud/Panel/VBoxContainer/LastSpellLabel")
-OutcomeLabelPath = NodePath("../HUD/TrainingHud/Panel/VBoxContainer/OutcomeLabel")
-BtnResetHpPath = NodePath("../HUD/TrainingHud/Panel/VBoxContainer/Buttons/BtnResetHp")
-BtnToggleFlyingPath = NodePath("../HUD/TrainingHud/Panel/VBoxContainer/Buttons/BtnToggleFlying")
-BtnToggleShieldPath = NodePath("../HUD/TrainingHud/Panel/VBoxContainer/Buttons/BtnToggleShield")
-BtnSpawn1Path = NodePath("../HUD/TrainingHud/Panel/VBoxContainer/HBoxContainer/BtnSpawn1")
-BtnSpawn2Path = NodePath("../HUD/TrainingHud/Panel/VBoxContainer/HBoxContainer/BtnSpawn2")
-BtnSpawn3Path = NodePath("../HUD/TrainingHud/Panel/VBoxContainer/HBoxContainer/BtnSpawn3")
-BtnBackPath = NodePath("../HUD/TrainingHud/Panel/VBoxContainer/Button")
+SfxPlayerPath = NodePath("../../../SfxPlayer")
+VfxPlayerPath = NodePath("../../../SpellVfx/VfxPlayer")
 
 [node name="MusicDomain" type="Node" parent="."]
 script = ExtResource("6_q1qh0")
@@ -147,13 +160,11 @@ script = ExtResource("6_q1qh0")
 
 [node name="SpellVfx" parent="." instance=ExtResource("10_6lcev")]
 
-[node name="Mage" parent="." instance=ExtResource("11_6lcev")]
-
-[node name="CombatController" type="Node" parent="."]
-script = ExtResource("12_lcyyg")
-MagePath = NodePath("../Mage")
-ElementControllerPath = NodePath("../HUD/ElementHUD/ElementController")
-TargetControllerPath = NodePath("../World/TargetController")
+[node name="VfxPlayer" type="Node" parent="SpellVfx"]
+script = ExtResource("9_n2qsq")
+Bank = ExtResource("11_lqmdg")
+MagePath = NodePath("../../World/Mage")
+TargetControllerPath = NodePath("../../World/TargetController")
 
 [node name="SpawnSlots" type="Node2D" parent="."]
 
@@ -172,6 +183,9 @@ EnemiesParentPath = NodePath("../World/Enemies")
 EnemyScene = ExtResource("1_pxb5y")
 SlotMarkers = Array[NodePath]([NodePath("../SpawnSlots/Slot1"), NodePath("../SpawnSlots/Slot2"), NodePath("../SpawnSlots/Slot3")])
 EnemiesToSpawn = Array[ExtResource("14_lqmdg")]([ExtResource("15_kijot"), ExtResource("15_kijot"), ExtResource("15_kijot")])
+
+[node name="SfxPlayer" parent="." instance=ExtResource("16_kijot")]
+script = ExtResource("17_kux0e")
 
 [editable path="World/Mage"]
 [editable path="HUD/ElementHUD"]

@@ -7,7 +7,7 @@ public partial class EnemyData : Resource
 	[Export] public string DisplayName = "Enemy";
 	[Export] public int MaxHp = 100;
 	[Export] public bool IsFlying = false;
-	[Export] public Texture2D Texture;
+	[Export] public Texture2D SpriteTexture;
 	// ✅ Offset onde o VFX deve nascer (ex: cabeça)
 	// Normalmente algo tipo (0, -30) ou (0, -50)
 	[Export] public Vector2 VfxOffset = new Vector2(0, -30);

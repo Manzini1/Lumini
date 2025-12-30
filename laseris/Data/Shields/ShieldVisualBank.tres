@@ -1,0 +1,49 @@
+[gd_resource type="Resource" script_class="ShieldVisualBank" load_steps=10 format=3 uid="uid://c7a5uvxdf3d5j"]
+
+[ext_resource type="Script" uid="uid://bqww5ogvj6svy" path="res://Scripts/VFX/ShieldVisualEntry.cs" id="1_k8cig"]
+[ext_resource type="Texture2D" uid="uid://c4g78mxvgktia" path="res://Sprites/concepts/barrier_fire.png" id="2_cha55"]
+[ext_resource type="Script" uid="uid://bjtkcxx0x3jdy" path="res://Scripts/VFX/ShieldVisualBank.cs" id="2_ciej4"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_ciej4"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_cha55")
+}],
+"loop": true,
+"name": &"fire",
+"speed": 5.0
+}, {
+"frames": [],
+"loop": true,
+"name": &"wind",
+"speed": 5.0
+}]
+
+[sub_resource type="Resource" id="Resource_atv1e"]
+script = ExtResource("1_k8cig")
+Key = "fire"
+Frames = SubResource("SpriteFrames_ciej4")
+AnimationName = "fire"
+metadata/_custom_type_script = "uid://bqww5ogvj6svy"
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_cha55"]
+
+[sub_resource type="Resource" id="Resource_rfle4"]
+script = ExtResource("1_k8cig")
+Key = "ice"
+Frames = SubResource("SpriteFrames_cha55")
+AnimationName = "ice"
+metadata/_custom_type_script = "uid://bqww5ogvj6svy"
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_lsdit"]
+
+[sub_resource type="Resource" id="Resource_n3cja"]
+script = ExtResource("1_k8cig")
+Frames = SubResource("SpriteFrames_lsdit")
+metadata/_custom_type_script = "uid://bqww5ogvj6svy"
+
+[resource]
+script = ExtResource("2_ciej4")
+Entries = Array[ExtResource("1_k8cig")]([SubResource("Resource_atv1e"), SubResource("Resource_rfle4"), SubResource("Resource_n3cja")])
+metadata/_custom_type_script = "uid://bjtkcxx0x3jdy"

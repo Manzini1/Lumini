@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://djfgdh73ic5jb"]
+
+[node name="SfxPlayer" type="Node"]
+
+[node name="OneShot" type="AudioStreamPlayer" parent="."]
+bus = &"SFX"

@@ -1,13 +1,29 @@
-[gd_resource type="Resource" script_class="SpellVfxBank" load_steps=5 format=3 uid="uid://bpdqe75qdl8pk"]
+[gd_resource type="Resource" script_class="SpellVfxBank" load_steps=7 format=3 uid="uid://bpdqe75qdl8pk"]
 
 [ext_resource type="Script" uid="uid://d2dnrbhqyhxhc" path="res://Scripts/VFX/SpellVfxEntry.cs" id="1_tw0os"]
 [ext_resource type="Script" uid="uid://cmk56jevkg36j" path="res://Scripts/VFX/SpellVfxBank.cs" id="2_rhh4v"]
-[ext_resource type="PackedScene" uid="uid://bvmtv7cwww2do" path="res://Scenes/GenericSpellVfx.tscn" id="2_v41ij"]
+[ext_resource type="Texture2D" uid="uid://cn8pn2hhjl6fr" path="res://Sprites/Spells/thunder.png" id="2_v41ij"]
+[ext_resource type="Texture2D" uid="uid://ddo1l2pgu4yd3" path="res://Sprites/Spells/thunder2.png" id="3_83hh2"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_het8y"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_v41ij")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_83hh2")
+}],
+"loop": true,
+"name": &"spell_lightning",
+"speed": 5.0
+}]
 
 [sub_resource type="Resource" id="Resource_83hh2"]
 script = ExtResource("1_tw0os")
-VfxScene = ExtResource("2_v41ij")
-SpawnPoint = 5
+SpellId = "spell_lightning"
+Frames = SubResource("SpriteFrames_het8y")
+SpawnPoint = 9
 metadata/_custom_type_script = "uid://d2dnrbhqyhxhc"
 
 [resource]

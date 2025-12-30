@@ -19,7 +19,7 @@ public partial class TargetController : Node
 	public override void _Ready()
 	{
 		GD.Print("TargetController iniciado");
-
+		
 		GetTree().NodeAdded += OnNodeAdded;
 		GetTree().NodeRemoved += OnNodeRemoved;
 

@@ -1,16 +1,16 @@
-[gd_scene load_steps=5 format=3 uid="uid://dwn0an3ojvbe5"]
+[gd_scene load_steps=7 format=3 uid="uid://dwn0an3ojvbe5"]
 
 [ext_resource type="Script" uid="uid://gnuiiocp0v8" path="res://Scripts/Enemies/Enemy.cs" id="1_1f0kj"]
 [ext_resource type="Script" uid="uid://bp3qw2meo27gj" path="res://Scripts/Combat/HealthComponent.cs" id="2_afpow"]
 [ext_resource type="Script" uid="uid://b302xqic18mmp" path="res://Scripts/Combat/ShieldComponent.cs" id="3_afpow"]
+[ext_resource type="Script" uid="uid://ctukcckg1akcr" path="res://Scripts/Combat/ShieldController.cs" id="4_287tu"]
+[ext_resource type="PackedScene" uid="uid://rnyonlsdkw3q" path="res://Scenes/Shield/shield_vfx.tscn" id="5_0830c"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_287tu"]
 size = Vector2(204, 293.25)
 
 [node name="Enemy" type="Node2D"]
 script = ExtResource("1_1f0kj")
-
-[node name="Sprite" type="Sprite2D" parent="."]
 
 [node name="Health" type="Node" parent="."]
 script = ExtResource("2_afpow")
@@ -20,9 +20,6 @@ script = ExtResource("3_afpow")
 
 [node name="Selected" type="Sprite2D" parent="."]
 
-[node name="VfxAnchor" type="Node2D" parent="."]
-position = Vector2(1440, 480)
-
 [node name="ClickArea" type="Area2D" parent="."]
 position = Vector2(72, 80)
 
@@ -30,4 +27,31 @@ position = Vector2(72, 80)
 position = Vector2(-72, -80)
 shape = SubResource("RectangleShape2D_287tu")
 
-[node name="HeadMarker" type="Marker2D" parent="."]
+[node name="ShieldAnchor" type="Marker2D" parent="."]
+position = Vector2(1224, 728)
+
+[node name="Visual" type="Node2D" parent="."]
+
+[node name="Sprite" type="Sprite2D" parent="Visual"]
+
+[node name="Shield" type="Sprite2D" parent="Visual"]
+
+[node name="VfxAnchor" type="Node2D" parent="Visual"]
+position = Vector2(1440, 480)
+
+[node name="ShieldController" type="Node" parent="."]
+script = ExtResource("4_287tu")
+Mode = 1
+
+[node name="ShieldVfx" parent="." instance=ExtResource("5_0830c")]
+
+[node name="VfxCenter" type="Marker2D" parent="."]
+position = Vector2(1432, 544)
+
+[node name="VfxHead" type="Marker2D" parent="."]
+position = Vector2(1448, 416)
+
+[node name="VfxGround" type="Marker2D" parent="."]
+position = Vector2(1464, 848)
+
+[editable path="ShieldVfx"]

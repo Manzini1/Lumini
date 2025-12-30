@@ -20,7 +20,10 @@ public partial class CombatController : Node
 		_mage = GetNodeOrNull<Mage>(MagePath);
 		_elementController = GetNodeOrNull<ElementController>(ElementControllerPath);
 		_targetController = GetNodeOrNull<TargetController>(TargetControllerPath);
-
+			GD.Print($"[CombatController] NodePath={GetPath()} Owner={Owner?.Name} Scene={GetTree().CurrentScene?.Name}");
+			GD.Print($"MagePath empty? {MagePath.IsEmpty} val='{MagePath}'");
+		GD.Print($"[Combat] Self={GetPath()} Owner={Owner?.GetPath()} MagePath='{MagePath}' empty={MagePath.IsEmpty}");
+GD.Print($"[Combat] Mage raw = {GetNodeOrNull<Node>(MagePath)}");
 		if (_mage == null) GD.PushError("CombatController: MagePath não setado ou node não encontrado.");
 		if (_elementController == null) GD.PushError("CombatController: ElementControllerPath não setado ou node não encontrado.");
 		if (_targetController == null) GD.PushWarning("CombatController: TargetControllerPath não setado (ok, mas sem alvo).");

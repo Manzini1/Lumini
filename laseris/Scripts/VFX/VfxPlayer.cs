@@ -11,9 +11,19 @@ public partial class VfxPlayer : Node
 
 	private Mage _mage;
 	private TargetController _targetController;
-
+	
 	public override void _Ready()
 	{
+		 GD.Print($"[VfxPlayer] Self={GetPath()} MagePath='{MagePath}' empty={MagePath.IsEmpty}");
+
+	var mageNode = GetNodeOrNull<Node>(MagePath);
+	GD.Print($"[VfxPlayer] Mage raw={mageNode} type={(mageNode == null ? "null" : mageNode.GetType().FullName)}");
+
+	_mage = GetNodeOrNull<Mage>(MagePath);
+	GD.Print($"[VfxPlayer] Mage typed={_mage}");
+
+	if (_mage == null)
+		GD.PushWarning("VfxPlayer: MagePath não setado/encontrado.");
 		_mage = GetNodeOrNull<Mage>(MagePath);
 		_targetController = GetNodeOrNull<TargetController>(TargetControllerPath);
 
@@ -21,7 +31,10 @@ public partial class VfxPlayer : Node
 		if (_mage == null) GD.PushWarning("VfxPlayer: MagePath não setado/encontrado.");
 		if (_targetController == null) GD.PushWarning("VfxPlayer: TargetControllerPath não setado/encontrado.");
 	}
-
+private static Marker2D GetMarker(Node root, string name)
+{
+	return root?.GetNodeOrNull<Marker2D>(name);
+}
 public void PlaySpell(SpellDefinition spell)
 {
 	if (spell == null || Bank == null)
@@ -100,23 +113,20 @@ public void PlaySpell(SpellDefinition spell)
 
 			case SpellSpawnPoint.CasterCastPoint:
 			{
-				var m = GetMarker(mage, "VfxCast");
-				if (m != null)
-				{
-					if (entry.FollowAnchor) return (m, m.GlobalPosition);
-					pos = m.GlobalPosition;
-				}
+					var m = GetMarker(_mage, "VfxCast");
+			if (m != null)
+				pos = m.GlobalPosition;
+			else
+				pos = _mage.GlobalPosition; // fallback seguro
 				break;
 			}
 
 			case SpellSpawnPoint.TargetHead:
 			{
-				var m = GetMarker(target, "VfxHead");
-				if (m != null)
-				{
-					if (entry.FollowAnchor) return (m, m.GlobalPosition);
-					pos = m.GlobalPosition;
-				}
+				var head = GetMarker(target, "VfxHead");
+				if (head != null) pos = head.GlobalPosition;
+				else pos = target.GlobalPosition; // fallback
+
 				break;
 			}
 

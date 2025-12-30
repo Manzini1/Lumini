@@ -3,90 +3,68 @@ using System.Collections.Generic;
 
 public partial class Enemy : Node2D
 {
-	[ExportCategory("Data")]
+	[ExportCategory("Data (opcional)")]
 	[Export] public EnemyData Data;
 
-	[ExportCategory("Refs")]
-	[Export] public NodePath SpritePath = "Sprite";
-	[Export] public NodePath ClickAreaPath = "ClickArea";
-	[Export] public NodePath VfxHeadPath = "VfxHead";
-	[Export] public NodePath VfxCenterPath = "VfxCenter";
-	[Export] public NodePath VfxGroundPath = "VfxGround";
-
-	// fallback (se não setar Data)
-	[ExportCategory("Fallback")]
+	[ExportCategory("Fallback (se Data = null)")]
 	[Export] public int MaxHp = 1000;
 	[Export] public bool IsFlying = false;
 
 	public int Hp { get; private set; }
 	public bool IsDead => Hp <= 0;
 
-	// escudo atual (sua mecânica já usa isso)
-	public HashSet<ElementType> ShieldActive = new();
+	public ShieldController Shield { get; private set; } // ✅ novo
 
 	private Sprite2D _sprite;
-	private bool _selected;
 
-	// Mouse selection
+	// clique (opcional)
 	public Area2D ClickArea { get; private set; }
 
-	// Anchors (para VFX spawn)
-	public Marker2D VfxHead { get; private set; }
-	public Marker2D VfxCenter { get; private set; }
-	public Marker2D VfxGround { get; private set; }
+	private bool _selected = false;
 
 	[Signal] public delegate void DiedEventHandler(Enemy who);
 	[Signal] public delegate void HpChangedEventHandler(Enemy who, int hp, int maxHp);
 
 	public override void _Ready()
 	{
-		AddToGroup("Enemies");
-		if (Data != null)
+		 AddToGroup("Enemies"); 
+		_sprite = FindFirstChildOfType<Sprite2D>(this);
+		if (_sprite == null)
 		{
-			MaxHp = Data.MaxHp;
-			IsFlying = Data.IsFlying;
-
-			if (_sprite != null)
-			{
-				if (Data.Texture != null)
-					_sprite.Texture = Data.Texture;
-
-				_sprite.Scale = Data.SpriteScale;
-				_sprite.Position = Data.SpriteOffset;
-			}
+			GD.PushError($"{Name}: Enemy precisa ter um Sprite2D dentro da cena.");
+			return;
 		}
-		_sprite = GetNodeOrNull<Sprite2D>(SpritePath);
-		ClickArea = GetNodeOrNull<Area2D>(ClickAreaPath);
 
-		VfxHead = GetNodeOrNull<Marker2D>(VfxHeadPath);
-		VfxCenter = GetNodeOrNull<Marker2D>(VfxCenterPath);
-		VfxGround = GetNodeOrNull<Marker2D>(VfxGroundPath);
+		// ✅ ShieldController obrigatório na cena Enemy.tscn
+		Shield = GetNodeOrNull<ShieldController>("ShieldController");
+		if (Shield == null)
+			GD.PushError($"{Name}: não encontrei 'ShieldController' como filho. Adicione o node na cena Enemy.tscn.");
 
-		// aplica Data (se existir)
-		if (Data != null)
-		{
-			MaxHp = Data.MaxHp;
-			IsFlying = Data.IsFlying;
+		ClickArea = GetNodeOrNull<Area2D>("ClickArea");
 
-			if (_sprite != null && Data.Texture != null)
-				_sprite.Texture = Data.Texture;
-		}
+		ApplyDataIfAny();
 
 		Hp = MaxHp;
-
-		if (_sprite == null)
-			GD.PushError($"{Name}: Enemy precisa ter Sprite2D em '{SpritePath}'.");
-
-		if (ClickArea == null)
-			GD.PushWarning($"{Name}: não encontrei ClickArea em '{ClickAreaPath}' (mouse target não vai funcionar).");
-
-		UpdateHighlight();
-
-		GD.Print($"{GetDisplayName()} spawned with HP {Hp}/{MaxHp}");
+		GD.Print($"{Name} spawned with HP {Hp}/{MaxHp}");
 		EmitSignal(SignalName.HpChanged, this, Hp, MaxHp);
 	}
 
-	public string GetDisplayName() => Data?.DisplayName ?? Name;
+	public void ApplyData(EnemyData data)
+	{
+		Data = data;
+		ApplyDataIfAny();
+	}
+
+	private void ApplyDataIfAny()
+	{
+		if (Data == null) return;
+
+		MaxHp = Data.MaxHp;
+		IsFlying = Data.IsFlying;
+
+		if (Data.SpriteTexture != null && _sprite != null)
+			_sprite.Texture = Data.SpriteTexture;
+	}
 
 	public void SetSelected(bool selected)
 	{
@@ -94,43 +72,56 @@ public partial class Enemy : Node2D
 		UpdateHighlight();
 	}
 
-	private void UpdateHighlight()
-	{
-		if (_sprite == null) return;
-		_sprite.Modulate = _selected ? new Color(1.25f, 1.25f, 1.25f, 1f) : Colors.White;
-	}
-
-	// Mantém sua assinatura atual (ElementController usa isso)
 	public CastOutcome TakeSpellHit(SpellDefinition spell)
 	{
-		if (spell == null) return CastOutcome.CancelledNoElements;
-		if (IsDead) return CastOutcome.Blocked;
+		if (spell == null)
+			return CastOutcome.CancelledNoElements;
 
-		// MISS por ar/chão
+		if (IsDead)
+			return CastOutcome.Blocked;
+
 		if (!DoesSpellHitThisEnemy(spell.Targeting))
 		{
-			GD.Print($"{GetDisplayName()} MISS ({spell.Id}) - targeting {spell.Targeting} vs IsFlying={IsFlying}");
+			GD.Print($"{Name} MISS ({spell.Id}) - targeting {spell.Targeting} vs IsFlying={IsFlying}");
 			return CastOutcome.Miss;
 		}
 
-		// ABSORVE (escudo cura)
 		float healRatio = GetShieldHealRatio(spell.Elements);
 		if (healRatio > 0f)
 		{
 			int heal = Mathf.RoundToInt(spell.Damage * healRatio);
 			Heal(heal);
-			GD.Print($"{GetDisplayName()} ABSORVEU e curou {heal} (ratio {healRatio}). HP: {Hp}/{MaxHp}");
 
-			RefreshShieldImmediately();
+			GD.Print($"{Name} ABSORVEU ({FormatElements(spell.Elements)}) e curou {heal} (ratio {healRatio}). HP: {Hp}/{MaxHp}");
+
+			// ✅ quem decide refresh é o ShieldController (via NotifySpellResolved)
 			return healRatio >= 1.0f ? CastOutcome.Absorbed100 : CastOutcome.Absorbed50;
 		}
 
-		// HIT normal
 		TakeDamage(spell.Damage);
 		_ = HitFlashRed();
-		GD.Print($"{GetDisplayName()} tomou {spell.Damage} ({spell.PrimaryElement}). HP: {Hp}/{MaxHp}");
+		GD.Print($"{Name} tomou {spell.Damage} ({spell.PrimaryElement}). HP: {Hp}/{MaxHp}");
 
 		return CastOutcome.Hit;
+	}
+
+	public void TakeDamage(int amount)
+	{
+		if (amount <= 0 || IsDead) return;
+
+		Hp = Mathf.Max(Hp - amount, 0);
+		EmitSignal(SignalName.HpChanged, this, Hp, MaxHp);
+
+		if (Hp <= 0)
+			Die();
+	}
+
+	public void Heal(int amount)
+	{
+		if (amount <= 0 || IsDead) return;
+
+		Hp = Mathf.Min(Hp + amount, MaxHp);
+		EmitSignal(SignalName.HpChanged, this, Hp, MaxHp);
 	}
 
 	private bool DoesSpellHitThisEnemy(SpellTargeting targeting)
@@ -147,46 +138,25 @@ public partial class Enemy : Node2D
 
 	private float GetShieldHealRatio(IReadOnlyList<ElementType> castElements)
 	{
-		if (ShieldActive == null || ShieldActive.Count == 0) return 0f;
+		if (Shield == null) return 0f;
+		if (Shield.Active == null || Shield.Active.Count == 0) return 0f;
 		if (castElements == null || castElements.Count == 0) return 0f;
 
 		int matches = 0;
 		for (int i = 0; i < castElements.Count; i++)
-			if (ShieldActive.Contains(castElements[i])) matches++;
+			if (Shield.Active.Contains(castElements[i])) matches++;
 
 		if (matches == 0) return 0f;
+
 		if (castElements.Count >= 2 && matches >= 2) return 1.0f;
 		return 0.5f;
-	}
-
-	private void RefreshShieldImmediately()
-	{
-		// aqui você pluga seu ShieldController real depois
-	}
-
-	public void TakeDamage(int amount)
-	{
-		if (amount <= 0 || IsDead) return;
-
-		Hp = Mathf.Max(Hp - amount, 0);
-		EmitSignal(SignalName.HpChanged, this, Hp, MaxHp);
-
-		if (Hp <= 0) Die();
-	}
-
-	public void Heal(int amount)
-	{
-		if (amount <= 0 || IsDead) return;
-
-		Hp = Mathf.Min(Hp + amount, MaxHp);
-		EmitSignal(SignalName.HpChanged, this, Hp, MaxHp);
 	}
 
 	private async System.Threading.Tasks.Task HitFlashRed()
 	{
 		if (_sprite == null) return;
 
-		var baseMod = _selected ? new Color(1.25f, 1.25f, 1.25f, 1f) : Colors.White;
+		var baseMod = GetBaseModulateForCurrentState();
 
 		for (int i = 0; i < 2; i++)
 		{
@@ -199,12 +169,44 @@ public partial class Enemy : Node2D
 		UpdateHighlight();
 	}
 
+	private Color GetBaseModulateForCurrentState()
+	{
+		if (_selected) return new Color(1.25f, 1.25f, 1.25f, 1f);
+		return Colors.White;
+	}
+
+	private void UpdateHighlight()
+	{
+		if (_sprite == null) return;
+		_sprite.Modulate = GetBaseModulateForCurrentState();
+	}
+
 	private void Die()
 	{
 		if (!IsDead) return;
 
-		GD.Print($"{GetDisplayName()} morreu!");
+		GD.Print($"{Name} morreu!");
 		EmitSignal(SignalName.Died, this);
 		QueueFree();
+	}
+
+	private static T FindFirstChildOfType<T>(Node root) where T : Node
+	{
+		foreach (var childObj in root.GetChildren())
+		{
+			if (childObj is Node child)
+			{
+				if (child is T typed) return typed;
+				var deeper = FindFirstChildOfType<T>(child);
+				if (deeper != null) return deeper;
+			}
+		}
+		return null;
+	}
+
+	private static string FormatElements(IReadOnlyList<ElementType> elements)
+	{
+		if (elements == null || elements.Count == 0) return "None";
+		return string.Join(", ", elements);
 	}
 }

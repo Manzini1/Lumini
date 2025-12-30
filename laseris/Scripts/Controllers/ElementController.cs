@@ -8,6 +8,10 @@ public partial class ElementController : Node
 	[Export] public NodePath TargetControllerPath;
 	[Export] public NodePath SfxPlayerPath;
 	[Export] public NodePath VfxPlayerPath;
+	public event Action<ElementType> ElementActivated;
+	public event Action ElementsCleared;
+	public event Action CastStarted;
+	public event Action<CastOutcome, SpellDefinition, Enemy> CastResolved; // você já tem
 
 	[ExportCategory("Config")]
 	[Export] public int MaxElements = 2;
@@ -19,7 +23,7 @@ public partial class ElementController : Node
 	private bool _inputEnabled = true;
 	private readonly List<ElementIcon> _activeElements = new();
 
-	public event Action<CastOutcome, SpellDefinition, Enemy> CastResolved;
+	
 
 	public override void _Ready()
 	{
@@ -28,7 +32,18 @@ public partial class ElementController : Node
 		_targetController = GetNodeOrNull<TargetController>(TargetControllerPath);
 		_sfxPlayer = GetNodeOrNull<SfxPlayer>(SfxPlayerPath);
 		_vfxPlayer = GetNodeOrNull<VfxPlayer>(VfxPlayerPath);
+	GD.Print($"[Elem] VfxPath='{VfxPlayerPath}' empty={VfxPlayerPath.IsEmpty}");
+var raw = GetNodeOrNull<Node>(VfxPlayerPath);
+GD.Print($"[Elem] Vfx raw={raw} type={(raw == null ? "null" : raw.GetType().FullName)}");
+GD.Print($"[Elem] Vfx is VfxPlayer? {raw is VfxPlayer}");
 
+_vfxPlayer = GetNodeOrNull<VfxPlayer>(VfxPlayerPath);
+GD.Print($"[Elem] Vfx typed={_vfxPlayer}");
+
+//var raw = GetNodeOrNull<Node>(VfxPlayerPath);
+GD.Print($"[Elem] Vfx raw={raw} rawType={raw?.GetType()}");
+GD.Print($"raw={raw} type={raw?.GetType()}");
+GD.Print($"[Elem] Self={GetPath()} VfxPath='{VfxPlayerPath}' empty={VfxPlayerPath.IsEmpty}");
 		GD.Print("=== VFX DEBUG ===");
 		GD.Print("Node:", Name);
 		GD.Print("Path:", GetPath());
@@ -64,10 +79,13 @@ public partial class ElementController : Node
 		_activeElements.Add(element);
 		element.SetActive(true);
 		GD.Print($"Ativado: {element.Name} ({element.ElementType})");
+		ElementActivated?.Invoke(element.ElementType);
 	}
 
 	public void Cast()
 	{
+		CastStarted?.Invoke();
+
 		if (!_inputEnabled)
 		{
 			EmitResolved(CastOutcome.CancelledInputDisabled, null, null);
@@ -109,6 +127,8 @@ public partial class ElementController : Node
 		foreach (var element in _activeElements)
 			element.ResetElement();
 		_activeElements.Clear();
+		
+		ElementsCleared?.Invoke();
 	}
 
 	private void EmitResolved(CastOutcome outcome, SpellDefinition spell, Enemy target)
