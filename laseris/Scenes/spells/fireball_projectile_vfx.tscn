@@ -1,0 +1,20 @@
+[gd_scene load_steps=5 format=3 uid="uid://jkccuydy7g0p"]
+
+[ext_resource type="Script" uid="uid://owdgb7sl2o40" path="res://Scripts/VFX/ProjectileSpellVfx.cs" id="1_1603e"]
+[ext_resource type="PackedScene" uid="uid://cs5fwr1hp3mq0" path="res://Scenes/VFX/Frames/impact.tscn" id="2_405cb"]
+[ext_resource type="SpriteFrames" uid="uid://q6gawp0g2jhf" path="res://Scenes/VFX/Frames/impact.tres" id="3_mr0xy"]
+[ext_resource type="SpriteFrames" uid="uid://dy3dmiy273w4p" path="res://Scenes/VFX/Frames/fireball_projectile_vfx.tres" id="3_ndiw4"]
+
+[node name="FireballProjectileVfx" type="Node2D"]
+script = ExtResource("1_1603e")
+Speed = 2200.0
+ImpactScene = ExtResource("2_405cb")
+ImpactFrames = ExtResource("3_mr0xy")
+ImpactAnimName = "default"
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+rotation = -2.2462387
+sprite_frames = ExtResource("3_ndiw4")
+animation = &"fly"
+frame = 1
+frame_progress = 0.57423407

@@ -46,12 +46,11 @@ Mode = 1
 [node name="ShieldVfx" parent="." instance=ExtResource("5_0830c")]
 
 [node name="VfxCenter" type="Marker2D" parent="."]
-position = Vector2(1432, 544)
 
 [node name="VfxHead" type="Marker2D" parent="."]
-position = Vector2(1448, 416)
+position = Vector2(0, -0.4)
 
 [node name="VfxGround" type="Marker2D" parent="."]
-position = Vector2(1464, 848)
+position = Vector2(0, 0.4)
 
 [editable path="ShieldVfx"]

@@ -4,21 +4,28 @@ using Godot;
 public partial class SpellVfxEntry : Resource
 {
 	[ExportCategory("Identity")]
-	[Export] public string SpellId = ""; // tem que bater com SpellDefinition.Id
+	[Export] public string SpellId = "";
 
 	[ExportCategory("Prefab")]
-	[Export] public PackedScene VfxScene; // vai ser SEMPRE o GenericSpellVfx.tscn
+	[Export] public PackedScene VfxScene;
 
-	[ExportCategory("Animation")]
-	[Export] public SpriteFrames Frames;     // frames específicos dessa magia
-	[Export] public string Animation = "play";
-	[Export] public float SpeedScale = 1.0f;
+	[ExportCategory("Animation (GenericSpellVfx)")]
+	[Export] public SpriteFrames Frames;
+	[Export] public string AnimationName = "play";
+	[Export(PropertyHint.Range, "0.1,4.0,0.05")]
+	public float SpeedScale = 1.0f;
 
 	[ExportCategory("Spawn")]
 	[Export] public SpellSpawnPoint SpawnPoint = SpellSpawnPoint.TargetCenter;
-	[Export] public bool FollowAnchor = true; // se true, vira filho do Marker (segue alvo)
+	[Export] public bool FollowAnchor = true;
 	[Export] public Vector2 Offset = Vector2.Zero;
-
-	// ✅ Isso aqui resolve seu erro do CS1061
 	[Export] public Vector2 ScreenMargin = new Vector2(40, 40);
+
+	[ExportCategory("Playback")]
+	[Export] public bool AutoFreeOnFinish = true;
+	[Export(PropertyHint.Range, "0.0,10.0,0.1")]
+	public float FallbackLifetime = 1.2f;
+
+	[ExportCategory("Render")]
+	[Export] public int ZIndex = 50; // ✅ default alto pra não sumir atrás de nada
 }

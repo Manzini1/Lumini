@@ -8,10 +8,11 @@ public partial class ElementController : Node
 	[Export] public NodePath TargetControllerPath;
 	[Export] public NodePath SfxPlayerPath;
 	[Export] public NodePath VfxPlayerPath;
+
 	public event Action<ElementType> ElementActivated;
 	public event Action ElementsCleared;
 	public event Action CastStarted;
-	public event Action<CastOutcome, SpellDefinition, Enemy> CastResolved; // você já tem
+	public event Action<CastOutcome, SpellDefinition, Enemy> CastResolved;
 
 	[ExportCategory("Config")]
 	[Export] public int MaxElements = 2;
@@ -23,48 +24,24 @@ public partial class ElementController : Node
 	private bool _inputEnabled = true;
 	private readonly List<ElementIcon> _activeElements = new();
 
-	
-
 	public override void _Ready()
 	{
-		
-		
 		_targetController = GetNodeOrNull<TargetController>(TargetControllerPath);
 		_sfxPlayer = GetNodeOrNull<SfxPlayer>(SfxPlayerPath);
 		_vfxPlayer = GetNodeOrNull<VfxPlayer>(VfxPlayerPath);
-	GD.Print($"[Elem] VfxPath='{VfxPlayerPath}' empty={VfxPlayerPath.IsEmpty}");
-var raw = GetNodeOrNull<Node>(VfxPlayerPath);
-GD.Print($"[Elem] Vfx raw={raw} type={(raw == null ? "null" : raw.GetType().FullName)}");
-GD.Print($"[Elem] Vfx is VfxPlayer? {raw is VfxPlayer}");
 
-_vfxPlayer = GetNodeOrNull<VfxPlayer>(VfxPlayerPath);
-GD.Print($"[Elem] Vfx typed={_vfxPlayer}");
-
-//var raw = GetNodeOrNull<Node>(VfxPlayerPath);
-GD.Print($"[Elem] Vfx raw={raw} rawType={raw?.GetType()}");
-GD.Print($"raw={raw} type={raw?.GetType()}");
-GD.Print($"[Elem] Self={GetPath()} VfxPath='{VfxPlayerPath}' empty={VfxPlayerPath.IsEmpty}");
-		GD.Print("=== VFX DEBUG ===");
-		GD.Print("Node:", Name);
-		GD.Print("Path:", GetPath());
-		GD.Print("VfxPlayerPath:", VfxPlayerPath);
-
-		var vfx = GetNodeOrNull<Node>(VfxPlayerPath);
-		GD.Print("Resolved node:", vfx);
-
-		if (_targetController == null)
-			GD.PushWarning("ElementController: TargetControllerPath não setado ou node não encontrado.");
-		if (_sfxPlayer == null)
-			GD.PushWarning("ElementController: SfxPlayerPath não setado ou node não encontrado.");
-		if (_vfxPlayer == null)
-			GD.PushWarning("ElementController: VfxPlayerPath não setado ou node não encontrado.");
+		if (_targetController == null) GD.PushWarning("ElementController: TargetControllerPath inválido.");
+		if (_sfxPlayer == null) GD.PushWarning("ElementController: SfxPlayerPath inválido.");
+		if (_vfxPlayer == null) GD.PushWarning("ElementController: VfxPlayerPath inválido.");
 	}
-
+		private DamagePopupManager GetDamagePopupManager()
+	{
+		return GetTree().GetFirstNodeInGroup("damage_popup_manager") as DamagePopupManager;
+	}
 	public void SetInputEnabled(bool enabled)
 	{
 		_inputEnabled = enabled;
-		if (!enabled)
-			ResetActiveElements();
+		if (!enabled) ResetActiveElements();
 	}
 
 	public bool CanActivate() => _inputEnabled && _activeElements.Count < MaxElements;
@@ -78,7 +55,8 @@ GD.Print($"[Elem] Self={GetPath()} VfxPath='{VfxPlayerPath}' empty={VfxPlayerPat
 
 		_activeElements.Add(element);
 		element.SetActive(true);
-		GD.Print($"Ativado: {element.Name} ({element.ElementType})");
+
+		GD.Print($"[ElementController] Ativado: {element.Name} ({element.ElementType})");
 		ElementActivated?.Invoke(element.ElementType);
 	}
 
@@ -101,7 +79,6 @@ GD.Print($"[Elem] Self={GetPath()} VfxPath='{VfxPlayerPath}' empty={VfxPlayerPat
 		var target = _targetController?.CurrentTarget;
 		if (target == null || !GodotObject.IsInstanceValid(target))
 		{
-			GD.Print("CAST cancelado: nenhum alvo válido selecionado.");
 			EmitResolved(CastOutcome.CancelledNoTarget, null, null);
 			ResetActiveElements();
 			return;
@@ -113,13 +90,45 @@ GD.Print($"[Elem] Self={GetPath()} VfxPath='{VfxPlayerPath}' empty={VfxPlayerPat
 
 		var spell = SpellResolver.Resolve(castElements);
 
+		// áudio toca na hora
 		_sfxPlayer?.PlaySpell(spell);
-		_vfxPlayer?.PlaySpell(spell);
 
-		var outcome = target.TakeSpellHit(spell);
-		EmitResolved(outcome, spell, target);
+		// vfx toca e pode devolver handle p/ sincronizar impacto
+		var vfx = _vfxPlayer?.PlaySpell(spell);
 
+		// limpa seleção agora (pode manter se preferir)
 		ResetActiveElements();
+
+		if (vfx != null)
+		{
+			bool applied = false;
+			Enemy castTarget = target;
+			SpellDefinition castSpell = spell;
+
+			vfx.Impacted += () =>
+			{
+				if (applied) return;
+				applied = true;
+
+				if (castTarget == null || !GodotObject.IsInstanceValid(castTarget))
+				{
+					EmitResolved(CastOutcome.CancelledNoTarget, castSpell, null);
+					return;
+				}
+
+				var outcome = castTarget.TakeSpellHit(castSpell);
+				var dmgMgr = GetDamagePopupManager();
+				dmgMgr?.ShowFromOutcome(castTarget, castSpell, outcome);
+				EmitResolved(outcome, castSpell, castTarget);
+			};
+
+			GD.Print("[ElementController] Cast aguardando Impacted do VFX para aplicar dano.");
+			return;
+		}
+
+		// instantâneo (sem timing de impacto)
+		var instantOutcome = target.TakeSpellHit(spell);
+		EmitResolved(instantOutcome, spell, target);
 	}
 
 	private void ResetActiveElements()
@@ -127,7 +136,7 @@ GD.Print($"[Elem] Self={GetPath()} VfxPath='{VfxPlayerPath}' empty={VfxPlayerPat
 		foreach (var element in _activeElements)
 			element.ResetElement();
 		_activeElements.Clear();
-		
+
 		ElementsCleared?.Invoke();
 	}
 

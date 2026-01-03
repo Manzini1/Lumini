@@ -8,76 +8,78 @@ public partial class VfxPlayer : Node
 	[ExportCategory("Refs")]
 	[Export] public NodePath MagePath;
 	[Export] public NodePath TargetControllerPath;
-
+	[Export] public NodePath VfxManagerPath;
+	
 	private Mage _mage;
 	private TargetController _targetController;
-	
-	public override void _Ready()
+	private VfxManager _vfxManager;
+	 public override void _Ready()
 	{
-		 GD.Print($"[VfxPlayer] Self={GetPath()} MagePath='{MagePath}' empty={MagePath.IsEmpty}");
-
-	var mageNode = GetNodeOrNull<Node>(MagePath);
-	GD.Print($"[VfxPlayer] Mage raw={mageNode} type={(mageNode == null ? "null" : mageNode.GetType().FullName)}");
-
-	_mage = GetNodeOrNull<Mage>(MagePath);
-	GD.Print($"[VfxPlayer] Mage typed={_mage}");
-
-	if (_mage == null)
-		GD.PushWarning("VfxPlayer: MagePath não setado/encontrado.");
 		_mage = GetNodeOrNull<Mage>(MagePath);
 		_targetController = GetNodeOrNull<TargetController>(TargetControllerPath);
+		_vfxManager = GetNodeOrNull<VfxManager>(VfxManagerPath);
 
-		if (Bank == null) GD.PushWarning("VfxPlayer: Bank não setado.");
 		if (_mage == null) GD.PushWarning("VfxPlayer: MagePath não setado/encontrado.");
 		if (_targetController == null) GD.PushWarning("VfxPlayer: TargetControllerPath não setado/encontrado.");
+		if (_vfxManager == null) GD.PushWarning("VfxPlayer: VfxManagerPath não setado/encontrado.");
+	}
+
+	/// Toca VFX e retorna um “handle” para eventos (impact).
+	public IVfxPlayable PlaySpell(SpellDefinition spell)
+	{
+		if (spell == null) return null;
+		var target = _targetController?.CurrentTarget;
+		if (_vfxManager == null) return null;
+
+		return _vfxManager.PlaySpell(spell, _mage, target);
 	}
 private static Marker2D GetMarker(Node root, string name)
 {
 	return root?.GetNodeOrNull<Marker2D>(name);
 }
-public void PlaySpell(SpellDefinition spell)
-{
-	if (spell == null || Bank == null)
-		return;
-
-	GD.Print($"[VFX] SpellId recebido: {spell.Id}");
-
-	var entry = Bank.Get(spell.Id);
-	GD.Print($"[VFX] Entry encontrada? {entry != null}");
-
-	if (entry == null || entry.VfxScene == null)
-		return;
-
-	var target = _targetController?.CurrentTarget;
-
-	// instancia o VFX
-	var vfx = entry.VfxScene.Instantiate<Node2D>();
-
-	// resolve onde spawnar
-	var (parent, globalPos) = ResolveSpawn(entry, _mage, target);
-	parent.AddChild(vfx);
-
-	// posiciona
-	vfx.GlobalPosition = globalPos + entry.Offset;
-
-	// escolhe animação pelo ID
-	var sprite = vfx.GetNodeOrNull<AnimatedSprite2D>("AnimatedSprite2D");
-	if (sprite == null)
-	{
-		GD.PushWarning("[VFX] AnimatedSprite2D não encontrado no VFX.");
-		return;
-	}
-
-	if (sprite.SpriteFrames.HasAnimation(spell.Id))
-	{
-		sprite.Play(spell.Id);
-	}
-	else
-	{
-		GD.PushWarning($"[VFX] Animação '{spell.Id}' não existe. Usando default.");
-		sprite.Play("default");
-	}
-}
+//public void PlaySpell(SpellDefinition spell)
+//{
+	//if (spell == null || Bank == null)
+		//return;
+//
+	//GD.Print($"[VFX] SpellId recebido: {spell.Id}");
+//
+	//var entry = Bank.Get(spell.Id);
+	//GD.Print($"[VFX] Entry encontrada? {entry != null}");
+//
+	//if (entry == null || entry.VfxScene == null)
+		//return;
+//
+	//var target = _targetController?.CurrentTarget;
+//
+	//// instancia o VFX
+	//var vfx = entry.VfxScene.Instantiate<Node2D>();
+//
+	//// resolve onde spawnar
+	//var (parent, globalPos) = ResolveSpawn(entry, _mage, target);
+	//parent.AddChild(vfx);
+//
+	//// posiciona
+	//vfx.GlobalPosition = globalPos + entry.Offset;
+//
+	//// escolhe animação pelo ID
+	//var sprite = vfx.GetNodeOrNull<AnimatedSprite2D>("AnimatedSprite2D");
+	//if (sprite == null)
+	//{
+		//GD.PushWarning("[VFX] AnimatedSprite2D não encontrado no VFX.");
+		//return;
+	//}
+//
+	//if (sprite.SpriteFrames.HasAnimation(spell.Id))
+	//{
+		//sprite.Play(spell.Id);
+	//}
+	//else
+	//{
+		//GD.PushWarning($"[VFX] Animação '{spell.Id}' não existe. Usando default.");
+		//sprite.Play("default");
+	//}
+//}
 
 
 	private (Node parent, Vector2 globalPos) ResolveSpawn(SpellVfxEntry entry, Mage mage, Enemy target)

@@ -4,144 +4,70 @@ public partial class VfxManager : Node
 {
 	[Export] public SpellVfxBank Bank;
 
-	[ExportCategory("Refs")]
-	[Export] public NodePath MagePath;
-	[Export] public NodePath TargetControllerPath;
-
-	// Root para VFX de tela (CanvasLayer)
-	[Export] public NodePath ScreenVfxRootPath;
-
-	private Mage _mage;
-	private TargetController _targetController;
-	private CanvasLayer _screenVfxRoot;
-
 	public override void _Ready()
 	{
-		_mage = GetNodeOrNull<Mage>(MagePath);
-		_targetController = GetNodeOrNull<TargetController>(TargetControllerPath);
-		_screenVfxRoot = GetNodeOrNull<CanvasLayer>(ScreenVfxRootPath);
-
-		if (Bank == null)
-			GD.PushWarning("VfxManager: Bank não setado.");
-
-		if (_screenVfxRoot == null)
-			GD.PushWarning("VfxManager: ScreenVfxRootPath não setado (ScreenTopLeft/Center pode ficar errado).");
+		GD.Print($"[VfxManager] Ready. bank={(Bank != null)}");
 	}
 
-	public void PlayForSpell(SpellDefinition spell)
+	public IVfxPlayable PlaySpell(SpellDefinition spell, Node2D caster, Node2D target)
 	{
-		
-		  GD.Print($"[VFX] PlayForSpell chamado: {spell?.Id}");
-		
-		if (spell == null || Bank == null) return;
+		GD.Print($"[VfxManager] PlaySpell called. spell={spell?.Id ?? "NULL"}");
+
+		if (spell == null || Bank == null) return null;
 
 		var entry = Bank.Get(spell.Id);
-		GD.Print($"[VFX] Entry encontrada? {entry != null}");
 		if (entry == null || entry.VfxScene == null)
 		{
-			GD.Print($"[VFX] Sem entry para '{spell.Id}'.");
-			return;
+			GD.PushWarning($"[VfxManager] Sem entry ou VfxScene para '{spell.Id}'.");
+			return null;
 		}
 
-		var target = _targetController?.CurrentTarget;
-		var (parent, globalPos, isScreenSpace) = ResolveSpawn(entry, _mage, target);
+		var roots = GetTree().GetNodesInGroup("vfx_root");
+		var parent = (roots.Count > 0) ? roots[0] as Node : GetTree().CurrentScene;
 
-		var vfx = entry.VfxScene.Instantiate<Node2D>();
-		parent.AddChild(vfx);
+		var vfxNode = entry.VfxScene.Instantiate<Node2D>();
+		parent.AddChild(vfxNode);
 
-		if (isScreenSpace)
+		vfxNode.GlobalPosition = ResolveSpawnPos(entry, caster, target);
+		vfxNode.ZIndex = entry.ZIndex;
+
+		if (vfxNode is IVfxPlayable playable)
 		{
-			// Screen-space: usa Position (local) e não GlobalPosition
-			vfx.Position = globalPos + entry.Offset;
-			return;
+			playable.Configure(entry, caster, target);
+			return playable;
 		}
 
-		if (entry.FollowAnchor)
-		{
-			// se for filho do marker, posição local é só offset
-			vfx.Position = entry.Offset;
-		}
-		else
-		{
-			// se for no mundo, usa posição global
-			vfx.GlobalPosition = globalPos + entry.Offset;
-		}
+		// fallback: se algum VFX específico não implementar interface ainda
+		GD.PushWarning($"[VfxManager] VFX '{vfxNode.Name}' não implementa IVfxPlayable. Dano será instantâneo.");
+		return null;
 	}
 
-	private (Node parent, Vector2 pos, bool isScreenSpace) ResolveSpawn(SpellVfxEntry entry, Mage mage, Enemy target)
+	private Vector2 ResolveSpawnPos(SpellVfxEntry entry, Node2D caster, Node2D target)
 	{
-		// default: mundo
-		Node parent = GetTree().CurrentScene;
-		Vector2 pos = Vector2.Zero;
-		bool isScreen = false;
-
-		Marker2D GetMarker(Node n, string name) => n?.GetNodeOrNull<Marker2D>(name);
-
 		switch (entry.SpawnPoint)
 		{
 			case SpellSpawnPoint.CasterCastPoint:
 			{
-				var m = GetMarker(mage, "VfxCast");
-				if (m != null)
+				if (caster != null)
 				{
-					if (entry.FollowAnchor) return (m, m.GlobalPosition, false);
-					pos = m.GlobalPosition;
+					var m = caster.GetNodeOrNull<Marker2D>("VfxCast");
+					if (m != null) return m.GlobalPosition + entry.Offset;
+					return caster.GlobalPosition + entry.Offset;
 				}
 				break;
 			}
-
-			case SpellSpawnPoint.TargetHead:
-			{
-				var m = GetMarker(target, "VfxHead");
-				if (m != null)
-				{
-					if (entry.FollowAnchor) return (m, m.GlobalPosition, false);
-					pos = m.GlobalPosition;
-				}
-				break;
-			}
-
-			case SpellSpawnPoint.TargetGround:
-			{
-				var m = GetMarker(target, "VfxGround");
-				if (m != null)
-				{
-					if (entry.FollowAnchor) return (m, m.GlobalPosition, false);
-					pos = m.GlobalPosition;
-				}
-				break;
-			}
-
-			case SpellSpawnPoint.TargetCenter:
 			default:
 			{
-				var m = GetMarker(target, "VfxCenter");
-				if (m != null)
+				if (target != null)
 				{
-					if (entry.FollowAnchor) return (m, m.GlobalPosition, false);
-					pos = m.GlobalPosition;
+					var m = target.GetNodeOrNull<Marker2D>("VfxCenter");
+					if (m != null) return m.GlobalPosition + entry.Offset;
+					return target.GlobalPosition + entry.Offset;
 				}
-				break;
-			}
-
-			case SpellSpawnPoint.ScreenTopLeft:
-			{
-				isScreen = true;
-				parent = _screenVfxRoot;
-				pos = new Vector2(40, 40);
-				break;
-			}
-
-			case SpellSpawnPoint.ScreenCenter:
-			{
-				isScreen = true;
-				parent = _screenVfxRoot;
-				var vp = GetViewport().GetVisibleRect().Size;
-				pos = vp * 0.5f;
 				break;
 			}
 		}
 
-		return (parent, pos, isScreen);
+		return entry.Offset;
 	}
 }

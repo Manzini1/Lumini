@@ -1,0 +1,8 @@
+[gd_scene load_steps=3 format=3 uid="uid://b5qtciuq7jd22"]
+
+[ext_resource type="Script" uid="uid://cbd1foelgsc25" path="res://Scripts/VFX/VfxManager.cs" id="1_pfd24"]
+[ext_resource type="Resource" uid="uid://bpdqe75qdl8pk" path="res://Data/SpellVfxBank.tres" id="2_pfd24"]
+
+[node name="VfxManager" type="Node"]
+script = ExtResource("1_pfd24")
+Bank = ExtResource("2_pfd24")

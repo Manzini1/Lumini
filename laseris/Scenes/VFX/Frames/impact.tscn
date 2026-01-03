@@ -1,0 +1,15 @@
+[gd_scene load_steps=3 format=3 uid="uid://cs5fwr1hp3mq0"]
+
+[ext_resource type="SpriteFrames" uid="uid://q6gawp0g2jhf" path="res://Scenes/VFX/Frames/impact.tres" id="1_3r3fh"]
+[ext_resource type="Script" uid="uid://bywpayfmojrn4" path="res://Scenes/VFX/Frames/Impact.cs" id="1_rp11r"]
+
+[node name="Impact" type="Node2D"]
+script = ExtResource("1_rp11r")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+scale = Vector2(0.2, 0.2)
+sprite_frames = ExtResource("1_3r3fh")
+animation = &"play"
+autoplay = "play"
+frame = 1
+frame_progress = 1.0

@@ -22,6 +22,7 @@ SettingsService="*res://Scripts/Autoload/SettingsService.cs"
 AudioManager="*res://Scripts/Autoload/AudioManager.cs"
 MusicPlayer="*res://Scenes/Autoload/MusicPlayer.tscn"
 MusicService="*res://Scripts/Autoload/MusicService.cs"
+VfxManager="*res://Scenes/Autoload/vfx_manager.tscn"
 
 [display]
 

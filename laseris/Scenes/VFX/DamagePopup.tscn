@@ -1,0 +1,14 @@
+[gd_scene load_steps=3 format=3 uid="uid://booek8qptr1nt"]
+
+[ext_resource type="Script" uid="uid://dlx6b1qxma8ab" path="res://Scripts/VFX/DamagePopup.cs" id="1_y5gwf"]
+[ext_resource type="FontFile" uid="uid://cv4ep4688461r" path="res://fonts/Jacquard_12/Jacquard12-Regular.ttf" id="2_ww80m"]
+
+[node name="DamagePopup" type="Node2D"]
+script = ExtResource("1_y5gwf")
+
+[node name="Label" type="Label" parent="."]
+offset_right = 40.0
+offset_bottom = 23.0
+theme_override_fonts/font = ExtResource("2_ww80m")
+horizontal_alignment = 1
+vertical_alignment = 1

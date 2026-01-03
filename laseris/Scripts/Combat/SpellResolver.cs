@@ -38,7 +38,7 @@ public static class SpellResolver
 			{
 				ElementType.Earth => new SpellDefinition("spell_earth", "Stone Spike", castElements, 20, SpellTargeting.Ground),
 				ElementType.Air => new SpellDefinition("spell_air", "Gust Shot", castElements, 20, SpellTargeting.Air),
-				ElementType.Fire => new SpellDefinition("spell_fire", "Fire Bolt", castElements, 20, SpellTargeting.Both),
+				ElementType.Fire => new SpellDefinition("fireball", "Fire Bolt", castElements, 20, SpellTargeting.Both),
 				ElementType.Ice => new SpellDefinition("spell_ice", "Ice Shard", castElements, 20, SpellTargeting.Both),
 				ElementType.Lightning => new SpellDefinition("spell_lightning", "Arc Zap", castElements, 20, SpellTargeting.Both),
 				ElementType.Poison => new SpellDefinition("spell_poison", "Toxic Dart", castElements, 20, SpellTargeting.Both),

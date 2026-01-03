@@ -4,16 +4,15 @@ using System.Collections.Generic;
 [GlobalClass]
 public partial class SpellVfxBank : Resource
 {
-	// Godot.Collections.Array aparece editável no Inspector
 	[Export] public Godot.Collections.Array<SpellVfxEntry> Entries = new();
 
 	private Dictionary<string, SpellVfxEntry> _map;
 
 	public SpellVfxEntry Get(string spellId)
 	{
-		if (string.IsNullOrEmpty(spellId)) return null;
-
+		if (string.IsNullOrWhiteSpace(spellId)) return null;
 		EnsureMap();
+		spellId = spellId.Trim();
 
 		return _map.TryGetValue(spellId, out var entry) ? entry : null;
 	}
@@ -29,8 +28,15 @@ public partial class SpellVfxBank : Resource
 			if (e == null) continue;
 			if (string.IsNullOrWhiteSpace(e.SpellId)) continue;
 
-			// Último ganha (se duplicar sem querer, pelo menos compila)
-			_map[e.SpellId] = e;
+			var id = e.SpellId.Trim();
+
+			if (_map.ContainsKey(id))
+				GD.PushWarning($"[SpellVfxBank] SpellId duplicado: '{id}'. Último vai sobrescrever.");
+
+			_map[id] = e;
 		}
 	}
+
+	// Se você editar Entries em runtime/editor e quiser reconstruir:
+	public void InvalidateCache() => _map = null;
 }

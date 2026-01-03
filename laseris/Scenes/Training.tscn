@@ -1,11 +1,14 @@
-[gd_scene load_steps=18 format=3 uid="uid://y8elah67a2l5"]
+[gd_scene load_steps=21 format=3 uid="uid://y8elah67a2l5"]
 
 [ext_resource type="Texture2D" uid="uid://4lwdexkkbsx8" path="res://Sprites/Backgrounds/TrainingGrounds/tg1.png" id="1_iessl"]
 [ext_resource type="Script" uid="uid://da3bj42sd1s37" path="res://Scripts/Controllers/TargetController.cs" id="1_nd45q"]
 [ext_resource type="PackedScene" uid="uid://dwn0an3ojvbe5" path="res://Scenes/enemy.tscn" id="1_pxb5y"]
 [ext_resource type="Script" uid="uid://ba3i2p5b5n7jm" path="res://Scripts/Training/TrainingController.cs" id="5_qfe5b"]
+[ext_resource type="Script" uid="uid://cbd1foelgsc25" path="res://Scripts/VFX/VfxManager.cs" id="6_acfv3"]
 [ext_resource type="Script" uid="uid://6t1dg057fu1l" path="res://Scripts/UI/MusicDomainOnEnter.cs" id="6_q1qh0"]
 [ext_resource type="PackedScene" uid="uid://bhq41r88ibllx" path="res://Scenes/UI/ElementHUD/ElementHUD.tscn" id="6_qfe5b"]
+[ext_resource type="Script" uid="uid://fejadxwxsqup" path="res://Scripts/VFX/DamagePopupManager.cs" id="8_aqhdw"]
+[ext_resource type="PackedScene" uid="uid://booek8qptr1nt" path="res://Scenes/VFX/DamagePopup.tscn" id="9_8tbxj"]
 [ext_resource type="PackedScene" uid="uid://dmh402ajms7p8" path="res://Scenes/Autoload/MusicPlayer.tscn" id="9_f1ff0"]
 [ext_resource type="Script" uid="uid://bai7gdkxga4d1" path="res://Scripts/VFX/VfxPlayer.cs" id="9_n2qsq"]
 [ext_resource type="PackedScene" uid="uid://tu7pi0t41us4" path="res://Scenes/spell_vfx.tscn" id="10_6lcev"]
@@ -29,12 +32,15 @@ texture = ExtResource("1_iessl")
 
 [node name="Enemies" type="Node2D" parent="World"]
 
-[node name="Mage" parent="World" instance=ExtResource("11_6lcev")]
+[node name="Mage" parent="World" groups=["mage"] instance=ExtResource("11_6lcev")]
 scale = Vector2(0.9938471, 0.98769855)
 VisualPath = NodePath("Sprite")
 AnimPath = NodePath("Sprite")
 ElementControllerPath = NodePath("../../HUD/ElementHUD/ElementController")
 CastPointPath = NodePath("VfxCast")
+
+[node name="VfxCast" parent="World/Mage" index="1"]
+position = Vector2(645.9747, 703.656)
 
 [node name="CombatController" type="Node" parent="World"]
 script = ExtResource("12_lcyyg")
@@ -62,6 +68,18 @@ BtnSpawn1Path = NodePath("../../HUD/TrainingHud/Panel/VBoxContainer/HBoxContaine
 BtnSpawn2Path = NodePath("../../HUD/TrainingHud/Panel/VBoxContainer/HBoxContainer/BtnSpawn2")
 BtnSpawn3Path = NodePath("../../HUD/TrainingHud/Panel/VBoxContainer/HBoxContainer/BtnSpawn3")
 BtnBackPath = NodePath("../../HUD/TrainingHud/Panel/VBoxContainer/Button")
+
+[node name="VfxRoot" type="Node2D" parent="World" groups=["vfx_root"]]
+position = Vector2(1016, 640)
+
+[node name="VfxManager" type="Node" parent="World"]
+script = ExtResource("6_acfv3")
+Bank = ExtResource("11_lqmdg")
+
+[node name="DamagePopupManager" type="Node" parent="World" groups=["damage_popup_manager"]]
+script = ExtResource("8_aqhdw")
+PopupScene = ExtResource("9_8tbxj")
+RootPath = NodePath("../VfxRoot")
 
 [node name="HUD" type="CanvasLayer" parent="."]
 
@@ -165,6 +183,7 @@ script = ExtResource("9_n2qsq")
 Bank = ExtResource("11_lqmdg")
 MagePath = NodePath("../../World/Mage")
 TargetControllerPath = NodePath("../../World/TargetController")
+VfxManagerPath = NodePath("../../World/VfxManager")
 
 [node name="SpawnSlots" type="Node2D" parent="."]
 
