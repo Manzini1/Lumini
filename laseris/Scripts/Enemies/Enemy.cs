@@ -1,4 +1,5 @@
 using Godot;
+using System;
 using System.Collections.Generic;
 
 public partial class Enemy : Node2D
@@ -13,7 +14,7 @@ public partial class Enemy : Node2D
 	public int Hp { get; private set; }
 	public bool IsDead => Hp <= 0;
 
-	public ShieldController Shield { get; private set; } // ✅ novo
+	public ShieldController Shield { get; private set; } // esperado existir como filho
 
 	private Sprite2D _sprite;
 
@@ -27,7 +28,8 @@ public partial class Enemy : Node2D
 
 	public override void _Ready()
 	{
-		 AddToGroup("Enemies"); 
+		AddToGroup("Enemies");
+
 		_sprite = FindFirstChildOfType<Sprite2D>(this);
 		if (_sprite == null)
 		{
@@ -35,7 +37,7 @@ public partial class Enemy : Node2D
 			return;
 		}
 
-		// ✅ ShieldController obrigatório na cena Enemy.tscn
+		// ShieldController (obrigatório na cena Enemy.tscn)
 		Shield = GetNodeOrNull<ShieldController>("ShieldController");
 		if (Shield == null)
 			GD.PushError($"{Name}: não encontrei 'ShieldController' como filho. Adicione o node na cena Enemy.tscn.");
@@ -72,21 +74,34 @@ public partial class Enemy : Node2D
 		UpdateHighlight();
 	}
 
+	/// <summary>
+	/// Resolve a magia (miss/hit/absorbed) e DISPARA VFX via ShieldController.NotifySpellResolved().
+	/// O dano/curar acontece aqui (como você já fazia).
+	/// </summary>
 	public CastOutcome TakeSpellHit(SpellDefinition spell)
 	{
 		if (spell == null)
+		{
+			NotifyShieldResolved(spell, CastOutcome.CancelledNoElements);
 			return CastOutcome.CancelledNoElements;
+		}
 
 		if (IsDead)
+		{
+			NotifyShieldResolved(spell, CastOutcome.Blocked);
 			return CastOutcome.Blocked;
+		}
 
 		if (!DoesSpellHitThisEnemy(spell.Targeting))
 		{
 			GD.Print($"{Name} MISS ({spell.Id}) - targeting {spell.Targeting} vs IsFlying={IsFlying}");
+			NotifyShieldResolved(spell, CastOutcome.Miss);
 			return CastOutcome.Miss;
 		}
 
+		// ---------- Shield absorb/heal ----------
 		float healRatio = GetShieldHealRatio(spell.Elements);
+
 		if (healRatio > 0f)
 		{
 			int heal = Mathf.RoundToInt(spell.Damage * healRatio);
@@ -94,15 +109,29 @@ public partial class Enemy : Node2D
 
 			GD.Print($"{Name} ABSORVEU ({FormatElements(spell.Elements)}) e curou {heal} (ratio {healRatio}). HP: {Hp}/{MaxHp}");
 
-			// ✅ quem decide refresh é o ShieldController (via NotifySpellResolved)
-			return healRatio >= 1.0f ? CastOutcome.Absorbed100 : CastOutcome.Absorbed50;
+			var outcome = (healRatio >= 1.0f) ? CastOutcome.Absorbed100 : CastOutcome.Absorbed50;
+			NotifyShieldResolved(spell, outcome);
+			return outcome;
 		}
 
+		// ---------- Hit normal ----------
 		TakeDamage(spell.Damage);
 		_ = HitFlashRed();
+
 		GD.Print($"{Name} tomou {spell.Damage} ({spell.PrimaryElement}). HP: {Hp}/{MaxHp}");
 
+		NotifyShieldResolved(spell, CastOutcome.Hit);
 		return CastOutcome.Hit;
+	}
+
+	private void NotifyShieldResolved(SpellDefinition spell, CastOutcome outcome)
+	{
+		// ShieldController decide VFX/refresh/etc.
+		// Mesmo em miss/blocked a gente pode querer VFX (ex: “shield shimmer” ou “whiff”)
+		if (Shield == null) return;
+
+		// Se sua assinatura for diferente, me manda o ShieldController.cs que eu ajusto.
+		Shield.NotifySpellResolved(spell, outcome);
 	}
 
 	public void TakeDamage(int amount)
@@ -143,12 +172,20 @@ public partial class Enemy : Node2D
 		if (castElements == null || castElements.Count == 0) return 0f;
 
 		int matches = 0;
+
 		for (int i = 0; i < castElements.Count; i++)
-			if (Shield.Active.Contains(castElements[i])) matches++;
+		{
+			// Shield.Active deve ser algo como List/Array de ElementType
+			if (Shield.Active.Contains(castElements[i]))
+				matches++;
+		}
 
 		if (matches == 0) return 0f;
 
+		// se a spell tem 2 elementos e ambos bateram => cura 100%
 		if (castElements.Count >= 2 && matches >= 2) return 1.0f;
+
+		// se bateu pelo menos 1 => cura 50%
 		return 0.5f;
 	}
 
@@ -197,6 +234,7 @@ public partial class Enemy : Node2D
 			if (childObj is Node child)
 			{
 				if (child is T typed) return typed;
+
 				var deeper = FindFirstChildOfType<T>(child);
 				if (deeper != null) return deeper;
 			}

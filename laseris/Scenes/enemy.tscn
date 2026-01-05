@@ -1,10 +1,11 @@
-[gd_scene load_steps=7 format=3 uid="uid://dwn0an3ojvbe5"]
+[gd_scene load_steps=8 format=3 uid="uid://dwn0an3ojvbe5"]
 
 [ext_resource type="Script" uid="uid://gnuiiocp0v8" path="res://Scripts/Enemies/Enemy.cs" id="1_1f0kj"]
 [ext_resource type="Script" uid="uid://bp3qw2meo27gj" path="res://Scripts/Combat/HealthComponent.cs" id="2_afpow"]
-[ext_resource type="Script" uid="uid://b302xqic18mmp" path="res://Scripts/Combat/ShieldComponent.cs" id="3_afpow"]
 [ext_resource type="Script" uid="uid://ctukcckg1akcr" path="res://Scripts/Combat/ShieldController.cs" id="4_287tu"]
-[ext_resource type="PackedScene" uid="uid://rnyonlsdkw3q" path="res://Scenes/Shield/shield_vfx.tscn" id="5_0830c"]
+[ext_resource type="Script" uid="uid://b07romwh23p65" path="res://Scripts/VFX/ShieldOrbsVisual.cs" id="4_0830c"]
+[ext_resource type="PackedScene" uid="uid://f26qy731h4oa" path="res://Scenes/Shield/element_orb_vfx.tscn" id="5_ghaa6"]
+[ext_resource type="Resource" uid="uid://dobxhf6123o2c" path="res://Data/Shields/ShieldOrbBank.tres" id="6_1dp5w"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_287tu"]
 size = Vector2(204, 293.25)
@@ -16,7 +17,6 @@ script = ExtResource("1_1f0kj")
 script = ExtResource("2_afpow")
 
 [node name="Shield" type="Node" parent="."]
-script = ExtResource("3_afpow")
 
 [node name="Selected" type="Sprite2D" parent="."]
 
@@ -28,7 +28,6 @@ position = Vector2(-72, -80)
 shape = SubResource("RectangleShape2D_287tu")
 
 [node name="ShieldAnchor" type="Marker2D" parent="."]
-position = Vector2(1224, 728)
 
 [node name="Visual" type="Node2D" parent="."]
 
@@ -43,8 +42,6 @@ position = Vector2(1440, 480)
 script = ExtResource("4_287tu")
 Mode = 1
 
-[node name="ShieldVfx" parent="." instance=ExtResource("5_0830c")]
-
 [node name="VfxCenter" type="Marker2D" parent="."]
 
 [node name="VfxHead" type="Marker2D" parent="."]
@@ -53,4 +50,10 @@ position = Vector2(0, -0.4)
 [node name="VfxGround" type="Marker2D" parent="."]
 position = Vector2(0, 0.4)
 
-[editable path="ShieldVfx"]
+[node name="ShieldVfx" type="Node2D" parent="."]
+script = ExtResource("4_0830c")
+OrbScene = ExtResource("5_ghaa6")
+Bank = ExtResource("6_1dp5w")
+RadiusX = 90.0
+ScaleBack = 0.5
+ScaleFront = 1.2

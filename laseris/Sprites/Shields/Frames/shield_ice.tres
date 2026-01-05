@@ -1,0 +1,67 @@
+[gd_resource type="SpriteFrames" load_steps=10 format=3 uid="uid://bsj1qpoliugha"]
+
+[ext_resource type="Texture2D" uid="uid://b06mxn4h7d3ju" path="res://Sprites/Shields/Frames/water_shield.png" id="1_bp52u"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_5qeyq"]
+atlas = ExtResource("1_bp52u")
+region = Rect2(0, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_3fb43"]
+atlas = ExtResource("1_bp52u")
+region = Rect2(128, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_bfp32"]
+atlas = ExtResource("1_bp52u")
+region = Rect2(0, 128, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_0b7rt"]
+atlas = ExtResource("1_bp52u")
+region = Rect2(128, 128, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_bs5pk"]
+atlas = ExtResource("1_bp52u")
+region = Rect2(128, 128, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_mtitd"]
+atlas = ExtResource("1_bp52u")
+region = Rect2(0, 128, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_jw3d3"]
+atlas = ExtResource("1_bp52u")
+region = Rect2(128, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ytryu"]
+atlas = ExtResource("1_bp52u")
+region = Rect2(0, 0, 128, 128)
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_5qeyq")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_3fb43")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_bfp32")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_0b7rt")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_bs5pk")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_mtitd")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_jw3d3")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ytryu")
+}],
+"loop": true,
+"name": &"loop",
+"speed": 5.0
+}]

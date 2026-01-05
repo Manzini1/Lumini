@@ -13,8 +13,9 @@ ImpactFrames = ExtResource("3_mr0xy")
 ImpactAnimName = "default"
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
-rotation = -2.2462387
+rotation = -2.3300145
+scale = Vector2(2, 2)
 sprite_frames = ExtResource("3_ndiw4")
 animation = &"fly"
 frame = 1
-frame_progress = 0.57423407
+frame_progress = 0.22557314

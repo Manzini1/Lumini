@@ -19,10 +19,12 @@ public partial class ShieldController : Node
 
 	public readonly HashSet<ElementType> Active = new();
 
-	// ✅ muda aqui: lista read-only (pra bater com handlers)
+	// Lista read-only (pra bater com handlers)
 	public event Action<IReadOnlyList<ElementType>> Changed;
 
 	private float _t = 0f;
+
+	private readonly RandomNumberGenerator _rng = new();
 
 	private static readonly ElementType[] Pool = new[]
 	{
@@ -32,6 +34,7 @@ public partial class ShieldController : Node
 
 	public override void _Ready()
 	{
+		_rng.Randomize();
 		RefreshRandom();
 	}
 
@@ -83,12 +86,15 @@ public partial class ShieldController : Node
 	{
 		Active.Clear();
 
-		int count = (int)GD.RandRange(MinActive, MaxActive);
-		count = Mathf.Clamp(count, 1, 2);
+		int min = Mathf.Clamp(MinActive, 1, 2);
+		int max = Mathf.Clamp(MaxActive, 1, 2);
+		if (max < min) max = min;
+
+		int count = _rng.RandiRange(min, max);
 
 		while (Active.Count < count)
 		{
-			int idx = (int)GD.RandRange(0, Pool.Length - 1);
+			int idx = _rng.RandiRange(0, Pool.Length - 1);
 			Active.Add(Pool[idx]);
 		}
 
@@ -98,7 +104,6 @@ public partial class ShieldController : Node
 
 	private void EmitChanged()
 	{
-		// snapshot pra ninguém mutar o HashSet por fora
 		var snapshot = new List<ElementType>(Active);
 		Changed?.Invoke(snapshot);
 	}

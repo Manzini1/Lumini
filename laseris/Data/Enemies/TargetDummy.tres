@@ -8,5 +8,4 @@ script = ExtResource("1_jddwl")
 DisplayName = "Enemy3"
 MaxHp = 100000
 SpriteTexture = ExtResource("1_7n274")
-SpriteScale = Vector2(0.3, 0.3)
 metadata/_custom_type_script = "uid://cr8f8fsvx2wy"

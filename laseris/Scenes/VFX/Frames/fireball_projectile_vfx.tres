@@ -1,17 +1,39 @@
-[gd_resource type="SpriteFrames" load_steps=2 format=3 uid="uid://dy3dmiy273w4p"]
+[gd_resource type="SpriteFrames" load_steps=6 format=3 uid="uid://dy3dmiy273w4p"]
 
-[ext_resource type="Texture2D" uid="uid://sxiniqcjvkxh" path="res://Sprites/Spells/fireball.png" id="1_lyp6y"]
+[ext_resource type="Texture2D" uid="uid://mthk6s48t568" path="res://Sprites/Spells/fireball_sheet.png" id="1_lyp6y"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_b3rwj"]
+atlas = ExtResource("1_lyp6y")
+region = Rect2(0, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ee4ro"]
+atlas = ExtResource("1_lyp6y")
+region = Rect2(128, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_byhoe"]
+atlas = ExtResource("1_lyp6y")
+region = Rect2(0, 128, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_7n2iv"]
+atlas = ExtResource("1_lyp6y")
+region = Rect2(128, 128, 128, 128)
 
 [resource]
 animations = [{
 "frames": [{
 "duration": 1.0,
-"texture": ExtResource("1_lyp6y")
+"texture": SubResource("AtlasTexture_b3rwj")
 }, {
 "duration": 1.0,
-"texture": ExtResource("1_lyp6y")
+"texture": SubResource("AtlasTexture_ee4ro")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_byhoe")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_7n2iv")
 }],
 "loop": true,
 "name": &"fly",
-"speed": 5.0
+"speed": 120.0
 }]

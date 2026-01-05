@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3 uid="uid://bfa8nl2bkifkm"]
+
+[ext_resource type="Script" uid="uid://ctlq6ixy2nnb3" path="res://Scripts/VFX/ShieldAuraVfx.cs" id="1_tuhnk"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_tuhnk"]
+
+[node name="ShieldAuraVfx" type="Node2D"]
+script = ExtResource("1_tuhnk")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+sprite_frames = SubResource("SpriteFrames_tuhnk")

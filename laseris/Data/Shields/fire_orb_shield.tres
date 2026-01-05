@@ -1,0 +1,39 @@
+[gd_resource type="SpriteFrames" load_steps=6 format=3 uid="uid://demjxbl7m3vby"]
+
+[ext_resource type="Texture2D" uid="uid://bm152wcgg7384" path="res://Sprites/Shields/Frames/fire_shield3.png" id="1_neqm7"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ynffa"]
+atlas = ExtResource("1_neqm7")
+region = Rect2(0, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_si3ml"]
+atlas = ExtResource("1_neqm7")
+region = Rect2(0, 128, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_yxybu"]
+atlas = ExtResource("1_neqm7")
+region = Rect2(128, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_jifg8"]
+atlas = ExtResource("1_neqm7")
+region = Rect2(128, 128, 128, 128)
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ynffa")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_si3ml")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_yxybu")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_jifg8")
+}],
+"loop": true,
+"name": &"loop",
+"speed": 16.0
+}]

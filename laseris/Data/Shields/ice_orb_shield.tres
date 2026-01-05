@@ -1,0 +1,39 @@
+[gd_resource type="SpriteFrames" load_steps=6 format=3 uid="uid://cgulo5gfegrse"]
+
+[ext_resource type="Texture2D" uid="uid://opyt85kw82pf" path="res://Sprites/Shields/Frames/iceorb.png" id="1_3xg4t"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_axp7o"]
+atlas = ExtResource("1_3xg4t")
+region = Rect2(0, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_i17sr"]
+atlas = ExtResource("1_3xg4t")
+region = Rect2(0, 128, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_sbjco"]
+atlas = ExtResource("1_3xg4t")
+region = Rect2(128, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_bfogx"]
+atlas = ExtResource("1_3xg4t")
+region = Rect2(128, 128, 128, 128)
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_axp7o")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_i17sr")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_sbjco")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_bfogx")
+}],
+"loop": true,
+"name": &"loop",
+"speed": 8.0
+}]

@@ -1,0 +1,39 @@
+[gd_resource type="SpriteFrames" load_steps=6 format=3 uid="uid://drbcj6eaavlne"]
+
+[ext_resource type="Texture2D" uid="uid://cqyldv3ns5cfn" path="res://Sprites/Shields/Frames/shadow_orb.png" id="1_c4jk0"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_w55bc"]
+atlas = ExtResource("1_c4jk0")
+region = Rect2(0, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_t5mrk"]
+atlas = ExtResource("1_c4jk0")
+region = Rect2(128, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_th74c"]
+atlas = ExtResource("1_c4jk0")
+region = Rect2(0, 128, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_pos85"]
+atlas = ExtResource("1_c4jk0")
+region = Rect2(128, 128, 128, 128)
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_w55bc")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_t5mrk")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_th74c")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_pos85")
+}],
+"loop": true,
+"name": &"loop",
+"speed": 16.0
+}]
