@@ -55,6 +55,9 @@ public partial class TrainingController : Node
 
 	private bool _shieldOn;
 
+	// ✅ alvo “observado” para HP label atualizar até em dano físico
+	private Enemy _watchedTarget;
+
 	public override void _Ready()
 	{
 		_shieldOn = StartWithShieldOn;
@@ -92,15 +95,20 @@ public partial class TrainingController : Node
 			_elementController.CastResolved += OnCastResolved;
 
 		CallDeferred(nameof(RefreshUi));
-
-		// opcional: já spawnar 3 no começo pra treino ficar vivo
-		// SpawnCount(3);
 	}
 
 	public override void _ExitTree()
 	{
 		if (_elementController != null)
 			_elementController.CastResolved -= OnCastResolved;
+
+		StopWatchingTarget();
+	}
+
+	// ✅ simples/robusto: verifica troca de alvo sempre
+	public override void _Process(double delta)
+	{
+		EnsureWatchingCurrentTarget();
 	}
 
 	private void WireButtons()
@@ -133,17 +141,52 @@ public partial class TrainingController : Node
 		if (_outcomeLabel != null)
 			_outcomeLabel.Text = $"Outcome: {outcome}";
 
-		// ✅ se você quiser que o shield reaja ao resultado do cast, é aqui:
-		// (isso mantém o shield “oficial” ligado ao combate)
-		if (target != null && GodotObject.IsInstanceValid(target))
-		{
-			var shield = target.Shield;
-			if (shield != null)
-				shield.NotifySpellResolved(spell, outcome);
-		}
+		// ✅ IMPORTANTE:
+		// NÃO chame shield.NotifySpellResolved aqui,
+		// porque o Enemy.TakeSpellHit já chama por dentro.
+		// (evita duplicar VFX/rotations/logs)
 
 		RefreshUi();
 	}
+
+	// ---------------- HP WATCHER (AQUI ESTÁ O FIX) ----------------
+
+	private void EnsureWatchingCurrentTarget()
+	{
+		var t = _targetController != null ? _targetController.CurrentTarget : null;
+
+		if (t == _watchedTarget) return;
+
+		StopWatchingTarget();
+		_watchedTarget = t;
+
+		if (_watchedTarget != null && GodotObject.IsInstanceValid(_watchedTarget))
+		{
+			_watchedTarget.HpChanged += OnWatchedHpChanged;
+
+			// força refresh imediato do HP label
+			OnWatchedHpChanged(_watchedTarget, _watchedTarget.Hp, _watchedTarget.MaxHp);
+		}
+
+		// atualiza TargetLabel também
+		RefreshUi();
+	}
+
+	private void StopWatchingTarget()
+	{
+		if (_watchedTarget != null && GodotObject.IsInstanceValid(_watchedTarget))
+			_watchedTarget.HpChanged -= OnWatchedHpChanged;
+
+		_watchedTarget = null;
+	}
+
+	private void OnWatchedHpChanged(Enemy who, int hp, int maxHp)
+	{
+		if (who != _watchedTarget) return;
+		UpdateHpLabel(who);
+	}
+
+	// ---------------- UI ----------------
 
 	private void RefreshUi()
 	{
@@ -152,27 +195,36 @@ public partial class TrainingController : Node
 		if (_targetLabel != null)
 			_targetLabel.Text = t != null ? $"Target: {t.Name}" : "Target: -";
 
-		if (_hpLabel != null)
-		{
-			if (t == null) _hpLabel.Text = "HP: -";
-			else
-			{
-				string shieldTxt = "-";
-				if (t.Shield != null && t.Shield.Active != null && t.Shield.Active.Count > 0)
-					shieldTxt = string.Join(", ", t.Shield.Active);
-
-				_hpLabel.Text = $"HP: {t.Hp}/{t.MaxHp} | Flying={t.IsFlying} | ShieldOn={_shieldOn} | Shield=[{shieldTxt}]";
-			}
-		}
+		// HP agora é atualizado por evento, mas chamamos aqui também por segurança
+		UpdateHpLabel(t);
 	}
+
+	private void UpdateHpLabel(Enemy t)
+	{
+		if (_hpLabel == null) return;
+
+		if (t == null || !GodotObject.IsInstanceValid(t))
+		{
+			_hpLabel.Text = "HP: -";
+			return;
+		}
+
+		string shieldTxt = "-";
+		if (t.Shield != null && t.Shield.Active != null && t.Shield.Active.Count > 0)
+			shieldTxt = string.Join(", ", t.Shield.Active);
+
+		_hpLabel.Text = $"HP: {t.Hp}/{t.MaxHp} | Flying={t.IsFlying} | ShieldOn={_shieldOn} | Shield=[{shieldTxt}]";
+	}
+
+	// ---------------- BUTTON ACTIONS ----------------
 
 	private void ResetHp()
 	{
 		var t = _targetController?.CurrentTarget;
 		if (t == null || !GodotObject.IsInstanceValid(t)) return;
 
-		// sem mexer no setter privado: cura até o máximo
 		t.Heal(int.MaxValue);
+		// HpChanged vai atualizar automaticamente
 		RefreshUi();
 	}
 
@@ -196,14 +248,13 @@ public partial class TrainingController : Node
 
 			if (_shieldOn)
 			{
-				// liga: gera escudo válido
 				shield.RefreshRandom();
 			}
 			else
 			{
-				// desliga: limpa
+				// ⚠️ isso desliga mecanicamente, MAS o visual só some se o seu visual
+				// escutar Changed e tratar lista vazia (precisa de um "emit" do ShieldController).
 				shield.Active.Clear();
-				// (o visual só vai sumir se seu ShieldVisual tratar lista vazia)
 			}
 		}
 
@@ -229,30 +280,27 @@ public partial class TrainingController : Node
 		if (_enemiesRoot == null) return;
 		if (_enemyPacked == null) return;
 
-		// remove antigos
+		StopWatchingTarget(); // ✅ evita ficar inscrito em alvo que vai ser QueueFree
+
 		foreach (var child in _enemiesRoot.GetChildren())
 		{
 			if (child is Node n)
 				n.QueueFree();
 		}
 
-		// spawn novos
 		for (int i = 0; i < count; i++)
 		{
 			var inst = _enemyPacked.Instantiate<Enemy>();
 			inst.Name = $"Dummy_{i + 1}";
 			_enemiesRoot.AddChild(inst);
 
-			// posição (centralizado)
 			float offset = (i - (count - 1) * 0.5f) * SpawnSpacing;
 			inst.GlobalPosition = SpawnCenter + new Vector2(offset, 0);
 
-			// stats básicos
 			inst.MaxHp = DefaultHp;
 			inst.IsFlying = false;
 		}
 
-		// espera 1 frame pro TargetController registrar e selecionar
 		CallDeferred(nameof(ApplyShieldStateAfterSpawn));
 		CallDeferred(nameof(RefreshUi));
 	}

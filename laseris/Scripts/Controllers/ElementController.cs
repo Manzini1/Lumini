@@ -21,6 +21,9 @@ public partial class ElementController : Node
 	private SfxPlayer _sfxPlayer;
 	private VfxPlayer _vfxPlayer;
 
+	// ✅ para bloquear input enquanto arma está voando
+	private Mage _mage;
+
 	private bool _inputEnabled = true;
 	private readonly List<ElementIcon> _activeElements = new();
 
@@ -33,11 +36,35 @@ public partial class ElementController : Node
 		if (_targetController == null) GD.PushWarning("ElementController: TargetControllerPath inválido.");
 		if (_sfxPlayer == null) GD.PushWarning("ElementController: SfxPlayerPath inválido.");
 		if (_vfxPlayer == null) GD.PushWarning("ElementController: VfxPlayerPath inválido.");
+
+		// ✅ pega Mage via VfxPlayer e trava input quando arma está voando
+		_mage = _vfxPlayer?.Mage;
+		if (_mage != null)
+		{
+			_mage.WeaponFlightChanged += OnWeaponFlightChanged;
+
+			// aplica estado inicial (se já estiver voando por algum motivo)
+			OnWeaponFlightChanged(_mage.WeaponInFlight);
+		}
 	}
-		private DamagePopupManager GetDamagePopupManager()
+
+	public override void _ExitTree()
+	{
+		if (_mage != null)
+			_mage.WeaponFlightChanged -= OnWeaponFlightChanged;
+	}
+
+	private void OnWeaponFlightChanged(bool inFlight)
+	{
+		SetInputEnabled(!inFlight);
+		GD.Print($"[ElementController] Input {(inFlight ? "DESLIGADO" : "LIGADO")} (weapon in flight={inFlight})");
+	}
+
+	private DamagePopupManager GetDamagePopupManager()
 	{
 		return GetTree().GetFirstNodeInGroup("damage_popup_manager") as DamagePopupManager;
 	}
+
 	public void SetInputEnabled(bool enabled)
 	{
 		_inputEnabled = enabled;
@@ -62,7 +89,13 @@ public partial class ElementController : Node
 
 	public void Cast()
 	{
-		CastStarted?.Invoke();
+		// ✅ trava: não pode castar enquanto arma está voando
+		if (_mage != null && _mage.WeaponInFlight)
+		{
+			GD.Print("[ElementController] Cast BLOQUEADO: arma ainda não voltou.");
+			EmitResolved(CastOutcome.CancelledInputDisabled, null, null);
+			return;
+		}
 
 		if (!_inputEnabled)
 		{
@@ -84,19 +117,19 @@ public partial class ElementController : Node
 			return;
 		}
 
+		// ✅ agora sim: o cast realmente começou (aqui dispara animação do mage)
+		CastStarted?.Invoke();
+
 		var castElements = new List<ElementType>();
 		foreach (var icon in _activeElements)
 			castElements.Add(icon.ElementType);
 
 		var spell = SpellResolver.Resolve(castElements);
 
-		// áudio toca na hora
 		_sfxPlayer?.PlaySpell(spell);
 
-		// vfx toca e pode devolver handle p/ sincronizar impacto
 		var vfx = _vfxPlayer?.PlaySpell(spell);
 
-		// limpa seleção agora (pode manter se preferir)
 		ResetActiveElements();
 
 		if (vfx != null)
@@ -126,8 +159,9 @@ public partial class ElementController : Node
 			return;
 		}
 
-		// instantâneo (sem timing de impacto)
+		// instantâneo
 		var instantOutcome = target.TakeSpellHit(spell);
+		GetDamagePopupManager()?.ShowFromOutcome(target, spell, instantOutcome);
 		EmitResolved(instantOutcome, spell, target);
 	}
 

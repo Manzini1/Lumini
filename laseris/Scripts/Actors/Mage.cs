@@ -4,54 +4,83 @@ using System;
 public partial class Mage : CharacterBody2D
 {
 	[ExportCategory("Refs")]
-	[Export] public NodePath VisualPath;             // ex: "Visual" (Node2D)
-	[Export] public NodePath AnimPath;               // ex: "Visual/Anim" (AnimatedSprite2D)
-	[Export] public NodePath ElementControllerPath;  // ex: "../../HUD/ElementHUD/ElementController"
-	[Export] public NodePath CastPointPath;          // ex: "CastPoint" (Marker2D) opcional
+	[Export] public NodePath VisualPath = "Sprite";                 // opcional
+	[Export] public NodePath AnimPath = "Sprite";                   // AnimatedSprite2D (p/ flip)
+	[Export] public NodePath AnimPlayerPath = "AnimationPlayer";    // AnimationPlayer
+	[Export] public NodePath TargetControllerPath;                  // p/ pegar alvo atual
+	[Export] public NodePath ElementControllerPath;                 // ✅ pra casting/cast via eventos
+
+	[ExportCategory("Weapon Refs")]
+	[Export] public NodePath WeaponSocketPath = "WeaponSocket";                      // Node2D
+	[Export] public NodePath WeaponInHandPath = "WeaponSocket/Weapon";               // Node2D
+	[Export] public NodePath ThrownWeaponRootPath = "WeaponSocket/ThrownWeaponsRoot"; // Node2D onde instancia
+	[Export] public PackedScene ThrownWeaponScene;                                    // ThrownWeapon.tscn
+
+	[ExportCategory("Weapon Visual")]
+	[Export] public float ThrownWeaponScale = 1.0f;
+
+	[ExportCategory("Damage")]
+	[Export] public int PhysDamage = 35;
 
 	[ExportCategory("Anim Names")]
 	[Export] public string IdleAnim = "idle";
 	[Export] public string CastingAnim = "casting";
 	[Export] public string CastAnim = "cast";
+	[Export] public string PhysAttackAnim = "throw";
 
 	[ExportCategory("Facing")]
-	[Export] public bool FaceRightIsDefault = true; // se sua arte “olha pra direita” por padrão
-	[Export] public bool UseFlipH = true;            // true = FlipH no sprite; false = Scale.X negativo
-
-	[ExportCategory("Feedback")]
-	[Export] public float CastPulseScale = 1.08f;
-	[Export] public float CastPulseTime = 0.08f;
+	[Export] public bool FaceRightIsDefault = true;
+	[Export] public bool UseFlipH = true;
 
 	private Node2D _visual;
 	private AnimatedSprite2D _anim;
+	private AnimationPlayer _animPlayer;
+	private TargetController _targetController;
 	private ElementController _elementController;
-	private Marker2D _castPoint;
 
-	private bool _hasActiveRunes = false;
-	private bool _playingCastOneShot = false;
+	private Node2D _weaponSocket;
+	private Node2D _weaponInHand;
+	private Node2D _thrownRoot;
 
-	public Marker2D CastPoint => _castPoint;
+	// ---------- state ----------
+	private bool _hasActiveRunes;
+	private bool _playingCastOneShot;
+	private bool _playingPhysOneShot;
+
+	// ---------- weapon lock ----------
+	private bool _weaponInFlight;
+	public bool WeaponInFlight => _weaponInFlight;
+	public event Action<bool> WeaponFlightChanged;
+
+	// alvo guardado no “prepare” pra usar no ReleaseThrow (chamado pelo AnimationPlayer)
+	private Vector2 _pendingThrowTarget;
+	private Enemy _pendingThrowEnemy;
 
 	public override void _Ready()
 	{
 		_visual = GetNodeOrNull<Node2D>(VisualPath);
 		_anim = GetNodeOrNull<AnimatedSprite2D>(AnimPath);
-		_castPoint = GetNodeOrNull<Marker2D>(CastPointPath);
+		_animPlayer = GetNodeOrNull<AnimationPlayer>(AnimPlayerPath);
 
-		if (_visual == null && !VisualPath.IsEmpty)
-			GD.PushWarning("Mage: VisualPath setado mas não encontrei o node (Node2D).");
-
-		if (_anim == null)
-			GD.PushError("Mage: AnimPath inválido (não achei AnimatedSprite2D).");
-
+		_targetController = GetNodeOrNull<TargetController>(TargetControllerPath);
 		_elementController = GetNodeOrNull<ElementController>(ElementControllerPath);
-		if (_elementController == null && !ElementControllerPath.IsEmpty)
-			GD.PushWarning("Mage: ElementControllerPath setado mas não encontrei ElementController.");
 
-		// estado inicial
-		PlayIdle();
+		_weaponSocket = GetNodeOrNull<Node2D>(WeaponSocketPath);
+		_weaponInHand = GetNodeOrNull<Node2D>(WeaponInHandPath);
+		_thrownRoot = GetNodeOrNull<Node2D>(ThrownWeaponRootPath);
 
-		// liga eventos do ElementController (runa ativa / limpa / cast)
+		if (_animPlayer == null) GD.PushWarning("Mage: não achei AnimationPlayer (AnimPlayerPath).");
+		if (_anim == null) GD.PushWarning("Mage: não achei AnimatedSprite2D (AnimPath) - flip pode não funcionar.");
+		if (_weaponSocket == null) GD.PushWarning("Mage: WeaponSocketPath não encontrado.");
+		if (_weaponInHand == null) GD.PushWarning("Mage: WeaponInHandPath não encontrado (arma na mão).");
+		if (_thrownRoot == null) GD.PushWarning("Mage: ThrownWeaponRootPath não encontrado (onde instanciar).");
+		if (ThrownWeaponScene == null) GD.PushWarning("Mage: ThrownWeaponScene não setado.");
+		if (_elementController == null && !ElementControllerPath.IsEmpty) GD.PushWarning("Mage: ElementControllerPath setado mas não encontrei ElementController.");
+
+		if (_animPlayer != null)
+			_animPlayer.AnimationFinished += OnAnimFinished;
+
+		// ✅ re-liga eventos pra casting/cast funcionar
 		if (_elementController != null)
 		{
 			_elementController.ElementActivated += OnElementActivated;
@@ -60,12 +89,14 @@ public partial class Mage : CharacterBody2D
 			_elementController.CastResolved += OnCastResolved;
 		}
 
-		if (_anim != null)
-			_anim.AnimationFinished += OnAnimFinished;
+		PlayIdle();
 	}
 
 	public override void _ExitTree()
 	{
+		if (_animPlayer != null)
+			_animPlayer.AnimationFinished -= OnAnimFinished;
+
 		if (_elementController != null)
 		{
 			_elementController.ElementActivated -= OnElementActivated;
@@ -73,144 +104,239 @@ public partial class Mage : CharacterBody2D
 			_elementController.CastStarted -= OnCastStarted;
 			_elementController.CastResolved -= OnCastResolved;
 		}
-
-		if (_anim != null)
-			_anim.AnimationFinished -= OnAnimFinished;
 	}
 
-	// ---------------- PUBLIC API (contrato pro CombatController) ----------------
+	// ---------------- INPUT (throw) ----------------
 
-	/// <summary>Vira a Mage para olhar para uma posição no mundo (ex: alvo).</summary>
-	public void FaceWorldPosition(Vector2 worldPos)
+	public override void _UnhandledInput(InputEvent e)
 	{
-		// se worldPos.x é maior -> olha pra direita, senão esquerda
-		bool wantRight = worldPos.X >= GlobalPosition.X;
-		ApplyFacing(wantRight);
+		if (!e.IsActionPressed("physattack"))
+			return;
+
+		if (_weaponInFlight) return;
+
+		var (enemy, pos) = ResolveThrowTarget();
+		_pendingThrowEnemy = enemy;
+		_pendingThrowTarget = pos;
+
+		FaceWorldPosition(pos);
+		PlayPhysAttackOnce(); // ReleaseThrow via call method track
 	}
 
-	/// <summary>Feedback visual pós-cast (hit/absorbed). Não muda animação de estado.</summary>
-	public void PlayCastFeedback()
+	private (Enemy enemy, Vector2 pos) ResolveThrowTarget()
 	{
-		if (_visual == null && _anim == null) return;
+		var t = _targetController?.CurrentTarget;
+		if (t != null && GodotObject.IsInstanceValid(t))
+		{
+			var m = t.GetNodeOrNull<Marker2D>("VfxCenter");
+			return (t, m != null ? m.GlobalPosition : t.GlobalPosition);
+		}
 
-		// pulso rápido (tween) no Visual se existir, senão no próprio node
-		var node = (Node2D)(_visual ?? this);
-
-		var tw = CreateTween();
-		tw.SetTrans(Tween.TransitionType.Sine);
-		tw.SetEase(Tween.EaseType.Out);
-
-		Vector2 baseScale = node.Scale;
-		Vector2 up = baseScale * CastPulseScale;
-
-		////tw.TweenProperty(node, "scale", up, CastPulseTime);
-		//tw.TweenProperty(node, "scale", baseScale, CastPulseTime);
+		return (null, GetGlobalMousePosition());
 	}
 
-	// ---------------- EVENT HANDLERS (animação por estado) ----------------
+	// ---------------- SPELL EVENTS (casting/cast) ----------------
 
 	private void OnElementActivated(ElementType _)
 	{
 		_hasActiveRunes = true;
-		if (!_playingCastOneShot)
-			PlayCasting();
+		if (_playingCastOneShot || _playingPhysOneShot) return;
+		PlayCasting();
 	}
 
 	private void OnElementsCleared()
 	{
 		_hasActiveRunes = false;
-		if (!_playingCastOneShot)
-			PlayIdle();
+		if (_playingCastOneShot || _playingPhysOneShot) return;
+		PlayIdle();
 	}
 
 	private void OnCastStarted()
 	{
-		// toca o cast 1 vez
+		_playingCastOneShot = true;
 		PlayCastOnce();
 	}
 
 	private void OnCastResolved(CastOutcome outcome, SpellDefinition spell, Enemy target)
 	{
-		// Aqui fica disponível para você no futuro fazer cast feedback diferente por outcome/spell.
+		// por enquanto nada. (depois você pode dar feedback diferente aqui)
 	}
 
-	private void OnAnimFinished()
+	// ---------------- CALL METHOD TRACK (throw) ----------------
+
+	private DamagePopupManager GetDamagePopupManager()
 	{
-		if (_anim == null) return;
-		if (_anim.Animation != CastAnim) return;
+		return GetTree().GetFirstNodeInGroup("damage_popup_manager") as DamagePopupManager;
+	}
 
-		_playingCastOneShot = false;
+	// Chamado via Call Method track na animação "throw"
+	public void ReleaseThrow()
+	{
+		if (_weaponSocket == null)
+		{
+			GD.PushWarning("[Mage] ReleaseThrow sem WeaponSocket.");
+			return;
+		}
 
-		// termina cast -> volta pro estado correto
+		Vector2 start = _weaponSocket.GlobalPosition;
+		Vector2 target = _pendingThrowTarget;
+
+		GD.Print($"[Mage] ReleaseThrow from={start} to={target}");
+
+		Enemy hitEnemy = _pendingThrowEnemy; // captura local
+		int dmg = PhysDamage;
+
+		_weaponInHand?.SetDeferred("visible", false);
+
+		if (ThrownWeaponScene == null || _thrownRoot == null)
+		{
+			GD.PushWarning("[Mage] Não dá pra instanciar throw (scene/root faltando).");
+			_weaponInHand?.SetDeferred("visible", true);
+			SetWeaponInFlight(false);
+			return;
+		}
+
+		SetWeaponInFlight(true);
+
+		var thrown = ThrownWeaponScene.Instantiate<ThrownWeapon>();
+		_thrownRoot.AddChild(thrown);
+
+		thrown.GlobalPosition = start;
+		thrown.Scale = Vector2.One * ThrownWeaponScale;
+		thrown.ZIndex = 999;
+		thrown.Visible = true;
+
+		thrown.Hit += () =>
+		{
+			if (hitEnemy == null || !GodotObject.IsInstanceValid(hitEnemy))
+				return;
+
+			hitEnemy.TakeDamage(dmg);
+
+			// ⚠️ Se você ainda não criou ShowPhysicalDamage, comenta essa linha por enquanto
+			GetDamagePopupManager()?.ShowPhysicalDamage(hitEnemy, dmg);
+
+			GD.Print($"[Mage] HIT phys -> {hitEnemy.Name} -{dmg}");
+		};
+
+		thrown.Finished += success =>
+		{
+			_weaponInHand?.SetDeferred("visible", true);
+			SetWeaponInFlight(false);
+		};
+
+		thrown.Launch(_weaponSocket, start, target);
+	}
+
+	private void SetWeaponInFlight(bool v)
+	{
+		if (_weaponInFlight == v) return;
+		_weaponInFlight = v;
+		WeaponFlightChanged?.Invoke(_weaponInFlight);
+	}
+
+	// ---------------- ANIM FINISH ----------------
+
+	private void OnAnimFinished(StringName animName)
+	{
+		// terminou cast spell
+		if (animName == CastAnim)
+		{
+			_playingCastOneShot = false;
+			ReturnToState();
+			return;
+		}
+
+		// terminou throw
+		if (animName == PhysAttackAnim)
+		{
+			_playingPhysOneShot = false;
+			ReturnToState();
+			return;
+		}
+	}
+
+	private void ReturnToState()
+	{
+		if (_playingCastOneShot || _playingPhysOneShot) return;
+
 		if (_hasActiveRunes) PlayCasting();
 		else PlayIdle();
 	}
 
-	// ---------------- INTERNAL: animações ----------------
+	// ---------------- PLAY ANIMS ----------------
 
 	private void PlayIdle()
 	{
-		if (_anim == null) return;
-		_playingCastOneShot = false;
+		if (_animPlayer != null && _animPlayer.HasAnimation(IdleAnim))
+		{
+			if (_animPlayer.CurrentAnimation != IdleAnim)
+				_animPlayer.Play(IdleAnim);
+			return;
+		}
 
-		if (!HasAnim(IdleAnim)) return;
-		if (_anim.Animation != IdleAnim)
-			_anim.Play(IdleAnim);
+		// fallback (se ainda usa spriteframes direto)
+		if (_anim != null && _anim.SpriteFrames != null && _anim.SpriteFrames.HasAnimation(IdleAnim))
+		{
+			if (_anim.Animation != IdleAnim)
+				_anim.Play(IdleAnim);
+		}
 	}
 
 	private void PlayCasting()
 	{
-		if (_anim == null) return;
-		if (!HasAnim(CastingAnim)) return;
+		if (_animPlayer == null) return;
+		if (!_animPlayer.HasAnimation(CastingAnim)) return;
 
-		if (_anim.Animation != CastingAnim)
-			_anim.Play(CastingAnim);
+		if (_animPlayer.CurrentAnimation != CastingAnim)
+			_animPlayer.Play(CastingAnim);
 	}
 
 	private void PlayCastOnce()
 	{
-		if (_anim == null) return;
-		if (!HasAnim(CastAnim)) return;
-
-		_playingCastOneShot = true;
-		_anim.Play(CastAnim);
-	}
-
-	private bool HasAnim(string name)
-	{
-		if (_anim?.SpriteFrames == null)
+		if (_animPlayer == null)
 		{
-			GD.PushWarning("Mage: AnimatedSprite2D sem SpriteFrames setado.");
-			return false;
+			GD.PushWarning("Mage: sem AnimationPlayer, não dá pra tocar 'cast'.");
+			return;
 		}
 
-		if (!_anim.SpriteFrames.HasAnimation(name))
+		if (!_animPlayer.HasAnimation(CastAnim))
 		{
-			GD.PushWarning($"Mage: animação '{name}' não existe no SpriteFrames.");
-			return false;
+			GD.PushWarning($"Mage: AnimationPlayer não tem '{CastAnim}'.");
+			return;
 		}
 
-		return true;
+		_animPlayer.Play(CastAnim);
 	}
 
-	// ---------------- INTERNAL: facing ----------------
-
-	private void ApplyFacing(bool wantRight)
+	private void PlayPhysAttackOnce()
 	{
-		// se a arte é “right default”, então wantRight = true deixa normal
-		// se a arte é “left default”, inverte
+		if (_animPlayer == null)
+		{
+			GD.PushWarning("Mage: sem AnimationPlayer, não dá pra tocar 'throw'.");
+			return;
+		}
+		if (!_animPlayer.HasAnimation(PhysAttackAnim))
+		{
+			GD.PushWarning($"Mage: AnimationPlayer não tem '{PhysAttackAnim}'.");
+			return;
+		}
+
+		_playingPhysOneShot = true;
+		_animPlayer.Play(PhysAttackAnim);
+	}
+
+	// ---------------- FACING ----------------
+
+	public void FaceWorldPosition(Vector2 worldPos)
+	{
+		bool wantRight = worldPos.X >= GlobalPosition.X;
 		bool facingRight = FaceRightIsDefault ? wantRight : !wantRight;
 
-		if (_anim == null && _visual == null) return;
-
 		if (UseFlipH && _anim != null)
-		{
-			// FlipH espelha (em Godot 4 AnimatedSprite2D tem FlipH)
 			_anim.FlipH = !facingRight;
-		}
 		else
 		{
-			// fallback por escala no visual (ou no próprio node)
 			var node = (Node2D)(_visual ?? this);
 			var s = node.Scale;
 			s.X = Mathf.Abs(s.X) * (facingRight ? 1f : -1f);

@@ -65,13 +65,13 @@ GD.Print($"[Combat] Mage raw = {GetNodeOrNull<Node>(MagePath)}");
 		switch (outcome)
 		{
 			case CastOutcome.Hit:
-				_mage.PlayCastFeedback();
+//				_mage.PlayCastFeedback();
 				break;
 
 			case CastOutcome.Absorbed50:
 			case CastOutcome.Absorbed100:
 				// Feedback “mais fraco” (por enquanto só reutiliza o mesmo)
-				_mage.PlayCastFeedback();
+				//_mage.PlayCastFeedback();
 				break;
 
 			case CastOutcome.Miss:

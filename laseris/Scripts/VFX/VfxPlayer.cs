@@ -13,6 +13,7 @@ public partial class VfxPlayer : Node
 	private Mage _mage;
 	private TargetController _targetController;
 	private VfxManager _vfxManager;
+	public Mage Mage => _mage;
 	 public override void _Ready()
 	{
 		_mage = GetNodeOrNull<Mage>(MagePath);

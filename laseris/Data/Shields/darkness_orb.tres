@@ -1,0 +1,39 @@
+[gd_resource type="SpriteFrames" load_steps=6 format=3 uid="uid://cyeldeksd14nc"]
+
+[ext_resource type="Texture2D" uid="uid://u2c6f4iiydir" path="res://Sprites/Shields/Frames/darkness_orb.png" id="1_bdhbl"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_bk51p"]
+atlas = ExtResource("1_bdhbl")
+region = Rect2(0, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_psfn2"]
+atlas = ExtResource("1_bdhbl")
+region = Rect2(128, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_b6vio"]
+atlas = ExtResource("1_bdhbl")
+region = Rect2(0, 128, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_g7fcx"]
+atlas = ExtResource("1_bdhbl")
+region = Rect2(128, 128, 128, 128)
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_bk51p")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_psfn2")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_b6vio")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_g7fcx")
+}],
+"loop": true,
+"name": &"loop",
+"speed": 5.0
+}]

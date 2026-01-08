@@ -1,0 +1,46 @@
+[gd_resource type="SpriteFrames" load_steps=7 format=3 uid="uid://jmjxj50dtbi4"]
+
+[ext_resource type="Texture2D" uid="uid://bkkaoiixr0ay4" path="res://Sprites/Shields/Frames/venom_orb.png" id="1_xxabi"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_8qi7w"]
+atlas = ExtResource("1_xxabi")
+region = Rect2(0, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ak5th"]
+atlas = ExtResource("1_xxabi")
+region = Rect2(128, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ryf7y"]
+atlas = ExtResource("1_xxabi")
+region = Rect2(0, 128, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_pja0y"]
+atlas = ExtResource("1_xxabi")
+region = Rect2(128, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_epaof"]
+atlas = ExtResource("1_xxabi")
+region = Rect2(0, 0, 128, 128)
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_8qi7w")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ak5th")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ryf7y")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_pja0y")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_epaof")
+}],
+"loop": true,
+"name": &"loop",
+"speed": 6.0
+}]

@@ -1,11 +1,15 @@
-[gd_resource type="Resource" script_class="ShieldOrbBank" load_steps=11 format=3 uid="uid://dobxhf6123o2c"]
+[gd_resource type="Resource" script_class="ShieldOrbBank" load_steps=19 format=3 uid="uid://dobxhf6123o2c"]
 
 [ext_resource type="Script" uid="uid://csaaie0cjqyp5" path="res://Scripts/VFX/ShieldOrbEntry.cs" id="1_cpgf2"]
 [ext_resource type="Script" uid="uid://dbtm1bgpgjiur" path="res://Scripts/VFX/ShieldOrbBank.cs" id="1_op7s1"]
 [ext_resource type="SpriteFrames" uid="uid://demjxbl7m3vby" path="res://Data/Shields/fire_orb_shield.tres" id="2_cpgf2"]
 [ext_resource type="SpriteFrames" uid="uid://cgulo5gfegrse" path="res://Data/Shields/ice_orb_shield.tres" id="3_d3neh"]
-[ext_resource type="SpriteFrames" uid="uid://drbcj6eaavlne" path="res://Data/Shields/shadow_orb.tres" id="4_e1svw"]
+[ext_resource type="SpriteFrames" uid="uid://exyjteuupo24" path="res://Data/Shields/light_orb.tres" id="4_7egjl"]
 [ext_resource type="SpriteFrames" uid="uid://bbiaayrhj233f" path="res://Data/Shields/wind_orb.tres" id="5_jipgq"]
+[ext_resource type="SpriteFrames" uid="uid://cyeldeksd14nc" path="res://Data/Shields/darkness_orb.tres" id="6_jdkru"]
+[ext_resource type="SpriteFrames" uid="uid://woxe5yp7ikli" path="res://Data/Shields/lightning_orb.tres" id="7_qid73"]
+[ext_resource type="SpriteFrames" uid="uid://cprmae84b2u7h" path="res://Data/Shields/earth_orb.tres" id="8_qid73"]
+[ext_resource type="SpriteFrames" uid="uid://jmjxj50dtbi4" path="res://Data/Shields/venom_orb.tres" id="9_xynfw"]
 
 [sub_resource type="Resource" id="Resource_xynfw"]
 script = ExtResource("1_cpgf2")
@@ -22,8 +26,8 @@ metadata/_custom_type_script = "uid://csaaie0cjqyp5"
 
 [sub_resource type="Resource" id="Resource_jipgq"]
 script = ExtResource("1_cpgf2")
-Element = 7
-Frames = ExtResource("4_e1svw")
+Element = 6
+Frames = ExtResource("4_7egjl")
 AnimationName = "loop"
 metadata/_custom_type_script = "uid://csaaie0cjqyp5"
 
@@ -33,7 +37,34 @@ Element = 5
 Frames = ExtResource("5_jipgq")
 metadata/_custom_type_script = "uid://csaaie0cjqyp5"
 
+[sub_resource type="Resource" id="Resource_7egjl"]
+script = ExtResource("1_cpgf2")
+Element = 7
+Frames = ExtResource("6_jdkru")
+AnimationName = "loop"
+metadata/_custom_type_script = "uid://csaaie0cjqyp5"
+
+[sub_resource type="Resource" id="Resource_i6mfj"]
+script = ExtResource("1_cpgf2")
+Element = 2
+Frames = ExtResource("7_qid73")
+AnimationName = "loop"
+metadata/_custom_type_script = "uid://csaaie0cjqyp5"
+
+[sub_resource type="Resource" id="Resource_6vf3j"]
+script = ExtResource("1_cpgf2")
+Element = 4
+Frames = ExtResource("8_qid73")
+AnimationName = "loop"
+metadata/_custom_type_script = "uid://csaaie0cjqyp5"
+
+[sub_resource type="Resource" id="Resource_evior"]
+script = ExtResource("1_cpgf2")
+Element = 3
+Frames = ExtResource("9_xynfw")
+metadata/_custom_type_script = "uid://csaaie0cjqyp5"
+
 [resource]
 script = ExtResource("1_op7s1")
-Entries = Array[ExtResource("1_cpgf2")]([SubResource("Resource_xynfw"), SubResource("Resource_1a7lc"), SubResource("Resource_jipgq"), SubResource("Resource_e1svw")])
+Entries = Array[ExtResource("1_cpgf2")]([SubResource("Resource_xynfw"), SubResource("Resource_1a7lc"), SubResource("Resource_jipgq"), SubResource("Resource_e1svw"), SubResource("Resource_7egjl"), SubResource("Resource_i6mfj"), SubResource("Resource_6vf3j"), SubResource("Resource_evior")])
 metadata/_custom_type_script = "uid://dbtm1bgpgjiur"

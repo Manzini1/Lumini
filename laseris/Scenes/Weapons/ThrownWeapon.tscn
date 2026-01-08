@@ -1,0 +1,13 @@
+[gd_scene load_steps=3 format=3 uid="uid://dmtayatmh3nuk"]
+
+[ext_resource type="Script" uid="uid://bvwhguyts12g1" path="res://Scenes/Weapons/ThrownWeapon.cs" id="1_sgq2e"]
+[ext_resource type="Texture2D" uid="uid://bk002abgcbe0x" path="res://Sprites/weapons/baseweapon.png" id="2_w71l6"]
+
+[node name="ThrownWeapon" type="Node2D"]
+z_index = 999
+script = ExtResource("1_sgq2e")
+VisualPath = NodePath("VisualPath")
+
+[node name="VisualPath" type="Sprite2D" parent="."]
+scale = Vector2(3, 3)
+texture = ExtResource("2_w71l6")

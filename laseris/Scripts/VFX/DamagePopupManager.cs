@@ -16,12 +16,40 @@ public partial class DamagePopupManager : Node
 			GD.PushWarning("[DamagePopupManager] RootPath inválido. Vou usar CurrentScene.");
 	}
 
+	// -------------------- NOVO: API genérica --------------------
+
+	public void ShowPhysicalDamage(Enemy target, int damage, bool crit = false)
+	{
+		if (damage <= 0) return;
+
+		// físico: pode ser mais "branco/amarelo" pra diferenciar do mágico
+		var color = crit
+			? new Color(1.0f, 0.95f, 0.35f) // amarelo crit
+			: new Color(0.95f, 0.95f, 0.95f); // branco
+
+		float scale = crit ? 1.25f : 1.05f;
+		SpawnPopup(target, $"-{damage}", color, scale);
+	}
+
+	public void ShowHeal(Enemy target, int amount, float scale = 1.05f)
+	{
+		if (amount <= 0) return;
+		SpawnPopup(target, $"+{amount}", new Color(0.35f, 1.0f, 0.45f), scale);
+	}
+
+	public void ShowText(Enemy target, string text, Color color, float scale = 1.0f)
+	{
+		if (string.IsNullOrWhiteSpace(text)) return;
+		SpawnPopup(target, text, color, scale);
+	}
+
+	// -------------------- EXISTENTE: Spell outcome --------------------
+
 	public void ShowFromOutcome(Enemy target, SpellDefinition spell, CastOutcome outcome)
 	{
 		if (PopupScene == null || target == null || !GodotObject.IsInstanceValid(target))
 			return;
 
-		// Decide texto/valor
 		string text;
 		Color color;
 		float scale = 1.0f;
@@ -58,6 +86,16 @@ public partial class DamagePopupManager : Node
 			default:
 				return;
 		}
+
+		SpawnPopup(target, text, color, scale);
+	}
+
+	// -------------------- interno --------------------
+
+	private void SpawnPopup(Enemy target, string text, Color color, float scale)
+	{
+		if (PopupScene == null || target == null || !GodotObject.IsInstanceValid(target))
+			return;
 
 		var popup = PopupScene.Instantiate<DamagePopup>();
 

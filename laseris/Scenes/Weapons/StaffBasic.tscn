@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3 uid="uid://w5otm2rakkmj"]
+
+[ext_resource type="Texture2D" uid="uid://bk002abgcbe0x" path="res://Sprites/weapons/baseweapon.png" id="1_ropil"]
+
+[node name="StaffBasic" type="Node2D"]
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+scale = Vector2(1.7, 1.7)
+texture = ExtResource("1_ropil")

@@ -1,0 +1,25 @@
+[gd_resource type="SpriteFrames" load_steps=4 format=3 uid="uid://woxe5yp7ikli"]
+
+[ext_resource type="Texture2D" uid="uid://c7q0se4y35xg" path="res://Sprites/Shields/Frames/lightningorb.png" id="1_ohqif"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ekcoi"]
+atlas = ExtResource("1_ohqif")
+region = Rect2(0, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_1mcjm"]
+atlas = ExtResource("1_ohqif")
+region = Rect2(128, 128, 128, 128)
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ekcoi")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_1mcjm")
+}],
+"loop": true,
+"name": &"default",
+"speed": 6.0
+}]

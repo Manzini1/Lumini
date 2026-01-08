@@ -1,0 +1,39 @@
+[gd_resource type="SpriteFrames" load_steps=6 format=3 uid="uid://cprmae84b2u7h"]
+
+[ext_resource type="Texture2D" uid="uid://ko4uap2n2pm6" path="res://Sprites/Shields/Frames/earth_orb.png" id="1_1w1gb"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_rshke"]
+atlas = ExtResource("1_1w1gb")
+region = Rect2(0, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_u44go"]
+atlas = ExtResource("1_1w1gb")
+region = Rect2(128, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_04yo5"]
+atlas = ExtResource("1_1w1gb")
+region = Rect2(0, 128, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ysox1"]
+atlas = ExtResource("1_1w1gb")
+region = Rect2(128, 128, 128, 128)
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_rshke")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_u44go")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_04yo5")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ysox1")
+}],
+"loop": true,
+"name": &"loop",
+"speed": 8.0
+}]
