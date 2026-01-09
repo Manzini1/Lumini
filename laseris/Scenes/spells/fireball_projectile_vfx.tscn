@@ -17,5 +17,4 @@ rotation = -2.3300145
 scale = Vector2(2, 2)
 sprite_frames = ExtResource("3_ndiw4")
 animation = &"fly"
-frame = 1
-frame_progress = 0.22557314
+frame_progress = 0.6045174

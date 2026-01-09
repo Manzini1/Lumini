@@ -1,0 +1,28 @@
+[gd_scene load_steps=4 format=3 uid="uid://gh64gkf53635"]
+
+[ext_resource type="Script" uid="uid://dgjynw4rqhat7" path="res://Scripts/UI/ChannelCastBar.cs" id="1_d81py"]
+[ext_resource type="Texture2D" uid="uid://5bmsehytnrs1" path="res://Sprites/HUD/back.png" id="2_bs7iu"]
+[ext_resource type="Texture2D" uid="uid://bfqb5brlvpa2d" path="res://Sprites/HUD/prog.png" id="3_yt4cd"]
+
+[node name="ChannelCastBar" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -16.0
+offset_right = -16.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_d81py")
+BarPath = NodePath("TextureProgressBar")
+
+[node name="TextureProgressBar" type="TextureProgressBar" parent="."]
+layout_mode = 0
+offset_left = 496.0
+offset_top = 528.0
+offset_right = 752.0
+offset_bottom = 784.0
+scale = Vector2(2, 2)
+texture_under = ExtResource("2_bs7iu")
+texture_progress = ExtResource("3_yt4cd")

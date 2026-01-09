@@ -13,8 +13,7 @@ public partial class SpellVfxBank : Resource
 		if (string.IsNullOrWhiteSpace(spellId)) return null;
 		EnsureMap();
 		spellId = spellId.Trim();
-
-		return _map.TryGetValue(spellId, out var entry) ? entry : null;
+		return _map.TryGetValue(spellId, out var e) ? e : null;
 	}
 
 	private void EnsureMap()
@@ -22,21 +21,18 @@ public partial class SpellVfxBank : Resource
 		if (_map != null) return;
 
 		_map = new Dictionary<string, SpellVfxEntry>();
-
 		foreach (var e in Entries)
 		{
 			if (e == null) continue;
 			if (string.IsNullOrWhiteSpace(e.SpellId)) continue;
 
 			var id = e.SpellId.Trim();
-
 			if (_map.ContainsKey(id))
-				GD.PushWarning($"[SpellVfxBank] SpellId duplicado: '{id}'. Último vai sobrescrever.");
+				GD.PushWarning($"[SpellVfxBank] SpellId duplicado: '{id}' (último sobrescreve).");
 
 			_map[id] = e;
 		}
 	}
 
-	// Se você editar Entries em runtime/editor e quiser reconstruir:
 	public void InvalidateCache() => _map = null;
 }

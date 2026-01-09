@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://c1tk0n7deb6il"]
+
+[ext_resource type="Script" uid="uid://d06s0xtshtoki" path="res://Scenes/VFX/TargetInstantSpellVfx.cs" id="1_hblf3"]
+
+[node name="TargetInstantSpellVfx" type="Node2D"]
+script = ExtResource("1_hblf3")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]

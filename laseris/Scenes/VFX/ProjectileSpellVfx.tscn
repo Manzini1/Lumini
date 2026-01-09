@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://xojc7tmvlpy"]
+
+[ext_resource type="Script" uid="uid://owdgb7sl2o40" path="res://Scripts/VFX/ProjectileSpellVfx.cs" id="1_3arwr"]
+
+[node name="ProjectileSpellVfx" type="Node2D"]
+script = ExtResource("1_3arwr")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]

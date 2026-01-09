@@ -3,24 +3,27 @@ using System;
 
 public partial class Mage : CharacterBody2D
 {
+	// =========================================================
+	// Refs
+	// =========================================================
 	[ExportCategory("Refs")]
 	[Export] public NodePath VisualPath = "Sprite";                 // opcional
 	[Export] public NodePath AnimPath = "Sprite";                   // AnimatedSprite2D (p/ flip)
 	[Export] public NodePath AnimPlayerPath = "AnimationPlayer";    // AnimationPlayer
 	[Export] public NodePath TargetControllerPath;                  // p/ pegar alvo atual
-	[Export] public NodePath ElementControllerPath;                 // ✅ pra casting/cast via eventos
+	[Export] public NodePath ElementControllerPath;                 // ✅ casting/cast via eventos
 
 	[ExportCategory("Weapon Refs")]
-	[Export] public NodePath WeaponSocketPath = "WeaponSocket";                      // Node2D
-	[Export] public NodePath WeaponInHandPath = "WeaponSocket/Weapon";               // Node2D
+	[Export] public NodePath WeaponSocketPath = "WeaponSocket";                       // Node2D
+	[Export] public NodePath WeaponInHandPath = "WeaponSocket/Weapon";                // Node2D
 	[Export] public NodePath ThrownWeaponRootPath = "WeaponSocket/ThrownWeaponsRoot"; // Node2D onde instancia
-	[Export] public PackedScene ThrownWeaponScene;                                    // ThrownWeapon.tscn
+	[Export] public PackedScene ThrownWeaponScene;                                     // ThrownWeapon.tscn
 
 	[ExportCategory("Weapon Visual")]
 	[Export] public float ThrownWeaponScale = 1.0f;
 
 	[ExportCategory("Damage")]
-	[Export] public int PhysDamage = 35;
+	[Export] public int PhysDamage = 100;
 
 	[ExportCategory("Anim Names")]
 	[Export] public string IdleAnim = "idle";
@@ -32,6 +35,35 @@ public partial class Mage : CharacterBody2D
 	[Export] public bool FaceRightIsDefault = true;
 	[Export] public bool UseFlipH = true;
 
+	// =========================================================
+	// Pressure / Stun (novo)
+	// =========================================================
+	[ExportCategory("Pressure")]
+	[Export] public float PressureMax = 100f;
+	[Export] public float PressureDecayPerSecond = 0f; // 0 = não decai
+	[Export] public float StunSeconds = 2.0f;
+	[Export] public float IncomingDamageMultiplierWhileStunned = 1.6f;
+
+	public float Pressure { get; private set; } = 0f;
+	public bool IsStunned { get; private set; } = false;
+
+	/// <summary>Multiplicador aplicado ao dano recebido enquanto stunado.</summary>
+	public float IncomingDamageMultiplier => IsStunned ? IncomingDamageMultiplierWhileStunned : 1f;
+
+	/// <summary>Dispara quando pressure muda (pressure, max).</summary>
+	public event Action<float, float> PressureChanged;
+
+	/// <summary>Dispara quando stun muda (true/false).</summary>
+	public event Action<bool> StunChanged;
+
+	/// <summary>Dispara quando a Mage tomou hit (dano FINAL aplicado).</summary>
+	public event Action<int> TookHit;
+
+	private bool _stunRunning = false;
+
+	// =========================================================
+	// Runtime refs
+	// =========================================================
 	private Node2D _visual;
 	private AnimatedSprite2D _anim;
 	private AnimationPlayer _animPlayer;
@@ -42,20 +74,25 @@ public partial class Mage : CharacterBody2D
 	private Node2D _weaponInHand;
 	private Node2D _thrownRoot;
 
-	// ---------- state ----------
+	// =========================================================
+	// State
+	// =========================================================
 	private bool _hasActiveRunes;
 	private bool _playingCastOneShot;
 	private bool _playingPhysOneShot;
 
-	// ---------- weapon lock ----------
+	// Weapon lock
 	private bool _weaponInFlight;
 	public bool WeaponInFlight => _weaponInFlight;
 	public event Action<bool> WeaponFlightChanged;
 
-	// alvo guardado no “prepare” pra usar no ReleaseThrow (chamado pelo AnimationPlayer)
+	// Pending throw target
 	private Vector2 _pendingThrowTarget;
 	private Enemy _pendingThrowEnemy;
-
+	
+	// =========================================================
+	// Godot
+	// =========================================================
 	public override void _Ready()
 	{
 		_visual = GetNodeOrNull<Node2D>(VisualPath);
@@ -80,7 +117,7 @@ public partial class Mage : CharacterBody2D
 		if (_animPlayer != null)
 			_animPlayer.AnimationFinished += OnAnimFinished;
 
-		// ✅ re-liga eventos pra casting/cast funcionar
+		// liga eventos pra casting/cast funcionar
 		if (_elementController != null)
 		{
 			_elementController.ElementActivated += OnElementActivated;
@@ -106,13 +143,31 @@ public partial class Mage : CharacterBody2D
 		}
 	}
 
-	// ---------------- INPUT (throw) ----------------
+	public override void _Process(double delta)
+	{
+		// Decay opcional
+		if (PressureDecayPerSecond > 0f && !IsStunned && Pressure > 0f)
+		{
+			float dt = (float)delta;
+			float old = Pressure;
+			Pressure = Mathf.Max(0f, Pressure - PressureDecayPerSecond * dt);
 
+			if (!Mathf.IsEqualApprox(old, Pressure))
+				PressureChanged?.Invoke(Pressure, PressureMax);
+		}
+	}
+
+	// =========================================================
+	// INPUT (throw)
+	// =========================================================
 	public override void _UnhandledInput(InputEvent e)
 	{
+		if (e.IsActionPressed("debug_hit"))
+		ApplyDamage(10);
 		if (!e.IsActionPressed("physattack"))
 			return;
-
+		
+		if (IsStunned) return;
 		if (_weaponInFlight) return;
 
 		var (enemy, pos) = ResolveThrowTarget();
@@ -135,8 +190,9 @@ public partial class Mage : CharacterBody2D
 		return (null, GetGlobalMousePosition());
 	}
 
-	// ---------------- SPELL EVENTS (casting/cast) ----------------
-
+	// =========================================================
+	// SPELL EVENTS (casting/cast)
+	// =========================================================
 	private void OnElementActivated(ElementType _)
 	{
 		_hasActiveRunes = true;
@@ -153,17 +209,21 @@ public partial class Mage : CharacterBody2D
 
 	private void OnCastStarted()
 	{
+		// se estiver stunado, não deixa “travar” estado
+		if (IsStunned) return;
+
 		_playingCastOneShot = true;
 		PlayCastOnce();
 	}
 
 	private void OnCastResolved(CastOutcome outcome, SpellDefinition spell, Enemy target)
 	{
-		// por enquanto nada. (depois você pode dar feedback diferente aqui)
+		// aqui você pode acoplar feedback visual depois (shake, flash, etc)
 	}
 
-	// ---------------- CALL METHOD TRACK (throw) ----------------
-
+	// =========================================================
+	// CALL METHOD TRACK (throw)
+	// =========================================================
 	private DamagePopupManager GetDamagePopupManager()
 	{
 		return GetTree().GetFirstNodeInGroup("damage_popup_manager") as DamagePopupManager;
@@ -206,6 +266,7 @@ public partial class Mage : CharacterBody2D
 		thrown.ZIndex = 999;
 		thrown.Visible = true;
 
+		// aplica dano no hit
 		thrown.Hit += () =>
 		{
 			if (hitEnemy == null || !GodotObject.IsInstanceValid(hitEnemy))
@@ -219,12 +280,14 @@ public partial class Mage : CharacterBody2D
 			GD.Print($"[Mage] HIT phys -> {hitEnemy.Name} -{dmg}");
 		};
 
+		// quando volta: destrava e mostra arma
 		thrown.Finished += success =>
 		{
 			_weaponInHand?.SetDeferred("visible", true);
 			SetWeaponInFlight(false);
 		};
 
+		// sua assinatura atual: Launch(socket, start, target)
 		thrown.Launch(_weaponSocket, start, target);
 	}
 
@@ -235,8 +298,9 @@ public partial class Mage : CharacterBody2D
 		WeaponFlightChanged?.Invoke(_weaponInFlight);
 	}
 
-	// ---------------- ANIM FINISH ----------------
-
+	// =========================================================
+	// ANIM FINISH
+	// =========================================================
 	private void OnAnimFinished(StringName animName)
 	{
 		// terminou cast spell
@@ -260,12 +324,19 @@ public partial class Mage : CharacterBody2D
 	{
 		if (_playingCastOneShot || _playingPhysOneShot) return;
 
+		if (IsStunned)
+		{
+			PlayIdle();
+			return;
+		}
+
 		if (_hasActiveRunes) PlayCasting();
 		else PlayIdle();
 	}
 
-	// ---------------- PLAY ANIMS ----------------
-
+	// =========================================================
+	// PLAY ANIMS
+	// =========================================================
 	private void PlayIdle()
 	{
 		if (_animPlayer != null && _animPlayer.HasAnimation(IdleAnim))
@@ -326,8 +397,9 @@ public partial class Mage : CharacterBody2D
 		_animPlayer.Play(PhysAttackAnim);
 	}
 
-	// ---------------- FACING ----------------
-
+	// =========================================================
+	// FACING
+	// =========================================================
 	public void FaceWorldPosition(Vector2 worldPos)
 	{
 		bool wantRight = worldPos.X >= GlobalPosition.X;
@@ -342,5 +414,63 @@ public partial class Mage : CharacterBody2D
 			s.X = Mathf.Abs(s.X) * (facingRight ? 1f : -1f);
 			node.Scale = s;
 		}
+	}
+
+	// =========================================================
+	// PRESSURE API (novo)
+	// =========================================================
+	public void AddPressure(float amount, string reason = "")
+	{
+		if (amount <= 0f) return;
+
+		Pressure = Mathf.Clamp(Pressure + amount, 0f, PressureMax);
+		PressureChanged?.Invoke(Pressure, PressureMax);
+
+		if (!string.IsNullOrWhiteSpace(reason))
+			GD.Print($"[Mage][Pressure] +{amount} => {Pressure}/{PressureMax} ({reason})");
+
+		if (Pressure >= PressureMax)
+			_ = TriggerStun();
+	}
+
+	/// <summary>Chame isso quando a Mage tomar dano (futuro: ataques inimigos). Isso dispara TookHit.</summary>
+	public void ApplyDamage(int rawDamage)
+	{
+		// aqui você pode integrar HP do player depois
+		int final = Mathf.RoundToInt(rawDamage * IncomingDamageMultiplier);
+
+		TookHit?.Invoke(final);
+
+		GD.Print($"[Mage] TookHit {final} (raw={rawDamage}, mult={IncomingDamageMultiplier:0.00})");
+	}
+
+	private async System.Threading.Tasks.Task TriggerStun()
+	{
+		if (_stunRunning) return;
+		_stunRunning = true;
+
+		IsStunned = true;
+		StunChanged?.Invoke(true);
+
+		// durante stun, você pode forçar idle
+		_playingCastOneShot = false;
+		_playingPhysOneShot = false;
+		PlayIdle();
+
+		GD.Print($"[Mage][Pressure] FULL -> STUN for {StunSeconds:0.00}s (incoming dmg x{IncomingDamageMultiplierWhileStunned:0.00})");
+
+		await ToSignal(GetTree().CreateTimer(Mathf.Max(0.05f, StunSeconds)), SceneTreeTimer.SignalName.Timeout);
+
+		IsStunned = false;
+		StunChanged?.Invoke(false);
+
+		// zera pressure ao sair do stun (se você preferir manter, comenta isso)
+		Pressure = 0f;
+		PressureChanged?.Invoke(Pressure, PressureMax);
+
+		_stunRunning = false;
+
+		// volta pro estado normal
+		ReturnToState();
 	}
 }

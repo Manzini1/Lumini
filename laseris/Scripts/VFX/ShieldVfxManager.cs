@@ -86,22 +86,22 @@ public partial class ShieldVfxManager : Node
 		fx.GlobalPosition = anchor.GlobalPosition;
 
 		// tenta configurar como GenericSpellVfx (se você estiver usando ele)
-		if (fx is GenericSpellVfx g)
-		{
-			var frames = isAbsorb ? AbsorbFrames : BlockFrames;
-			var anim   = isAbsorb ? AbsorbAnimName : BlockAnimName;
-			var speed  = isAbsorb ? AbsorbSpeedScale : BlockSpeedScale;
-
-			var tmp = new SpellVfxEntry
-			{
-				Frames = frames,
-				AnimationName = anim,
-				SpeedScale = speed,
-				ZIndex = 80
-			};
-
-			g.Configure(tmp, null, null);
-		}
+		//if (fx is GenericSpellVfx g)
+		//{
+			//var frames = isAbsorb ? AbsorbFrames : BlockFrames;
+			//var anim   = isAbsorb ? AbsorbAnimName : BlockAnimName;
+			//var speed  = isAbsorb ? AbsorbSpeedScale : BlockSpeedScale;
+//
+			//var tmp = new SpellVfxEntry
+			//{
+				//Frames = frames,
+				//AnimationName = anim,
+				//SpeedScale = speed,
+				//ZIndex = 80
+			//};
+//
+			//g.Configure(tmp, null, null);
+		//}
 	}
 
 	private Node2D GetAnchor(Node2D enemy)

@@ -9,22 +9,56 @@ public partial class ElementController : Node
 	[Export] public NodePath SfxPlayerPath;
 	[Export] public NodePath VfxPlayerPath;
 
-	public event Action<ElementType> ElementActivated;
-	public event Action ElementsCleared;
-	public event Action CastStarted;
-	public event Action<CastOutcome, SpellDefinition, Enemy> CastResolved;
+	[ExportCategory("Mage")]
+	[Export] public string MageGroupName = "mage";
 
 	[ExportCategory("Config")]
 	[Export] public int MaxElements = 2;
 
+	[ExportCategory("Dual Cast (2 elementos)")]
+	[Export] public float DualCastTimeSeconds = 2.0f;
+
+	[ExportCategory("Pressure")]
+	[Export] public float PressureOnInterrupted = 25f;   // apanhar conjurando
+	[Export] public float PressureOnShieldAbsorb = 10f;  // shield absorveu (Absorbed50/100)
+
+	// -------- UI / Events --------
+	public event Action<ElementType> ElementActivated;
+	public event Action ElementsCleared;
+
+	/// <summary>Momento em que o cast foi "liberado" (release). Bom pra tocar animação one-shot.</summary>
+	public event Action CastStarted;
+
+	public event Action<CastOutcome, SpellDefinition, Enemy> CastResolved;
+
+	/// <summary>Channeling começou (duration).</summary>
+	public event Action<float> DualChannelStarted;
+
+	/// <summary>Channeling progresso (elapsed, duration).</summary>
+	public event Action<float, float> DualChannelProgress;
+
+	/// <summary>Channeling cancelado (hit / stun / input off).</summary>
+	public event Action DualChannelCancelled;
+
+	/// <summary>Channeling terminou e soltou o cast.</summary>
+	public event Action DualChannelReleased;
+
 	private TargetController _targetController;
 	private SfxPlayer _sfxPlayer;
 	private VfxPlayer _vfxPlayer;
-
-	// ✅ para bloquear input enquanto arma está voando
 	private Mage _mage;
 
 	private bool _inputEnabled = true;
+
+	// -------- channel state --------
+	private bool _channeling = false;
+	private float _channelElapsed = 0f;
+	private float _channelDuration = 0f;
+
+	private Enemy _channelTarget;
+	private SpellDefinition _channelSpell;
+	private List<ElementType> _channelElements;
+
 	private readonly List<ElementIcon> _activeElements = new();
 
 	public override void _Ready()
@@ -33,31 +67,50 @@ public partial class ElementController : Node
 		_sfxPlayer = GetNodeOrNull<SfxPlayer>(SfxPlayerPath);
 		_vfxPlayer = GetNodeOrNull<VfxPlayer>(VfxPlayerPath);
 
+		_mage = GetTree().GetFirstNodeInGroup(MageGroupName) as Mage;
+		if (_mage != null)
+			_mage.TookHit += OnMageTookHit;
+
 		if (_targetController == null) GD.PushWarning("ElementController: TargetControllerPath inválido.");
 		if (_sfxPlayer == null) GD.PushWarning("ElementController: SfxPlayerPath inválido.");
 		if (_vfxPlayer == null) GD.PushWarning("ElementController: VfxPlayerPath inválido.");
-
-		// ✅ pega Mage via VfxPlayer e trava input quando arma está voando
-		_mage = _vfxPlayer?.Mage;
-		if (_mage != null)
-		{
-			_mage.WeaponFlightChanged += OnWeaponFlightChanged;
-
-			// aplica estado inicial (se já estiver voando por algum motivo)
-			OnWeaponFlightChanged(_mage.WeaponInFlight);
-		}
+		if (_mage == null) GD.PushWarning("ElementController: não achei Mage no group 'mage'.");
 	}
 
 	public override void _ExitTree()
 	{
 		if (_mage != null)
-			_mage.WeaponFlightChanged -= OnWeaponFlightChanged;
+			_mage.TookHit -= OnMageTookHit;
 	}
 
-	private void OnWeaponFlightChanged(bool inFlight)
+	public override void _Process(double delta)
 	{
-		SetInputEnabled(!inFlight);
-		GD.Print($"[ElementController] Input {(inFlight ? "DESLIGADO" : "LIGADO")} (weapon in flight={inFlight})");
+		if (!_channeling) return;
+
+		// travas
+		if (!_inputEnabled || (_mage != null && _mage.IsStunned))
+		{
+			CancelChannel();
+			return;
+		}
+
+		_channelElapsed += (float)delta;
+		DualChannelProgress?.Invoke(_channelElapsed, _channelDuration);
+
+		if (_channelElapsed < _channelDuration)
+			return;
+
+		// terminou -> solta o cast
+		_channeling = false;
+		DualChannelProgress?.Invoke(_channelDuration, _channelDuration);
+		DualChannelReleased?.Invoke();
+
+		ReleaseSpell(_channelSpell, _channelTarget, _channelElements);
+
+		// limpa
+		_channelSpell = null;
+		_channelTarget = null;
+		_channelElements = null;
 	}
 
 	private DamagePopupManager GetDamagePopupManager()
@@ -68,17 +121,27 @@ public partial class ElementController : Node
 	public void SetInputEnabled(bool enabled)
 	{
 		_inputEnabled = enabled;
-		if (!enabled) ResetActiveElements();
+
+		if (!enabled)
+		{
+			CancelChannel();
+			ResetActiveElements();
+		}
 	}
 
-	public bool CanActivate() => _inputEnabled && _activeElements.Count < MaxElements;
+	public bool CanActivate()
+	{
+		if (!_inputEnabled) return false;
+		if (_channeling) return false;
+		if (_mage != null && _mage.IsStunned) return false;
+		return _activeElements.Count < MaxElements;
+	}
 
 	public void ActivateElement(ElementIcon element)
 	{
-		if (!_inputEnabled) return;
+		if (!CanActivate()) return;
 		if (element == null) return;
 		if (_activeElements.Contains(element)) return;
-		if (_activeElements.Count >= MaxElements) return;
 
 		_activeElements.Add(element);
 		element.SetActive(true);
@@ -89,10 +152,11 @@ public partial class ElementController : Node
 
 	public void Cast()
 	{
-		// ✅ trava: não pode castar enquanto arma está voando
-		if (_mage != null && _mage.WeaponInFlight)
+		// já canalizando? ignora
+		if (_channeling) return;
+
+		if (_mage != null && _mage.IsStunned)
 		{
-			GD.Print("[ElementController] Cast BLOQUEADO: arma ainda não voltou.");
 			EmitResolved(CastOutcome.CancelledInputDisabled, null, null);
 			return;
 		}
@@ -117,21 +181,91 @@ public partial class ElementController : Node
 			return;
 		}
 
-		// ✅ agora sim: o cast realmente começou (aqui dispara animação do mage)
-		CastStarted?.Invoke();
-
 		var castElements = new List<ElementType>();
 		foreach (var icon in _activeElements)
 			castElements.Add(icon.ElementType);
 
 		var spell = SpellResolver.Resolve(castElements);
 
-		_sfxPlayer?.PlaySpell(spell);
+		bool isDual = castElements.Count >= 2;
 
+		if (!isDual)
+		{
+			// -------- SINGLE (instant) --------
+			CastStarted?.Invoke();
+			_sfxPlayer?.PlaySpell(spell);
+
+			var vfx = _vfxPlayer?.PlaySpell(spell);
+
+			// limpa seleção agora
+			ResetActiveElements();
+
+			ResolveSpellDamageWithVfxOrInstant(target, spell, vfx);
+			return;
+		}
+
+		// -------- DUAL (channel) --------
+		StartDualChannel(target, spell, castElements);
+	}
+
+	private void StartDualChannel(Enemy target, SpellDefinition spell, List<ElementType> elements)
+	{
+		_channeling = true;
+		_channelElapsed = 0f;
+		_channelDuration = Mathf.Max(0.05f, DualCastTimeSeconds);
+
+		_channelTarget = target;
+		_channelSpell = spell;
+		_channelElements = elements;
+
+		GD.Print($"[ElementController] DualCast channeling {_channelDuration:0.00}s (spell={spell?.Id})");
+		DualChannelStarted?.Invoke(_channelDuration);
+		DualChannelProgress?.Invoke(0f, _channelDuration);
+	}
+
+	private void CancelChannel()
+	{
+		if (!_channeling) return;
+
+		_channeling = false;
+		DualChannelCancelled?.Invoke();
+
+		_channelSpell = null;
+		_channelTarget = null;
+		_channelElements = null;
+		_channelElapsed = 0f;
+		_channelDuration = 0f;
+	}
+
+	private void ReleaseSpell(SpellDefinition spell, Enemy target, List<ElementType> castElements)
+	{
+		if (spell == null)
+		{
+			EmitResolved(CastOutcome.CancelledNoElements, null, target);
+			return;
+		}
+
+		if (target == null || !GodotObject.IsInstanceValid(target))
+		{
+			EmitResolved(CastOutcome.CancelledNoTarget, spell, null);
+			ResetActiveElements();
+			return;
+		}
+
+		// momento do release -> animação cast one-shot
+		CastStarted?.Invoke();
+
+		_sfxPlayer?.PlaySpell(spell);
 		var vfx = _vfxPlayer?.PlaySpell(spell);
 
+		// limpa runas APÓS soltar
 		ResetActiveElements();
 
+		ResolveSpellDamageWithVfxOrInstant(target, spell, vfx);
+	}
+
+	private void ResolveSpellDamageWithVfxOrInstant(Enemy target, SpellDefinition spell, IVfxPlayable vfx)
+	{
 		if (vfx != null)
 		{
 			bool applied = false;
@@ -150,8 +284,12 @@ public partial class ElementController : Node
 				}
 
 				var outcome = castTarget.TakeSpellHit(castSpell);
-				var dmgMgr = GetDamagePopupManager();
-				dmgMgr?.ShowFromOutcome(castTarget, castSpell, outcome);
+
+				// Pressure: shield absorveu
+				if (_mage != null && (outcome == CastOutcome.Absorbed50 || outcome == CastOutcome.Absorbed100))
+					_mage.AddPressure(PressureOnShieldAbsorb, "shield absorbed spell");
+
+				GetDamagePopupManager()?.ShowFromOutcome(castTarget, castSpell, outcome);
 				EmitResolved(outcome, castSpell, castTarget);
 			};
 
@@ -159,10 +297,31 @@ public partial class ElementController : Node
 			return;
 		}
 
-		// instantâneo
+		// instantâneo (sem timing de impacto)
 		var instantOutcome = target.TakeSpellHit(spell);
-		GetDamagePopupManager()?.ShowFromOutcome(target, spell, instantOutcome);
+
+		if (_mage != null && (instantOutcome == CastOutcome.Absorbed50 || instantOutcome == CastOutcome.Absorbed100))
+			_mage.AddPressure(PressureOnShieldAbsorb, "shield absorbed spell");
+
 		EmitResolved(instantOutcome, spell, target);
+	}
+
+	private void OnMageTookHit(int damage)
+	{
+		// só importa se estiver canalizando
+		if (!_channeling) return;
+
+		GD.Print($"[ElementController] INTERRUPTED by hit ({damage}). Dual cast fails -> pressure++");
+
+		CancelChannel();
+
+		if (_mage != null)
+			_mage.AddPressure(PressureOnInterrupted, "hit while channeling");
+
+		// punição: perde runas
+		ResetActiveElements();
+
+		EmitResolved(CastOutcome.CancelledInputDisabled, null, null);
 	}
 
 	private void ResetActiveElements()

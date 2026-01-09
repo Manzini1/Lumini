@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://ns1jroymurph"]
+
+[ext_resource type="Script" uid="uid://b3fj0yfpbk3jr" path="res://Scripts/UI/TugManager.cs" id="1_8wf2k"]
+
+[node name="Node" type="Node"]
+script = ExtResource("1_8wf2k")
