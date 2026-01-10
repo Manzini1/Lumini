@@ -15,8 +15,8 @@ VfxScene = ExtResource("3_8bbso")
 Frames = ExtResource("2_m4fcg")
 SpeedScale = 4.0
 SpawnPoint = 0
-RotationDegrees = -44.0
 ZIndex = 999
+RotationDegrees = 280.0
 FallbackLifetime = 4.4
 metadata/_custom_type_script = "uid://d2dnrbhqyhxhc"
 
@@ -27,9 +27,9 @@ VfxScene = ExtResource("4_m4fcg")
 Frames = ExtResource("3_het8y")
 SpawnPoint = 3
 Offset = Vector2(-70, 100)
-DamageDelaySeconds = 0.7
-Scale = Vector2(3, 3)
 ZIndex = 999
+Scale = Vector2(3, 3)
+DamageDelaySeconds = 0.7
 metadata/_custom_type_script = "uid://d2dnrbhqyhxhc"
 
 [sub_resource type="Resource" id="Resource_v41ij"]

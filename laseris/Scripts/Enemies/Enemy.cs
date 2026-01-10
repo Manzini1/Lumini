@@ -50,7 +50,32 @@ public partial class Enemy : Node2D
 		GD.Print($"{Name} spawned with HP {Hp}/{MaxHp}");
 		EmitSignal(SignalName.HpChanged, this, Hp, MaxHp);
 	}
+[ExportCategory("Stun")]
+[Export] public float StunSecondsDefault = 1.5f;
 
+public bool IsStunned { get; private set; }
+
+public void ForceStun(float seconds, string reason = "")
+{
+	_ = DoStun(Mathf.Max(0.05f, seconds), reason);
+}
+
+private bool _stunRunning = false;
+
+private async System.Threading.Tasks.Task DoStun(float seconds, string reason)
+{
+	if (_stunRunning) return;
+	_stunRunning = true;
+
+	IsStunned = true;
+	// aqui depois você pode: tocar anim, shader, etc
+	// GD.Print($"[Enemy] STUN {seconds:0.00}s reason={reason}");
+
+	await ToSignal(GetTree().CreateTimer(seconds), SceneTreeTimer.SignalName.Timeout);
+
+	IsStunned = false;
+	_stunRunning = false;
+}
 	public void ApplyData(EnemyData data)
 	{
 		Data = data;

@@ -1,4 +1,4 @@
-[gd_scene load_steps=28 format=3 uid="uid://y8elah67a2l5"]
+[gd_scene load_steps=32 format=3 uid="uid://y8elah67a2l5"]
 
 [ext_resource type="Texture2D" uid="uid://4lwdexkkbsx8" path="res://Sprites/Backgrounds/TrainingGrounds/tg1.png" id="1_iessl"]
 [ext_resource type="Script" uid="uid://da3bj42sd1s37" path="res://Scripts/Controllers/TargetController.cs" id="1_nd45q"]
@@ -22,11 +22,15 @@
 [ext_resource type="Script" uid="uid://cg1xcebur56j" path="res://Scripts/Controllers/EnemySpawner.cs" id="13_jh4eh"]
 [ext_resource type="PackedScene" uid="uid://cs5fwr1hp3mq0" path="res://Scenes/VFX/Frames/impact.tscn" id="13_kf538"]
 [ext_resource type="Script" uid="uid://cr8f8fsvx2wy" path="res://Scripts/Enemies/EnemyData.cs" id="14_lqmdg"]
+[ext_resource type="Script" uid="uid://bwpsu4720ss1v" path="res://Scenes/CameraShake2D.cs" id="15_eh108"]
 [ext_resource type="Resource" uid="uid://10x6ls6i6x31" path="res://Data/Enemies/TargetDummy.tres" id="15_kijot"]
 [ext_resource type="PackedScene" uid="uid://djfgdh73ic5jb" path="res://Scenes/Audio/SfxPlayer.tscn" id="16_kijot"]
 [ext_resource type="Script" uid="uid://dli8gedcp281f" path="res://Scripts/UI/TugHud.cs" id="16_yb1cs"]
 [ext_resource type="PackedScene" uid="uid://gh64gkf53635" path="res://Scenes/UI/channel_cast_bar.tscn" id="17_kf538"]
 [ext_resource type="Script" uid="uid://dggycs3si3qky" path="res://Scripts/Audio/SfxPlayer.cs" id="17_kux0e"]
+[ext_resource type="Script" uid="uid://gkrsohxktluh" path="res://Scenes/StunOverlay.cs" id="19_ea06w"]
+[ext_resource type="AudioStream" uid="uid://dujkbe2l7pom3" path="res://Audio/HUDSFX/impact_cinematic.ogg" id="20_ud4jx"]
+[ext_resource type="Script" uid="uid://novdwbcjm2eb" path="res://Scenes/StunFeedbackController.cs" id="21_1npqg"]
 
 [node name="Training" type="Node2D"]
 
@@ -95,6 +99,10 @@ script = ExtResource("10_pp342")
 Bank = ExtResource("11_pp342")
 AuraScene = ExtResource("12_yb1cs")
 ReactionScene = ExtResource("13_kf538")
+
+[node name="MainCamera" type="Camera2D" parent="World" groups=["main_camera"]]
+anchor_mode = 0
+script = ExtResource("15_eh108")
 
 [node name="HUD" type="CanvasLayer" parent="."]
 
@@ -182,6 +190,7 @@ offset_top = 656.0
 offset_bottom = 696.0
 
 [node name="ElementController" parent="HUD/ElementHUD" index="1" groups=["element_controller"]]
+TugManagerPath = NodePath("")
 TargetControllerPath = NodePath("../../../World/TargetController")
 SfxPlayerPath = NodePath("../../../SfxPlayer")
 VfxPlayerPath = NodePath("../../../SpellVfx/VfxPlayer")
@@ -200,8 +209,48 @@ script = ExtResource("16_yb1cs")
 ElementControllerPath = NodePath("../ElementHUD/ElementController")
 
 [node name="TextureProgressBar" parent="HUD/ChannelCastBar" index="0"]
+offset_left = 480.0
+offset_right = 736.0
 max_value = 1.0
 step = 0.0
+
+[node name="StunOverlay" type="Control" parent="HUD"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("19_ea06w")
+
+[node name="Vignette" type="ColorRect" parent="HUD/StunOverlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 0)
+
+[node name="Flash" type="ColorRect" parent="HUD/StunOverlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(1, 1, 1, 0)
+
+[node name="StunSfx" type="AudioStreamPlayer" parent="HUD"]
+stream = ExtResource("20_ud4jx")
+volume_db = 5.299
+bus = &"SFX"
+
+[node name="StunFeedbackController" type="Node" parent="HUD"]
+script = ExtResource("21_1npqg")
+OverlayPath = NodePath("../StunOverlay")
+StunSfxPath = NodePath("../StunSfx")
+LowPassBusName = "SFX"
 
 [node name="MusicDomain" type="Node" parent="."]
 script = ExtResource("6_q1qh0")

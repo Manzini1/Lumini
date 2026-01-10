@@ -40,7 +40,7 @@ position = Vector2(1440, 480)
 
 [node name="ShieldController" type="Node" parent="."]
 script = ExtResource("4_287tu")
-Mode = 1
+Mode = 2
 
 [node name="VfxCenter" type="Marker2D" parent="."]
 

@@ -1,11 +1,14 @@
-[gd_scene load_steps=28 format=3 uid="uid://nvoxx5jrd2g3"]
+[gd_scene load_steps=34 format=3 uid="uid://nvoxx5jrd2g3"]
 
 [ext_resource type="Texture2D" uid="uid://dokuag2wx3vw3" path="res://Sprites/Characters/lumina/magebase.png" id="1_7neqo"]
 [ext_resource type="Script" uid="uid://ikds8dlw2c63" path="res://Scripts/Actors/Mage.cs" id="1_ygjit"]
 [ext_resource type="Texture2D" uid="uid://ci552qleddsny" path="res://Sprites/Characters/lumina/magecasting.png" id="2_ygjit"]
 [ext_resource type="Texture2D" uid="uid://f42am8f0i3xr" path="res://Sprites/Characters/lumina/spellreleased.png" id="3_3b1lc"]
 [ext_resource type="Texture2D" uid="uid://cfj6rv4u05fb5" path="res://Sprites/Characters/lumina/throwing.png" id="5_csqk0"]
+[ext_resource type="Texture2D" uid="uid://dpgk21qu6gj1w" path="res://Sprites/Characters/lumina/stun_slap1.png" id="6_5q2c3"]
+[ext_resource type="Texture2D" uid="uid://v4aqjbye3gqh" path="res://Sprites/Characters/lumina/stun_slap2.png" id="7_4p1us"]
 [ext_resource type="PackedScene" uid="uid://w5otm2rakkmj" path="res://Scenes/Weapons/StaffBasic.tscn" id="7_rlrpk"]
+[ext_resource type="Texture2D" uid="uid://b24wmx1tdah3l" path="res://Sprites/Characters/lumina/stunned23.png" id="8_ff2e1"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_csqk0"]
 atlas = ExtResource("3_3b1lc")
@@ -46,6 +49,18 @@ region = Rect2(128, 128, 128, 128)
 [sub_resource type="AtlasTexture" id="AtlasTexture_rlrpk"]
 atlas = ExtResource("5_csqk0")
 region = Rect2(0, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_sf15w"]
+atlas = ExtResource("8_ff2e1")
+region = Rect2(128, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_e2aiw"]
+atlas = ExtResource("8_ff2e1")
+region = Rect2(0, 128, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ylkhn"]
+atlas = ExtResource("8_ff2e1")
+region = Rect2(128, 128, 128, 128)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_xwoaj"]
 atlas = ExtResource("5_csqk0")
@@ -117,6 +132,31 @@ animations = [{
 }, {
 "frames": [{
 "duration": 1.0,
+"texture": SubResource("AtlasTexture_sf15w")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_e2aiw")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ylkhn")
+}],
+"loop": true,
+"name": &"stun",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("6_5q2c3")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_4p1us")
+}],
+"loop": false,
+"name": &"stun_slap",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
 "texture": SubResource("AtlasTexture_xwoaj")
 }, {
 "duration": 1.0,
@@ -132,59 +172,6 @@ animations = [{
 "name": &"throw",
 "speed": 6.0
 }]
-
-[sub_resource type="Animation" id="Animation_csqk0"]
-resource_name = "idle"
-length = 0.66
-loop_mode = 1
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath("WeaponSocket:position")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 1,
-"values": [Vector2(418, 607)]
-}
-tracks/1/type = "value"
-tracks/1/imported = false
-tracks/1/enabled = true
-tracks/1/path = NodePath("WeaponSocket:rotation")
-tracks/1/interp = 1
-tracks/1/loop_wrap = true
-tracks/1/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 1,
-"values": [-0.59861946]
-}
-tracks/2/type = "value"
-tracks/2/imported = false
-tracks/2/enabled = true
-tracks/2/path = NodePath("Sprite:animation")
-tracks/2/interp = 1
-tracks/2/loop_wrap = true
-tracks/2/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 1,
-"values": [&"idle"]
-}
-tracks/3/type = "value"
-tracks/3/imported = false
-tracks/3/enabled = true
-tracks/3/path = NodePath("Sprite:frame")
-tracks/3/interp = 1
-tracks/3/loop_wrap = true
-tracks/3/keys = {
-"times": PackedFloat32Array(0, 0.1, 0.26666668, 0.5),
-"transitions": PackedFloat32Array(1, 1, 1, 1),
-"update": 1,
-"values": [0, 1, 2, 3]
-}
 
 [sub_resource type="Animation" id="Animation_rlrpk"]
 length = 0.001
@@ -235,6 +222,58 @@ tracks/3/keys = {
 "transitions": PackedFloat32Array(1),
 "update": 0,
 "values": [1.2179444]
+}
+
+[sub_resource type="Animation" id="Animation_5q2c3"]
+resource_name = "cast"
+length = 0.2
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite:animation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [&"cast"]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Sprite:frame")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [0]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("WeaponSocket:position")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [Vector2(585.99994, 615)]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("WeaponSocket:rotation")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [0.61932003]
 }
 
 [sub_resource type="Animation" id="Animation_kt2yc"]
@@ -290,56 +329,57 @@ tracks/3/keys = {
 "values": [-0.38577747]
 }
 
-[sub_resource type="Animation" id="Animation_5q2c3"]
-resource_name = "cast"
-length = 0.2
+[sub_resource type="Animation" id="Animation_csqk0"]
+resource_name = "idle"
+length = 0.66
+loop_mode = 1
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("Sprite:animation")
+tracks/0/path = NodePath("WeaponSocket:position")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
 "times": PackedFloat32Array(0),
 "transitions": PackedFloat32Array(1),
 "update": 1,
-"values": [&"cast"]
+"values": [Vector2(418, 607)]
 }
 tracks/1/type = "value"
 tracks/1/imported = false
 tracks/1/enabled = true
-tracks/1/path = NodePath("Sprite:frame")
+tracks/1/path = NodePath("WeaponSocket:rotation")
 tracks/1/interp = 1
 tracks/1/loop_wrap = true
 tracks/1/keys = {
 "times": PackedFloat32Array(0),
 "transitions": PackedFloat32Array(1),
 "update": 1,
-"values": [0]
+"values": [-0.59861946]
 }
 tracks/2/type = "value"
 tracks/2/imported = false
 tracks/2/enabled = true
-tracks/2/path = NodePath("WeaponSocket:position")
+tracks/2/path = NodePath("Sprite:animation")
 tracks/2/interp = 1
 tracks/2/loop_wrap = true
 tracks/2/keys = {
 "times": PackedFloat32Array(0),
 "transitions": PackedFloat32Array(1),
 "update": 1,
-"values": [Vector2(585.99994, 615)]
+"values": [&"idle"]
 }
 tracks/3/type = "value"
 tracks/3/imported = false
 tracks/3/enabled = true
-tracks/3/path = NodePath("WeaponSocket:rotation")
+tracks/3/path = NodePath("Sprite:frame")
 tracks/3/interp = 1
 tracks/3/loop_wrap = true
 tracks/3/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
+"times": PackedFloat32Array(0, 0.1, 0.26666668, 0.5),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
 "update": 1,
-"values": [0.61932003]
+"values": [0, 1, 2, 3]
 }
 
 [sub_resource type="Animation" id="Animation_4p1us"]

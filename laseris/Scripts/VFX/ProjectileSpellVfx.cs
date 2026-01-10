@@ -110,15 +110,57 @@ public partial class ProjectileSpellVfx : Node2D, IVfxPlayable, ISpellVfxConfigu
 	}
 
 	private void SpawnImpact()
+{
+	// 1) escolhe qual impact usar:
+	PackedScene scene = null;
+
+	// custom do entry tem prioridade
+	if (_entry != null && _entry.UseCustomImpact && _entry.ImpactScene != null)
+		scene = _entry.ImpactScene;
+
+	// fallback do script
+	scene ??= ImpactScene;
+
+	if (scene == null)
 	{
-		if (ImpactScene == null) return;
-
-		var roots = GetTree().GetNodesInGroup("vfx_root");
-		var parent = (roots != null && roots.Count > 0) ? roots[0] as Node : GetTree().CurrentScene;
-
-		var impact = ImpactScene.Instantiate<Node2D>();
-		parent.AddChild(impact);
-		impact.GlobalPosition = _targetPos;
-		impact.ZIndex = _entry?.ZIndex ?? 50;
+		GD.PushWarning("[ProjectileSpellVfx] Sem ImpactScene (nem entry nem default).");
+		return;
 	}
+
+	var roots = GetTree().GetNodesInGroup("vfx_root");
+	var parent = (roots.Count > 0) ? roots[0] as Node : GetTree().CurrentScene;
+
+	var impact = scene.Instantiate<Node2D>();
+	parent.AddChild(impact);
+
+	// 2) posiciona + offset
+	Vector2 offset = _entry != null ? _entry.ImpactOffset : Vector2.Zero;
+	impact.GlobalPosition = _targetPos + offset;
+
+	// 3) ZIndex
+	impact.ZIndex = (_entry != null && _entry.UseCustomImpact) ? _entry.ImpactZIndex : (_entry?.ZIndex ?? 50);
+
+	// 4) Scale
+	if (_entry != null && _entry.UseCustomImpact)
+		impact.Scale = _entry.ImpactScale;
+
+	// 5) se o Impact for GenericSpellVfx, injeta frames custom (se tiver)
+	//if (impact is GenericSpellVfx g && _entry != null && _entry.UseCustomImpact && _entry.ImpactFrames != null)
+	//{
+		//var tmp = new SpellVfxEntry
+		//{
+			//Frames = _entry.ImpactFrames,
+			//AnimationName = string.IsNullOrWhiteSpace(_entry.ImpactAnimName) ? "play" : _entry.ImpactAnimName,
+			//SpeedScale = _entry.ImpactSpeedScale,
+			//ZIndex = impact.ZIndex,
+			//FallbackLifetime = 1.2f,
+			//Scale = Vector2.One,
+			//RotationDegrees = 0f
+		//};
+//
+		//g.Configure(tmp, _caster, _target);
+	//}
+
+	GD.Print($"[ProjectileSpellVfx] impact spawned at {impact.GlobalPosition} z={impact.ZIndex}");
+}
 }

@@ -23,6 +23,7 @@ MusicPlayer="*res://Scenes/Autoload/MusicPlayer.tscn"
 MusicService="*res://Scripts/Autoload/MusicService.cs"
 VfxManager="*res://Scenes/Autoload/vfx_manager.tscn"
 Tug="*res://Scripts/UI/TugManager.cs"
+TugRouter="*res://Scripts/Combat/TugStunRouter.cs"
 
 [display]
 

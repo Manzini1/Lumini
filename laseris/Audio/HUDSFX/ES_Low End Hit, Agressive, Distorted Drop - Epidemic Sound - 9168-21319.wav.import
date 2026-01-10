@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://ds7my776eytbw"
+path="res://.godot/imported/ES_Low End Hit, Agressive, Distorted Drop - Epidemic Sound - 9168-21319.wav-cf8ba3ce96cdf3fa86249d04678a6fec.sample"
+
+[deps]
+
+source_file="res://Audio/HUDSFX/ES_Low End Hit, Agressive, Distorted Drop - Epidemic Sound - 9168-21319.wav"
+dest_files=["res://.godot/imported/ES_Low End Hit, Agressive, Distorted Drop - Epidemic Sound - 9168-21319.wav-cf8ba3ce96cdf3fa86249d04678a6fec.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

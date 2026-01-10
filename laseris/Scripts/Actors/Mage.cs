@@ -60,7 +60,9 @@ public partial class Mage : CharacterBody2D
 	public event Action<int> TookHit;
 
 	private bool _stunRunning = false;
-
+	[ExportCategory("Stun Anim (SpriteFrames)")]
+	[Export] public string StunSlapAnim = "stun_slap";
+	[Export] public string StunLoopAnim = "stun";
 	// =========================================================
 	// Runtime refs
 	// =========================================================
@@ -419,19 +421,19 @@ public partial class Mage : CharacterBody2D
 	// =========================================================
 	// PRESSURE API (novo)
 	// =========================================================
-	public void AddPressure(float amount, string reason = "")
-	{
-		if (amount <= 0f) return;
-
-		Pressure = Mathf.Clamp(Pressure + amount, 0f, PressureMax);
-		PressureChanged?.Invoke(Pressure, PressureMax);
-
-		if (!string.IsNullOrWhiteSpace(reason))
-			GD.Print($"[Mage][Pressure] +{amount} => {Pressure}/{PressureMax} ({reason})");
-
-		if (Pressure >= PressureMax)
-			_ = TriggerStun();
-	}
+	//public void AddPressure(float amount, string reason = "")
+	//{
+		//if (amount <= 0f) return;
+//
+		//Pressure = Mathf.Clamp(Pressure + amount, 0f, PressureMax);
+		//PressureChanged?.Invoke(Pressure, PressureMax);
+//
+		//if (!string.IsNullOrWhiteSpace(reason))
+			//GD.Print($"[Mage][Pressure] +{amount} => {Pressure}/{PressureMax} ({reason})");
+//
+		//if (Pressure >= PressureMax)
+			//_ = TriggerStun();
+	//}
 
 	/// <summary>Chame isso quando a Mage tomar dano (futuro: ataques inimigos). Isso dispara TookHit.</summary>
 	public void ApplyDamage(int rawDamage)
@@ -443,34 +445,57 @@ public partial class Mage : CharacterBody2D
 
 		GD.Print($"[Mage] TookHit {final} (raw={rawDamage}, mult={IncomingDamageMultiplier:0.00})");
 	}
+public void ForceStun(float seconds, string reason = "")
+{
+	
+	_ = TriggerStun(seconds, reason);
+}
+	private async System.Threading.Tasks.Task TriggerStun(float seconds, string reason = "")
+{
+	if (_stunRunning) return;
+	_stunRunning = true;
 
-	private async System.Threading.Tasks.Task TriggerStun()
+	IsStunned = true;
+	StunChanged?.Invoke(true);
+	
+	_playingCastOneShot = false;
+	_playingPhysOneShot = false;
+	PlayIdle();
+TryPlayStunAnims();
+	float stunDur = Mathf.Max(0.05f, seconds);
+
+	if (!string.IsNullOrWhiteSpace(reason))
+		GD.Print($"[Mage][Stun] {stunDur:0.00}s reason={reason}");
+
+	await ToSignal(GetTree().CreateTimer(stunDur), SceneTreeTimer.SignalName.Timeout);
+
+	IsStunned = false;
+	StunChanged?.Invoke(false);
+
+	// se você NÃO quiser mais pressure governando stun:
+	Pressure = 0f;
+	PressureChanged?.Invoke(Pressure, PressureMax);
+
+	_stunRunning = false;
+	ReturnToState();
+}
+	private async void TryPlayStunAnims()
+{
+	// se não tem AnimatedSprite2D ou não tem frames, ignora
+	if (_anim == null || _anim.SpriteFrames == null) return;
+
+	// para o AnimationPlayer pra não brigar com a sprite
+	_animPlayer?.Stop();
+
+	// 1) slap rápido
+	if (_anim.SpriteFrames.HasAnimation(StunSlapAnim))
 	{
-		if (_stunRunning) return;
-		_stunRunning = true;
-
-		IsStunned = true;
-		StunChanged?.Invoke(true);
-
-		// durante stun, você pode forçar idle
-		_playingCastOneShot = false;
-		_playingPhysOneShot = false;
-		PlayIdle();
-
-		GD.Print($"[Mage][Pressure] FULL -> STUN for {StunSeconds:0.00}s (incoming dmg x{IncomingDamageMultiplierWhileStunned:0.00})");
-
-		await ToSignal(GetTree().CreateTimer(Mathf.Max(0.05f, StunSeconds)), SceneTreeTimer.SignalName.Timeout);
-
-		IsStunned = false;
-		StunChanged?.Invoke(false);
-
-		// zera pressure ao sair do stun (se você preferir manter, comenta isso)
-		Pressure = 0f;
-		PressureChanged?.Invoke(Pressure, PressureMax);
-
-		_stunRunning = false;
-
-		// volta pro estado normal
-		ReturnToState();
+		_anim.Play(StunSlapAnim);
+		await ToSignal(_anim, AnimatedSprite2D.SignalName.AnimationFinished);
 	}
+
+	// 2) loop stun
+	if (IsStunned && _anim.SpriteFrames.HasAnimation(StunLoopAnim))
+		_anim.Play(StunLoopAnim);
+}
 }

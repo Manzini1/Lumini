@@ -5,18 +5,15 @@ public partial class TargetInstantSpellVfx : Node2D, IVfxPlayable, ISpellVfxConf
 {
 	public event Action Impacted;
 
-	[ExportCategory("Optional local tweak (only this scene)")]
-	[Export] public Vector2 ExtraLocalOffset = Vector2.Zero;
-
 	private AnimatedSprite2D _sprite;
 	private bool _hookedFinished;
 	private bool _configured;
 
-	private bool _damageFired;
-
 	private SpellVfxEntry _entry;
 	private Node2D _caster;
 	private Node2D _target;
+
+	private bool _damageFired;
 
 	public override void _Ready()
 	{
@@ -28,9 +25,14 @@ public partial class TargetInstantSpellVfx : Node2D, IVfxPlayable, ISpellVfxConf
 			return;
 		}
 
-		// Se cair aqui em runtime sem Configure, é bug de pipeline (você já viu esse warning)
+		// Se cair aqui em runtime sem Configure, é bug de pipeline
 		if (!Engine.IsEditorHint() && !_configured)
 			GD.PushWarning("[TargetInstantSpellVfx] Configure() não foi chamado (ruim em runtime).");
+
+		// ✅ roda em deferred para:
+		// - garantir que o node está na tree
+		// - garantir que quem chamou já assinou o Impacted
+		CallDeferred(nameof(BeginRuntime));
 	}
 
 	public void Configure(SpellVfxEntry entry, Node2D caster, Node2D target)
@@ -40,78 +42,145 @@ public partial class TargetInstantSpellVfx : Node2D, IVfxPlayable, ISpellVfxConf
 		_caster = caster;
 		_target = target;
 
-		_damageFired = false;
+		// Não dá play aqui — damos em BeginRuntime (deferred) por segurança.
+	}
 
-		// ✅ aplica ajustes visuais configuráveis por entry
-		if (_entry != null)
-		{
-			ZIndex = _entry.ZIndex;
-			Scale = _entry.Scale;
-			RotationDegrees = _entry.RotationDegrees;
-		}
+	private void BeginRuntime()
+	{
+		if (_sprite == null || _entry == null)
+			return;
 
-		// ✅ offset local extra (se você quiser empurrar só essa cena além do Offset do entry)
-		Position += ExtraLocalOffset;
+		// ✅ aplica tuning do entry
+		Scale = _entry.Scale;
+		RotationDegrees = _entry.RotationDegrees;
+		ZIndex = _entry.ZIndex;
 
-		// ✅ injeta frames se vierem do banco
-		if (_sprite != null && _entry?.Frames != null)
-		{
+		// ✅ injeta frames (se entry estiver usando cena genérica)
+		if (_entry.Frames != null)
 			_sprite.SpriteFrames = _entry.Frames;
 
-			if (!string.IsNullOrWhiteSpace(_entry.AnimationName) && _sprite.SpriteFrames.HasAnimation(_entry.AnimationName))
-				_sprite.Play(_entry.AnimationName);
-			else if (_sprite.SpriteFrames.GetAnimationNames().Length > 0)
-				_sprite.Play(_sprite.SpriteFrames.GetAnimationNames()[0]);
-			else
-				GD.PushWarning("[TargetInstantSpellVfx] SpriteFrames sem animações.");
+		_sprite.SpeedScale = Mathf.Max(0.01f, _entry.SpeedScale);
+
+		// ✅ toca animação correta
+		string anim = string.IsNullOrWhiteSpace(_entry.AnimationName) ? "play" : _entry.AnimationName;
+
+		if (_sprite.SpriteFrames == null)
+		{
+			GD.PushWarning("[TargetInstantSpellVfx] SpriteFrames null (sem animação).");
+		}
+		else if (_sprite.SpriteFrames.HasAnimation(anim))
+		{
+			_sprite.Play(anim);
 		}
 		else
 		{
-			// se a cena já tem SpriteFrames setado no editor
-			_sprite?.Play();
+			// fallback seguro
+			if (_sprite.SpriteFrames.HasAnimation("default"))
+				_sprite.Play("default");
+			else
+				_sprite.Play();
 		}
 
-		// ✅ conecta finish só uma vez (pra auto-free)
-		if (!_hookedFinished && _sprite != null)
+		if (!_hookedFinished)
 		{
 			_sprite.AnimationFinished += OnSpriteFinished;
 			_hookedFinished = true;
 		}
 
-		// ✅ DANO POR TEMPO (manual)
-		float delay = _entry?.DamageDelaySeconds ?? 0f;
+		// ✅ agenda dano (por tempo OU no fim)
+		ScheduleDamage();
 
-		if (delay <= 0f)
-		{
-			// default: dá dano imediatamente (bom pra “frame 0”)
-			FireDamageOnce();
-		}
-		else
-		{
-			// dá dano depois do delay configurado no entry
-			_ = FireDamageAfterDelay(delay);
-		}
+		// ✅ agenda impacto secundário (opcional)
+		ScheduleSecondaryImpact();
 	}
 
-	private async System.Threading.Tasks.Task FireDamageAfterDelay(float delay)
+	private async void ScheduleDamage()
 	{
-		await ToSignal(GetTree().CreateTimer(delay), SceneTreeTimer.SignalName.Timeout);
+		if (_entry == null) return;
+
+		// -1 => no fim da animação
+		if (_entry.DamageDelaySeconds < 0f)
+			return;
+
+		float delay = Mathf.Max(0f, _entry.DamageDelaySeconds);
+
+		// garante 1 frame antes de disparar (evita “perder assinatura do evento”)
+		await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+
+		if (delay > 0f)
+			await ToSignal(GetTree().CreateTimer(delay), SceneTreeTimer.SignalName.Timeout);
+
 		FireDamageOnce();
+	}
+
+	private void OnSpriteFinished()
+	{
+		// se pediu “dano no fim”
+		if (_entry != null && _entry.DamageDelaySeconds < 0f)
+			FireDamageOnce();
+
+		if (_entry?.AutoFreeOnFinish ?? true)
+			QueueFree();
 	}
 
 	private void FireDamageOnce()
 	{
 		if (_damageFired) return;
 		_damageFired = true;
+
 		Impacted?.Invoke();
 	}
 
-	private void OnSpriteFinished()
+	private async void ScheduleSecondaryImpact()
 	{
-		// se você preferir dano no final, seria aqui.
-		// do jeito que está: dano pode ser antes, e o finish só “some” o VFX.
-		if (_entry?.AutoFreeOnFinish ?? true)
-			QueueFree();
+		if (_entry == null) return;
+		if (!_entry.UseSecondaryImpact) return;
+		if (_entry.SecondaryImpactScene == null) return;
+
+		// 1 frame de segurança
+		await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+
+		float delay = Mathf.Max(0f, _entry.SecondaryImpactDelaySeconds);
+		if (delay > 0f)
+			await ToSignal(GetTree().CreateTimer(delay), SceneTreeTimer.SignalName.Timeout);
+
+		SpawnSecondaryImpact();
+	}
+
+	private void SpawnSecondaryImpact()
+	{
+		if (_entry == null || _entry.SecondaryImpactScene == null) return;
+
+		// parent: VfxRoot (group vfx_root) se existir
+		var roots = GetTree().GetNodesInGroup("vfx_root");
+		var parent = (roots.Count > 0) ? roots[0] as Node : GetTree().CurrentScene;
+		if (parent == null) return;
+
+		var impact = _entry.SecondaryImpactScene.Instantiate<Node2D>();
+		parent.AddChild(impact);
+
+		// ✅ base: posição atual do instant (já spawnado no anchor)
+		impact.GlobalPosition = GlobalPosition + _entry.SecondaryImpactOffset;
+		impact.ZIndex = _entry.SecondaryImpactZIndex;
+		impact.Scale = _entry.SecondaryImpactScale;
+
+		// ✅ se for GenericSpellVfx, injeta frames do secondary
+		//if (impact is GenericSpellVfx g && _entry.SecondaryImpactFrames != null)
+		//{
+			//var tmp = new SpellVfxEntry
+			//{
+				//Frames = _entry.SecondaryImpactFrames,
+				//AnimationName = string.IsNullOrWhiteSpace(_entry.SecondaryImpactAnimName) ? "play" : _entry.SecondaryImpactAnimName,
+				//SpeedScale = _entry.SecondaryImpactSpeedScale,
+				//ZIndex = impact.ZIndex,
+				//FallbackLifetime = 1.2f,
+				//Scale = Vector2.One,
+				//RotationDegrees = 0f,
+				//AutoFreeOnFinish = true
+			//};
+//
+			//g.Configure(tmp, _caster, _target);
+		//}
 	}
 
 	public override void _ExitTree()

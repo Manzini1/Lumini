@@ -4,6 +4,16 @@ using System.Collections.Generic;
 
 public partial class ElementController : Node
 {
+	[Export] public NodePath TugManagerPath;                // opcional: setar direto na cena
+[Export] public string TugManagerGroup = "tug_manager"; // alternativa por group
+
+
+[ExportCategory("Tug Tuning (points)")]
+[Export] public float TugOnSpellHit = +1f;
+[Export] public float TugOnSpellMiss = -1f;
+[Export] public float TugOnShieldAbsorb = -2f;   // punição maior
+[Export] public float TugOnInterrupted = -3f;    // punição maior
+
 	[ExportCategory("Refs")]
 	[Export] public NodePath TargetControllerPath;
 	[Export] public NodePath SfxPlayerPath;
@@ -19,13 +29,13 @@ public partial class ElementController : Node
 	[Export] public float DualCastTimeSeconds = 2.0f;
 
 	[ExportCategory("Pressure")]
-	[Export] public float PressureOnInterrupted = 25f;   // apanhar conjurando
-	[Export] public float PressureOnShieldAbsorb = 10f;  // shield absorveu (Absorbed50/100)
+	[Export] public float PressureOnInterrupted = 0;   // apanhar conjurando
+	[Export] public float PressureOnShieldAbsorb = 0;  // shield absorveu (Absorbed50/100)
 
 	// -------- UI / Events --------
 	public event Action<ElementType> ElementActivated;
 	public event Action ElementsCleared;
-
+	private TugManager _tug;
 	/// <summary>Momento em que o cast foi "liberado" (release). Bom pra tocar animação one-shot.</summary>
 	public event Action CastStarted;
 
@@ -68,6 +78,13 @@ public partial class ElementController : Node
 		_vfxPlayer = GetNodeOrNull<VfxPlayer>(VfxPlayerPath);
 
 		_mage = GetTree().GetFirstNodeInGroup(MageGroupName) as Mage;
+		
+		_tug = !TugManagerPath.IsEmpty
+	? GetNodeOrNull<TugManager>(TugManagerPath)
+	: GetTree().GetFirstNodeInGroup(TugManagerGroup) as TugManager;
+
+		if (_tug == null)
+			GD.PushWarning("[ElementController] TugManager não encontrado (set TugManagerPath ou coloque no group 'tug_manager').");
 		if (_mage != null)
 			_mage.TookHit += OnMageTookHit;
 
@@ -284,10 +301,29 @@ public partial class ElementController : Node
 				}
 
 				var outcome = castTarget.TakeSpellHit(castSpell);
+				if (_tug != null)
+				{
+					switch (outcome)
+					{
+						case CastOutcome.Hit:
+							_tug.Push(TugOnSpellHit, $"hit {castSpell.Id}");
+							break;
 
+						case CastOutcome.Miss:
+							_tug.Push(TugOnSpellMiss, $"miss {castSpell.Id}");
+							break;
+
+						case CastOutcome.Absorbed50:
+						case CastOutcome.Absorbed100:
+							_tug.Push(TugOnShieldAbsorb, $"absorbed {castSpell.Id}");
+							break;
+
+						// Blocked / Cancelled etc: você decide se quer empurrar ou ignorar
+					}
+				}	
 				// Pressure: shield absorveu
 				if (_mage != null && (outcome == CastOutcome.Absorbed50 || outcome == CastOutcome.Absorbed100))
-					_mage.AddPressure(PressureOnShieldAbsorb, "shield absorbed spell");
+					//_mage.AddPressure(PressureOnShieldAbsorb, "shield absorbed spell");
 
 				GetDamagePopupManager()?.ShowFromOutcome(castTarget, castSpell, outcome);
 				EmitResolved(outcome, castSpell, castTarget);
@@ -299,9 +335,28 @@ public partial class ElementController : Node
 
 		// instantâneo (sem timing de impacto)
 		var instantOutcome = target.TakeSpellHit(spell);
+		if (_tug != null)
+			{
+				switch (instantOutcome)
+				{
+					case CastOutcome.Hit:
+						_tug.Push(TugOnSpellHit, $"hit {spell.Id}");
+						break;
 
+					case CastOutcome.Miss:
+						_tug.Push(TugOnSpellMiss, $"miss {spell.Id}");
+						break;
+
+					case CastOutcome.Absorbed50:
+					case CastOutcome.Absorbed100:
+						_tug.Push(TugOnShieldAbsorb, $"absorbed {spell.Id}");
+						break;
+
+					// Blocked / Cancelled etc: você decide se quer empurrar ou ignorar
+				}
+			}
 		if (_mage != null && (instantOutcome == CastOutcome.Absorbed50 || instantOutcome == CastOutcome.Absorbed100))
-			_mage.AddPressure(PressureOnShieldAbsorb, "shield absorbed spell");
+			//_mage.AddPressure(PressureOnShieldAbsorb, "shield absorbed spell");
 
 		EmitResolved(instantOutcome, spell, target);
 	}
@@ -314,9 +369,9 @@ public partial class ElementController : Node
 		GD.Print($"[ElementController] INTERRUPTED by hit ({damage}). Dual cast fails -> pressure++");
 
 		CancelChannel();
-
+		_tug?.Push(TugOnInterrupted, "hit while channeling");
 		if (_mage != null)
-			_mage.AddPressure(PressureOnInterrupted, "hit while channeling");
+			//_mage.AddPressure(PressureOnInterrupted, "hit while channeling");
 
 		// punição: perde runas
 		ResetActiveElements();
