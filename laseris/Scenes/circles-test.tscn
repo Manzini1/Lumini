@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3 uid="uid://dp14wc1lq0jwm"]
+
+[ext_resource type="SpriteFrames" uid="uid://b3f43p8fr1lwp" path="res://Data/Shields/shield_circle_bank.tres" id="1_5vanh"]
+
+[node name="Node2D" type="Node2D"]
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+sprite_frames = ExtResource("1_5vanh")
+animation = &"fire"
+frame_progress = 0.60469323

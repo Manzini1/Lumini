@@ -210,7 +210,7 @@ public partial class ElementController : Node
 		{
 			// -------- SINGLE (instant) --------
 			CastStarted?.Invoke();
-			_sfxPlayer?.PlaySpell(spell);
+			_sfxPlayer?.PlaySpell(spell, SpellSfxCue.Release);
 
 			var vfx = _vfxPlayer?.PlaySpell(spell);
 
@@ -272,7 +272,7 @@ public partial class ElementController : Node
 		// momento do release -> animação cast one-shot
 		CastStarted?.Invoke();
 
-		_sfxPlayer?.PlaySpell(spell);
+		_sfxPlayer?.PlaySpell(spell, SpellSfxCue.Release);
 		var vfx = _vfxPlayer?.PlaySpell(spell);
 
 		// limpa runas APÓS soltar
@@ -299,7 +299,7 @@ public partial class ElementController : Node
 					EmitResolved(CastOutcome.CancelledNoTarget, castSpell, null);
 					return;
 				}
-
+				_sfxPlayer?.PlaySpell(castSpell, SpellSfxCue.Impact);
 				var outcome = castTarget.TakeSpellHit(castSpell);
 				if (_tug != null)
 				{

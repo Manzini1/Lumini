@@ -1,4 +1,5 @@
 using Godot;
+using System;
 using System.Collections.Generic;
 
 public partial class TargetController : Node
@@ -9,7 +10,7 @@ public partial class TargetController : Node
 	private readonly List<Enemy> _enemies = new();
 	private int _currentIndex = -1;
 
-	private bool _tabDownLastFrame = false;
+	public event Action<Enemy> TargetChanged;
 
 	public Enemy CurrentTarget =>
 		(_currentIndex >= 0 && _currentIndex < _enemies.Count)
@@ -19,7 +20,8 @@ public partial class TargetController : Node
 	public override void _Ready()
 	{
 		GD.Print("TargetController iniciado");
-		
+		AddToGroup("target_controller");
+
 		GetTree().NodeAdded += OnNodeAdded;
 		GetTree().NodeRemoved += OnNodeRemoved;
 
@@ -39,15 +41,14 @@ public partial class TargetController : Node
 
 		_enemies.Clear();
 		_currentIndex = -1;
+		TargetChanged?.Invoke(null);
 	}
 
 	public override void _Process(double delta)
 	{
-		// TAB: just pressed manual
-		bool tabDown = Input.IsActionPressed(NextTargetAction);
-		if (tabDown && !_tabDownLastFrame)
+		// mais confiável que “tabDownLastFrame”
+		if (Input.IsActionJustPressed(NextTargetAction))
 			SelectNext();
-		_tabDownLastFrame = tabDown;
 	}
 
 	public override void _UnhandledInput(InputEvent @event)
@@ -59,7 +60,7 @@ public partial class TargetController : Node
 		TryPickEnemyUnderMouse();
 	}
 
-	// --------- Scan inicial ---------
+	// -------------------- Scan inicial --------------------
 
 	private void InitialScan()
 	{
@@ -69,16 +70,23 @@ public partial class TargetController : Node
 		foreach (Node n in GetTree().GetNodesInGroup(EnemyGroupName))
 		{
 			if (n is Enemy e && IsValidEnemy(e))
-				AddEnemy(e);
+			{
+				_enemies.Add(e);
+				SubscribeEnemySignals(e);
+			}
 		}
+
+		SortEnemiesKeepCurrent();
 
 		GD.Print($"Inimigos encontrados: {_enemies.Count}");
 
 		if (_enemies.Count > 0)
 			SelectIndex(0);
+		else
+			TargetChanged?.Invoke(null);
 	}
 
-	// --------- Spawn/Despawn ---------
+	// -------------------- Spawn/Despawn --------------------
 
 	private void OnNodeAdded(Node n)
 	{
@@ -93,24 +101,21 @@ public partial class TargetController : Node
 		if (!IsValidEnemy(e)) return;
 		if (_enemies.Contains(e)) return;
 
-		AddEnemy(e);
+		_enemies.Add(e);
+		SubscribeEnemySignals(e);
+
+		SortEnemiesKeepCurrent();
+
+		GD.Print($"Enemy registrado: {e.Name} (total: {_enemies.Count})");
 
 		if (CurrentTarget == null)
-			SelectIndex(0);
+			SelectIndex(0); // SelectIndex dispara TargetChanged
 	}
 
 	private void OnNodeRemoved(Node n)
 	{
 		if (n is Enemy e)
 			RemoveEnemy(e);
-	}
-
-	private void AddEnemy(Enemy e)
-	{
-		_enemies.Add(e);
-		SubscribeEnemySignals(e);
-
-		GD.Print($"Enemy registrado: {e.Name} (total: {_enemies.Count})");
 	}
 
 	private void RemoveEnemy(Enemy e)
@@ -129,12 +134,17 @@ public partial class TargetController : Node
 		if (_enemies.Count == 0)
 		{
 			_currentIndex = -1;
+			TargetChanged?.Invoke(null);
 			return;
 		}
 
+		// ajusta índice se removeu antes do atual
 		if (idx < _currentIndex)
 			_currentIndex--;
 
+		SortEnemiesKeepCurrent();
+
+		// se removeu o selecionado, escolhe o “mesmo índice” (clamp)
 		if (wasSelected)
 		{
 			_currentIndex = Mathf.Clamp(_currentIndex, 0, _enemies.Count - 1);
@@ -142,14 +152,29 @@ public partial class TargetController : Node
 		}
 	}
 
-	// --------- Mouse picking (raycast point) ---------
+	// -------------------- Ordenação determinística --------------------
+
+	private void SortEnemiesKeepCurrent()
+	{
+		var current = CurrentTarget;
+
+		_enemies.Sort((a, b) =>
+		{
+			if (a == null || b == null) return 0;
+
+			// ordem determinística: esquerda -> direita
+			// (se quiser “direita -> esquerda”, inverte CompareTo)
+			return a.GlobalPosition.X.CompareTo(b.GlobalPosition.X);
+		});
+
+		_currentIndex = current != null ? _enemies.IndexOf(current) : (_enemies.Count > 0 ? 0 : -1);
+	}
+
+	// -------------------- Mouse picking --------------------
 
 	private void TryPickEnemyUnderMouse()
 	{
-		// posição do mouse na viewport (screen)
 		Vector2 mousePos = GetViewport().GetMousePosition();
-
-		// converte para world (2D) usando o canvas transform
 		Vector2 worldPos = GetViewport().GetCanvasTransform().AffineInverse() * mousePos;
 
 		var world2D = GetViewport().World2D;
@@ -171,13 +196,11 @@ public partial class TargetController : Node
 			if (!hit.ContainsKey("collider"))
 				continue;
 
-			// ✅ Godot 4: valores do Dictionary são Variant
 			Variant colliderVar = (Variant)hit["collider"];
 			GodotObject colliderObj = colliderVar.AsGodotObject();
 
 			if (colliderObj is Area2D area)
 			{
-				// padrão: Enemy -> ClickArea (Area2D)
 				Enemy enemy = area.GetParent() as Enemy;
 
 				if (enemy != null && IsValidEnemy(enemy))
@@ -196,7 +219,7 @@ public partial class TargetController : Node
 		SelectIndex(idx);
 	}
 
-	// --------- Seleção / Highlight ---------
+	// -------------------- Seleção --------------------
 
 	private void SelectNext()
 	{
@@ -204,8 +227,12 @@ public partial class TargetController : Node
 		{
 			GD.Print("Nenhum inimigo encontrado!");
 			_currentIndex = -1;
+			TargetChanged?.Invoke(null);
 			return;
 		}
+
+		// garante ordem atualizada antes de avançar
+		SortEnemiesKeepCurrent();
 
 		int nextIndex = _currentIndex + 1;
 		if (nextIndex >= _enemies.Count) nextIndex = 0;
@@ -218,12 +245,12 @@ public partial class TargetController : Node
 		if (_enemies.Count == 0)
 		{
 			_currentIndex = -1;
+			TargetChanged?.Invoke(null);
 			return;
 		}
 
 		index = Mathf.Clamp(index, 0, _enemies.Count - 1);
 
-		// desmarca anterior antes de mudar índice
 		var previous = CurrentTarget;
 		if (previous != null && IsValidEnemy(previous))
 			previous.SetSelected(false);
@@ -235,6 +262,7 @@ public partial class TargetController : Node
 		{
 			current.SetSelected(true);
 			GD.Print($"Alvo atual: {current.Name}");
+			TargetChanged?.Invoke(current);
 		}
 		else
 		{
@@ -249,6 +277,7 @@ public partial class TargetController : Node
 		if (_enemies.Count == 0)
 		{
 			_currentIndex = -1;
+			TargetChanged?.Invoke(null);
 			return;
 		}
 
@@ -268,7 +297,7 @@ public partial class TargetController : Node
 		}
 	}
 
-	// --------- Eventos do Enemy ---------
+	// -------------------- Eventos do Enemy --------------------
 
 	private void SubscribeEnemySignals(Enemy e)
 	{
@@ -307,7 +336,7 @@ public partial class TargetController : Node
 		}
 	}
 
-	// --------- Validação ---------
+	// -------------------- Validação --------------------
 
 	private bool IsValidEnemy(Enemy e)
 	{

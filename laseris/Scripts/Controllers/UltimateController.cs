@@ -212,7 +212,7 @@ public partial class UltimateController : Node
 			targeting: UltimateTargeting
 		);
 
-		_sfxPlayer?.PlaySpell(spell);
+		_sfxPlayer?.PlaySpell(spell, SpellSfxCue.Release);
 		_vfxPlayer?.PlaySpell(spell);
 
 		// ✅ FIX DEFINITIVO

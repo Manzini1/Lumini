@@ -1,0 +1,12 @@
+[gd_scene load_steps=3 format=3 uid="uid://c47vuenj2kwlr"]
+
+[ext_resource type="Script" uid="uid://drq573gmw5bei" path="res://Scenes/SelectionCircleManager.cs" id="1_qa4um"]
+[ext_resource type="SpriteFrames" uid="uid://b3f43p8fr1lwp" path="res://Data/Shields/shield_circle_bank.tres" id="2_rt8f0"]
+
+[node name="SelectionCircle" type="Node2D"]
+script = ExtResource("1_qa4um")
+Frames = ExtResource("2_rt8f0")
+CircleScale = 1.5
+
+[node name="Circle" type="AnimatedSprite2D" parent="."]
+animation = &"water"

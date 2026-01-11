@@ -6,6 +6,7 @@ public partial class Enemy : Node2D
 {
 	[ExportCategory("Data (opcional)")]
 	[Export] public EnemyData Data;
+public int SlotIndex { get; set; } = -1;
 
 	[ExportCategory("Fallback (se Data = null)")]
 	[Export] public int MaxHp = 1000;
@@ -14,17 +15,55 @@ public partial class Enemy : Node2D
 	public int Hp { get; private set; }
 	public bool IsDead => Hp <= 0;
 
+	public bool IsSelected { get; private set; } = false;
 	public ShieldController Shield { get; private set; } // esperado existir como filho
 
 	private Sprite2D _sprite;
 
-	// clique (opcional)
 	public Area2D ClickArea { get; private set; }
 
-	private bool _selected = false;
+	// ✅ bom pra visuais (shield/círculo) ouvirem sem polling
+	public event Action<Enemy, bool> SelectedChanged;
 
 	[Signal] public delegate void DiedEventHandler(Enemy who);
 	[Signal] public delegate void HpChangedEventHandler(Enemy who, int hp, int maxHp);
+// =========================================================
+// STUN (para Tug / controle de turnos)
+// =========================================================
+[ExportCategory("Stun")]
+[Export] public float DefaultStunSeconds = 1.5f;
+
+public bool IsStunned { get; private set; } = false;
+public event Action<bool> StunChanged;
+
+private bool _stunRunning = false;
+
+public void ForceStun(float seconds, string reason = "")
+{
+	_ = TriggerStun(seconds, reason);
+}
+
+private async System.Threading.Tasks.Task TriggerStun(float seconds, string reason = "")
+{
+	if (_stunRunning) return;
+	_stunRunning = true;
+
+	IsStunned = true;
+	StunChanged?.Invoke(true);
+
+	float stunDur = Mathf.Max(0.05f, seconds);
+
+	if (!string.IsNullOrWhiteSpace(reason))
+		GD.Print($"[Enemy][Stun] {Name} stunned for {stunDur:0.00}s reason={reason}");
+
+	// (por enquanto só trava estado; depois você pode plugar VFX / AI pause aqui)
+	await ToSignal(GetTree().CreateTimer(stunDur), SceneTreeTimer.SignalName.Timeout);
+
+	IsStunned = false;
+	StunChanged?.Invoke(false);
+
+	_stunRunning = false;
+}
 
 	public override void _Ready()
 	{
@@ -37,7 +76,6 @@ public partial class Enemy : Node2D
 			return;
 		}
 
-		// ShieldController (obrigatório na cena Enemy.tscn)
 		Shield = GetNodeOrNull<ShieldController>("ShieldController");
 		if (Shield == null)
 			GD.PushError($"{Name}: não encontrei 'ShieldController' como filho. Adicione o node na cena Enemy.tscn.");
@@ -49,33 +87,10 @@ public partial class Enemy : Node2D
 		Hp = MaxHp;
 		GD.Print($"{Name} spawned with HP {Hp}/{MaxHp}");
 		EmitSignal(SignalName.HpChanged, this, Hp, MaxHp);
+
+		UpdateHighlight();
 	}
-[ExportCategory("Stun")]
-[Export] public float StunSecondsDefault = 1.5f;
 
-public bool IsStunned { get; private set; }
-
-public void ForceStun(float seconds, string reason = "")
-{
-	_ = DoStun(Mathf.Max(0.05f, seconds), reason);
-}
-
-private bool _stunRunning = false;
-
-private async System.Threading.Tasks.Task DoStun(float seconds, string reason)
-{
-	if (_stunRunning) return;
-	_stunRunning = true;
-
-	IsStunned = true;
-	// aqui depois você pode: tocar anim, shader, etc
-	// GD.Print($"[Enemy] STUN {seconds:0.00}s reason={reason}");
-
-	await ToSignal(GetTree().CreateTimer(seconds), SceneTreeTimer.SignalName.Timeout);
-
-	IsStunned = false;
-	_stunRunning = false;
-}
 	public void ApplyData(EnemyData data)
 	{
 		Data = data;
@@ -95,14 +110,14 @@ private async System.Threading.Tasks.Task DoStun(float seconds, string reason)
 
 	public void SetSelected(bool selected)
 	{
-		_selected = selected;
+		if (IsSelected == selected) return;
+
+		IsSelected = selected;
 		UpdateHighlight();
+
+		SelectedChanged?.Invoke(this, selected);
 	}
 
-	/// <summary>
-	/// Resolve a magia (miss/hit/absorbed) e DISPARA VFX via ShieldController.NotifySpellResolved().
-	/// O dano/curar acontece aqui (como você já fazia).
-	/// </summary>
 	public CastOutcome TakeSpellHit(SpellDefinition spell)
 	{
 		if (spell == null)
@@ -124,7 +139,6 @@ private async System.Threading.Tasks.Task DoStun(float seconds, string reason)
 			return CastOutcome.Miss;
 		}
 
-		// ---------- Shield absorb/heal ----------
 		float healRatio = GetShieldHealRatio(spell.Elements);
 
 		if (healRatio > 0f)
@@ -139,7 +153,6 @@ private async System.Threading.Tasks.Task DoStun(float seconds, string reason)
 			return outcome;
 		}
 
-		// ---------- Hit normal ----------
 		TakeDamage(spell.Damage);
 		_ = HitFlashRed();
 
@@ -151,11 +164,7 @@ private async System.Threading.Tasks.Task DoStun(float seconds, string reason)
 
 	private void NotifyShieldResolved(SpellDefinition spell, CastOutcome outcome)
 	{
-		// ShieldController decide VFX/refresh/etc.
-		// Mesmo em miss/blocked a gente pode querer VFX (ex: “shield shimmer” ou “whiff”)
 		if (Shield == null) return;
-
-		// Se sua assinatura for diferente, me manda o ShieldController.cs que eu ajusto.
 		Shield.NotifySpellResolved(spell, outcome);
 	}
 
@@ -200,17 +209,13 @@ private async System.Threading.Tasks.Task DoStun(float seconds, string reason)
 
 		for (int i = 0; i < castElements.Count; i++)
 		{
-			// Shield.Active deve ser algo como List/Array de ElementType
 			if (Shield.Active.Contains(castElements[i]))
 				matches++;
 		}
 
 		if (matches == 0) return 0f;
 
-		// se a spell tem 2 elementos e ambos bateram => cura 100%
 		if (castElements.Count >= 2 && matches >= 2) return 1.0f;
-
-		// se bateu pelo menos 1 => cura 50%
 		return 0.5f;
 	}
 
@@ -233,8 +238,7 @@ private async System.Threading.Tasks.Task DoStun(float seconds, string reason)
 
 	private Color GetBaseModulateForCurrentState()
 	{
-		if (_selected) return new Color(1.25f, 1.25f, 1.25f, 1f);
-		return Colors.White;
+		return IsSelected ? new Color(1.25f, 1.25f, 1.25f, 1f) : Colors.White;
 	}
 
 	private void UpdateHighlight()
