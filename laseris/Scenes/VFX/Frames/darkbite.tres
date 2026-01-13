@@ -1,0 +1,42 @@
+[gd_resource type="SpriteFrames" load_steps=6 format=3 uid="uid://qqvw5h07m6p8"]
+
+[ext_resource type="Texture2D" uid="uid://cu4s5qw6tkodv" path="res://Sprites/Spells/darkbite.png" id="1_5h347"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_1oltx"]
+atlas = ExtResource("1_5h347")
+region = Rect2(128, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ax8os"]
+atlas = ExtResource("1_5h347")
+region = Rect2(0, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_let7x"]
+atlas = ExtResource("1_5h347")
+region = Rect2(128, 128, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_gc5n5"]
+atlas = ExtResource("1_5h347")
+region = Rect2(0, 128, 128, 128)
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_1oltx")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ax8os")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_let7x")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_1oltx")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_gc5n5")
+}],
+"loop": false,
+"name": &"default",
+"speed": 7.0
+}]

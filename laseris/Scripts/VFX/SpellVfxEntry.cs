@@ -57,11 +57,37 @@ public partial class SpellVfxEntry : Resource
 	//  0  => dano quase imediato (seguro via deferred/frame no script)
 	// >0  => dano depois desse tempo
 	// -1  => dano no fim da animação (AnimationFinished)
+	// ============================================================
+// Between Caster/Target Spawn (Whip / Beam / etc.)
+// ============================================================
+	[ExportCategory("Between Spawn (Caster -> Target)")]
+	[Export] public bool UseBetweenSpawn = false;
+
+	// 0=caster, 1=target, 0.5=meio do caminho
+	[Export(PropertyHint.Range, "0,1,0.01")]
+	public float BetweenT = 0.5f;
+
+	// Offset no espaço da linha:
+	// X = ao longo da linha (positivo vai pro alvo; negativo vai pro caster)
+	// Y = perpendicular (positivo “sobe” dependendo do ângulo)
+	[Export] public Vector2 BetweenOffsetLocal = Vector2.Zero;
+
+	// Se true, ancora no chão do alvo (TargetGroundMarkerName) mas calcula X pelo Between
+	[Export] public bool BetweenUseTargetGroundY = false;
+	// ============================================================
+	// Beam Timing (quando o dano acontece)  ✅ NOVO (pro BeamSpellVfx)
+	// ============================================================
+	[ExportCategory("Beam Timing")]
+	[Export(PropertyHint.Range, "0,10,0.01")]
+	public float BeamImpactDelaySeconds = 0.0f;
+	//  0  => dano imediato
+	// >0  => dano depois desse tempo (pra sincronizar com efeito/flash)
+	// Obs: separado do DamageDelaySeconds porque Beam e TargetInstant têm lógicas diferentes.
 
 	// ============================================================
-	// Impact Override (ProjectileSpellVfx)
+	// Impact Override (ProjectileSpellVfx / BeamSpellVfx)
 	// ============================================================
-	[ExportCategory("Impact Override (ProjectileSpellVfx)")]
+	[ExportCategory("Impact Override (ProjectileSpellVfx / BeamSpellVfx)")]
 	[Export] public bool UseCustomImpact = false;
 
 	[Export] public PackedScene ImpactScene;       // se null, cai no default do script

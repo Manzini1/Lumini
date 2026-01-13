@@ -36,14 +36,14 @@ public static class SpellResolver
 			var e = castElements[0];
 			return e switch
 			{
-				ElementType.Earth => new SpellDefinition("spell_earth", "Stone Spike", castElements, 20, SpellTargeting.Ground),
-				ElementType.Air => new SpellDefinition("spell_air", "Gust Shot", castElements, 20, SpellTargeting.Air),
+				ElementType.Earth => new SpellDefinition("earth", "Stone Spike", castElements, 20, SpellTargeting.Ground),
+				ElementType.Air => new SpellDefinition("air", "Gust Shot", castElements, 20, SpellTargeting.Air),
 				ElementType.Fire => new SpellDefinition("fireball", "Fire Bolt", castElements, 20, SpellTargeting.Both),
-				ElementType.Ice => new SpellDefinition("spell_ice", "Ice Shard", castElements, 20, SpellTargeting.Both),
-				ElementType.Lightning => new SpellDefinition("spell_lightning", "Arc Zap", castElements, 20, SpellTargeting.Both),
-				ElementType.Poison => new SpellDefinition("spell_poison", "Toxic Dart", castElements, 20, SpellTargeting.Both),
-				ElementType.Light => new SpellDefinition("spell_light", "Radiant Ray", castElements, 20, SpellTargeting.Both),
-				ElementType.Shadow => new SpellDefinition("spell_shadow", "Shadow Needle", castElements, 20, SpellTargeting.Both),
+				ElementType.Ice => new SpellDefinition("ice", "Ice Shard", castElements, 20, SpellTargeting.Both),
+				ElementType.Lightning => new SpellDefinition("lightning", "Arc Zap", castElements, 20, SpellTargeting.Both),
+				ElementType.Poison => new SpellDefinition("poison", "Toxic Dart", castElements, 20, SpellTargeting.Both),
+				ElementType.Light => new SpellDefinition("light", "Radiant Ray", castElements, 20, SpellTargeting.Both),
+				ElementType.Shadow => new SpellDefinition("shadow", "Shadow Needle", castElements, 20, SpellTargeting.Both),
 				_ => new SpellDefinition("spell_unknown", "Mystic Hit", castElements, 20, SpellTargeting.Both)
 			};
 		}

@@ -1,0 +1,14 @@
+[gd_resource type="SpriteFrames" load_steps=2 format=3 uid="uid://da0jo0ypaoe7d"]
+
+[ext_resource type="Texture2D" uid="uid://dctiwntw72joc" path="res://Sprites/Spells/download (1).png" id="1_b3fs8"]
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_b3fs8")
+}],
+"loop": false,
+"name": &"play",
+"speed": 9.0
+}]

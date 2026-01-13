@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cm2dkw85qqjpf"
-path="res://.godot/imported/elements.png-80660d140eff65e30395a60b47d8afe3.ctex"
+uid="uid://dyo00y6egaxc5"
+path="res://.godot/imported/whip2.png-a8091db03a79f66161cb89d234175b74.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Sprites/elements.png"
-dest_files=["res://.godot/imported/elements.png-80660d140eff65e30395a60b47d8afe3.ctex"]
+source_file="res://Sprites/Spells/whip2.png"
+dest_files=["res://.godot/imported/whip2.png-a8091db03a79f66161cb89d234175b74.ctex"]
 
 [params]
 

@@ -1,0 +1,39 @@
+[gd_resource type="SpriteFrames" load_steps=6 format=3 uid="uid://m1p8dld7llnu"]
+
+[ext_resource type="Texture2D" uid="uid://ciidol14qb2m6" path="res://Sprites/Spells/fire_wave.png" id="1_sg5fr"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_a8nig"]
+atlas = ExtResource("1_sg5fr")
+region = Rect2(0, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_8gf3b"]
+atlas = ExtResource("1_sg5fr")
+region = Rect2(128, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_e875f"]
+atlas = ExtResource("1_sg5fr")
+region = Rect2(0, 128, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_sv80e"]
+atlas = ExtResource("1_sg5fr")
+region = Rect2(128, 128, 128, 128)
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_a8nig")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_8gf3b")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_e875f")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_sv80e")
+}],
+"loop": true,
+"name": &"default",
+"speed": 3.0
+}]

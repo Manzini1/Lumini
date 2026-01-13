@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://dp14wc1lq0jwm"]
+[gd_scene load_steps=3 format=3 uid="uid://dp14wc1lq0jwm"]
 
 [ext_resource type="SpriteFrames" uid="uid://b3f43p8fr1lwp" path="res://Data/Shields/shield_circle_bank.tres" id="1_5vanh"]
+[ext_resource type="SpriteFrames" uid="uid://ikvg77mh6p2v" path="res://Scenes/VFX/Frames/light.tres" id="2_3h1ca"]
 
 [node name="Node2D" type="Node2D"]
 
@@ -8,3 +9,9 @@
 sprite_frames = ExtResource("1_5vanh")
 animation = &"fire"
 frame_progress = 0.60469323
+
+[node name="AnimatedSprite2D2" type="AnimatedSprite2D" parent="."]
+position = Vector2(208, 72)
+sprite_frames = ExtResource("2_3h1ca")
+frame = 3
+frame_progress = 1.0

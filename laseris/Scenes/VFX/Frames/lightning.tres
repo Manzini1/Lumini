@@ -1,0 +1,25 @@
+[gd_resource type="SpriteFrames" load_steps=4 format=3 uid="uid://b6fn4m0pduev8"]
+
+[ext_resource type="Texture2D" uid="uid://b7f5htv18231o" path="res://Sprites/Spells/lightningsheet.png" id="1_siiwf"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_x7x68"]
+atlas = ExtResource("1_siiwf")
+region = Rect2(0, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_rl6vy"]
+atlas = ExtResource("1_siiwf")
+region = Rect2(128, 0, 128, 128)
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_x7x68")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_rl6vy")
+}],
+"loop": false,
+"name": &"default",
+"speed": 26.0
+}]

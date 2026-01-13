@@ -1,0 +1,45 @@
+[gd_scene load_steps=7 format=3 uid="uid://dyaurh5cdhvci"]
+
+[ext_resource type="Texture2D" uid="uid://ciidol14qb2m6" path="res://Sprites/Spells/fire_wave.png" id="1_73oji"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_gregu"]
+atlas = ExtResource("1_73oji")
+region = Rect2(0, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_qsv8u"]
+atlas = ExtResource("1_73oji")
+region = Rect2(128, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_kgtyj"]
+atlas = ExtResource("1_73oji")
+region = Rect2(0, 128, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_4yyi3"]
+atlas = ExtResource("1_73oji")
+region = Rect2(128, 128, 128, 128)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_xdfro"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_gregu")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_qsv8u")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_kgtyj")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_4yyi3")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}]
+
+[node name="Fire_ball" type="Node2D"]
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+sprite_frames = SubResource("SpriteFrames_xdfro")
+frame_progress = 0.20534068

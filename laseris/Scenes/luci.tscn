@@ -1,0 +1,79 @@
+[gd_scene load_steps=12 format=3 uid="uid://xq6edaf7vgxy"]
+
+[ext_resource type="Texture2D" uid="uid://cmvy26dfrljgq" path="res://Sprites/Characters/luci/sittingdown.png" id="1_dm63i"]
+[ext_resource type="Texture2D" uid="uid://dfneuh64fvktg" path="res://Sprites/Characters/luci/sleep.png" id="2_l6eq0"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_l6eq0"]
+atlas = ExtResource("1_dm63i")
+region = Rect2(0, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_4cy0v"]
+atlas = ExtResource("1_dm63i")
+region = Rect2(128, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_632d7"]
+atlas = ExtResource("1_dm63i")
+region = Rect2(0, 128, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_i4646"]
+atlas = ExtResource("1_dm63i")
+region = Rect2(128, 128, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_grh6e"]
+atlas = ExtResource("2_l6eq0")
+region = Rect2(0, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_yi3ql"]
+atlas = ExtResource("2_l6eq0")
+region = Rect2(128, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_04ph4"]
+atlas = ExtResource("2_l6eq0")
+region = Rect2(0, 128, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_su4hy"]
+atlas = ExtResource("2_l6eq0")
+region = Rect2(128, 128, 128, 128)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_grh6e"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_l6eq0")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_4cy0v")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_632d7")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_i4646")
+}],
+"loop": false,
+"name": &"Anim1",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_grh6e")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_yi3ql")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_04ph4")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_su4hy")
+}],
+"loop": true,
+"name": &"Anim2",
+"speed": 2.0
+}]
+
+[node name="Luci" type="Node2D"]
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+sprite_frames = SubResource("SpriteFrames_grh6e")
+animation = &"Anim2"

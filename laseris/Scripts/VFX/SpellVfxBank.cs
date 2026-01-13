@@ -15,7 +15,7 @@ public partial class SpellVfxBank : Resource
 		spellId = spellId.Trim();
 		return _map.TryGetValue(spellId, out var e) ? e : null;
 	}
-
+ 
 	private void EnsureMap()
 	{
 		if (_map != null) return;
