@@ -6,7 +6,6 @@ public partial class Enemy : Node2D
 {
 	[ExportCategory("Data (opcional)")]
 	[Export] public EnemyData Data;
-public int SlotIndex { get; set; } = -1;
 
 	[ExportCategory("Fallback (se Data = null)")]
 	[Export] public int MaxHp = 1000;
@@ -14,56 +13,15 @@ public int SlotIndex { get; set; } = -1;
 
 	public int Hp { get; private set; }
 	public bool IsDead => Hp <= 0;
-
 	public bool IsSelected { get; private set; } = false;
-	public ShieldController Shield { get; private set; } // esperado existir como filho
+
+	public ShieldController Shield { get; private set; }
 
 	private Sprite2D _sprite;
-
-	public Area2D ClickArea { get; private set; }
-
-	// ✅ bom pra visuais (shield/círculo) ouvirem sem polling
-	public event Action<Enemy, bool> SelectedChanged;
+	private bool _selected = false;
 
 	[Signal] public delegate void DiedEventHandler(Enemy who);
 	[Signal] public delegate void HpChangedEventHandler(Enemy who, int hp, int maxHp);
-// =========================================================
-// STUN (para Tug / controle de turnos)
-// =========================================================
-[ExportCategory("Stun")]
-[Export] public float DefaultStunSeconds = 1.5f;
-
-public bool IsStunned { get; private set; } = false;
-public event Action<bool> StunChanged;
-
-private bool _stunRunning = false;
-
-public void ForceStun(float seconds, string reason = "")
-{
-	_ = TriggerStun(seconds, reason);
-}
-
-private async System.Threading.Tasks.Task TriggerStun(float seconds, string reason = "")
-{
-	if (_stunRunning) return;
-	_stunRunning = true;
-
-	IsStunned = true;
-	StunChanged?.Invoke(true);
-
-	float stunDur = Mathf.Max(0.05f, seconds);
-
-	if (!string.IsNullOrWhiteSpace(reason))
-		GD.Print($"[Enemy][Stun] {Name} stunned for {stunDur:0.00}s reason={reason}");
-
-	// (por enquanto só trava estado; depois você pode plugar VFX / AI pause aqui)
-	await ToSignal(GetTree().CreateTimer(stunDur), SceneTreeTimer.SignalName.Timeout);
-
-	IsStunned = false;
-	StunChanged?.Invoke(false);
-
-	_stunRunning = false;
-}
 
 	public override void _Ready()
 	{
@@ -78,17 +36,13 @@ private async System.Threading.Tasks.Task TriggerStun(float seconds, string reas
 
 		Shield = GetNodeOrNull<ShieldController>("ShieldController");
 		if (Shield == null)
-			GD.PushError($"{Name}: não encontrei 'ShieldController' como filho. Adicione o node na cena Enemy.tscn.");
-
-		ClickArea = GetNodeOrNull<Area2D>("ClickArea");
+			GD.PushError($"{Name}: não encontrei 'ShieldController' como filho.");
 
 		ApplyDataIfAny();
 
 		Hp = MaxHp;
 		GD.Print($"{Name} spawned with HP {Hp}/{MaxHp}");
 		EmitSignal(SignalName.HpChanged, this, Hp, MaxHp);
-
-		UpdateHighlight();
 	}
 
 	public void ApplyData(EnemyData data)
@@ -110,14 +64,14 @@ private async System.Threading.Tasks.Task TriggerStun(float seconds, string reas
 
 	public void SetSelected(bool selected)
 	{
-		if (IsSelected == selected) return;
-
 		IsSelected = selected;
+		_selected = selected;
 		UpdateHighlight();
-
-		SelectedChanged?.Invoke(this, selected);
 	}
 
+	// =========================================================
+	// ✅ REINTRODUZIDO: usado pelo ElementController (compilação)
+	// =========================================================
 	public CastOutcome TakeSpellHit(SpellDefinition spell)
 	{
 		if (spell == null)
@@ -139,6 +93,7 @@ private async System.Threading.Tasks.Task TriggerStun(float seconds, string reas
 			return CastOutcome.Miss;
 		}
 
+		// Shield absorb/heal
 		float healRatio = GetShieldHealRatio(spell.Elements);
 
 		if (healRatio > 0f)
@@ -146,17 +101,14 @@ private async System.Threading.Tasks.Task TriggerStun(float seconds, string reas
 			int heal = Mathf.RoundToInt(spell.Damage * healRatio);
 			Heal(heal);
 
-			GD.Print($"{Name} ABSORVEU ({FormatElements(spell.Elements)}) e curou {heal} (ratio {healRatio}). HP: {Hp}/{MaxHp}");
-
 			var outcome = (healRatio >= 1.0f) ? CastOutcome.Absorbed100 : CastOutcome.Absorbed50;
 			NotifyShieldResolved(spell, outcome);
 			return outcome;
 		}
 
+		// Hit normal
 		TakeDamage(spell.Damage);
 		_ = HitFlashRed();
-
-		GD.Print($"{Name} tomou {spell.Damage} ({spell.PrimaryElement}). HP: {Hp}/{MaxHp}");
 
 		NotifyShieldResolved(spell, CastOutcome.Hit);
 		return CastOutcome.Hit;
@@ -166,6 +118,18 @@ private async System.Threading.Tasks.Task TriggerStun(float seconds, string reas
 	{
 		if (Shield == null) return;
 		Shield.NotifySpellResolved(spell, outcome);
+	}
+
+	// helper pro ritmo (pega o elemento ativo do shield)
+	public ElementType ShieldPrimaryOrFallback()
+	{
+		if (Shield == null || Shield.Active == null || Shield.Active.Count == 0)
+			return ElementType.Fire;
+
+		foreach (var e in Shield.Active)
+			return e;
+
+		return ElementType.Fire;
 	}
 
 	public void TakeDamage(int amount)
@@ -238,7 +202,8 @@ private async System.Threading.Tasks.Task TriggerStun(float seconds, string reas
 
 	private Color GetBaseModulateForCurrentState()
 	{
-		return IsSelected ? new Color(1.25f, 1.25f, 1.25f, 1f) : Colors.White;
+		if (_selected) return new Color(1.25f, 1.25f, 1.25f, 1f);
+		return Colors.White;
 	}
 
 	private void UpdateHighlight()
@@ -249,7 +214,7 @@ private async System.Threading.Tasks.Task TriggerStun(float seconds, string reas
 
 	private void Die()
 	{
-		if (!IsDead) return;
+		if (IsDead == false) return;
 
 		GD.Print($"{Name} morreu!");
 		EmitSignal(SignalName.Died, this);
@@ -269,11 +234,5 @@ private async System.Threading.Tasks.Task TriggerStun(float seconds, string reas
 			}
 		}
 		return null;
-	}
-
-	private static string FormatElements(IReadOnlyList<ElementType> elements)
-	{
-		if (elements == null || elements.Count == 0) return "None";
-		return string.Join(", ", elements);
 	}
 }

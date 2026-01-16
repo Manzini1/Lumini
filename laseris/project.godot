@@ -16,14 +16,14 @@ config/features=PackedStringArray("4.5", "C#", "Forward Plus")
 
 [autoload]
 
-SceneRouter="*res://Scripts/Autoload/SceneRouter.cs"
+SceneRouter="res://Scripts/Autoload/SceneRouter.cs"
 SettingsService="*res://Scripts/Autoload/SettingsService.cs"
 AudioManager="*res://Scripts/Autoload/AudioManager.cs"
-MusicPlayer="*res://Scenes/Autoload/MusicPlayer.tscn"
+MusicPlayer="res://Scenes/Autoload/MusicPlayer.tscn"
 MusicService="*res://Scripts/Autoload/MusicService.cs"
-VfxManager="*res://Scenes/Autoload/vfx_manager.tscn"
-Tug="*res://Scripts/UI/TugManager.cs"
-TugRouter="*res://Scripts/Combat/TugStunRouter.cs"
+VfxManager="res://Scenes/Autoload/vfx_manager.tscn"
+Tug="res://Scripts/UI/TugManager.cs"
+TugRouter="res://Scripts/Combat/TugStunRouter.cs"
 
 [display]
 
@@ -62,7 +62,7 @@ Shadow={
 "events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":85,"key_label":0,"unicode":0,"location":0,"echo":false,"script":null)
 ]
 }
-Air={
+Wind={
 "deadzone": 0.2,
 "events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":73,"key_label":0,"unicode":0,"location":0,"echo":false,"script":null)
 ]
@@ -87,14 +87,14 @@ next_target={
 "events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":4194306,"key_label":0,"unicode":0,"location":0,"echo":false,"script":null)
 ]
 }
-ultimate={
+defend={
 "deadzone": 0.2,
-"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":71,"key_label":0,"unicode":103,"location":0,"echo":false,"script":null)
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":70,"key_label":0,"unicode":70,"location":0,"echo":false,"script":null)
 ]
 }
 physattack={
 "deadzone": 0.2,
-"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":70,"key_label":0,"unicode":102,"location":0,"echo":false,"script":null)
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":71,"key_label":0,"unicode":71,"location":0,"echo":false,"script":null)
 ]
 }
 debug_hit={

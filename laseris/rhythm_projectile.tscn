@@ -1,0 +1,10 @@
+[gd_scene load_steps=3 format=3 uid="uid://2tmenp3pypu5"]
+
+[ext_resource type="Script" uid="uid://ctmx28c2ixoco" path="res://Scripts/Combat/RhythmProjectile.cs" id="1_q8se2"]
+[ext_resource type="Texture2D" uid="uid://pnrjd6elxwqn" path="res://Sprites/Projectiles/fire_arrow.png" id="2_beny0"]
+
+[node name="RhythmProjectile_FireArrow" type="Node2D"]
+script = ExtResource("1_q8se2")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2_beny0")

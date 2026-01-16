@@ -1,0 +1,115 @@
+[gd_scene load_steps=16 format=3 uid="uid://bkqnb7eycpjn4"]
+
+[ext_resource type="Script" uid="uid://br755yc36hova" path="res://Scripts/Actors/EnemyController.cs" id="1_fffn3"]
+[ext_resource type="Texture2D" uid="uid://ba5l0rxdnn740" path="res://Sprites/Monsters/skel_archer.png" id="1_fhlu0"]
+[ext_resource type="Texture2D" uid="uid://c3qyt8rud55yb" path="res://Sprites/Monsters/skel_archer_prepare.png" id="2_x4qfw"]
+[ext_resource type="Texture2D" uid="uid://cg3x7v7x0ir07" path="res://Sprites/Monsters/skel_archer_shoot.png" id="3_twxyo"]
+[ext_resource type="Script" uid="uid://ctukcckg1akcr" path="res://Scripts/Combat/ShieldController.cs" id="6_fffn3"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_fffn3"]
+atlas = ExtResource("1_fhlu0")
+region = Rect2(0, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_p1bnd"]
+atlas = ExtResource("1_fhlu0")
+region = Rect2(128, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_tq0yd"]
+atlas = ExtResource("1_fhlu0")
+region = Rect2(128, 128, 128, 128)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_gkmb3"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_fffn3")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_p1bnd")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_tq0yd")
+}],
+"loop": true,
+"name": &"idle",
+"speed": 4.0
+}]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_twxyo"]
+atlas = ExtResource("2_x4qfw")
+region = Rect2(0, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_gkmb3"]
+atlas = ExtResource("3_twxyo")
+region = Rect2(0, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_3uhkr"]
+atlas = ExtResource("2_x4qfw")
+region = Rect2(128, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_o50p6"]
+atlas = ExtResource("3_twxyo")
+region = Rect2(0, 128, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ee0ce"]
+atlas = ExtResource("3_twxyo")
+region = Rect2(128, 128, 128, 128)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_eumsa"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_twxyo")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_gkmb3")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_3uhkr")
+}],
+"loop": false,
+"name": &"prepare",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_o50p6")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ee0ce")
+}],
+"loop": false,
+"name": &"shoot",
+"speed": 5.0
+}]
+
+[node name="Enemy" type="Node2D"]
+script = ExtResource("1_fffn3")
+
+[node name="Sprite" type="AnimatedSprite2D" parent="."]
+position = Vector2(1480, 784)
+scale = Vector2(2.7, 2.7)
+sprite_frames = SubResource("SpriteFrames_gkmb3")
+animation = &"idle"
+flip_h = true
+
+[node name="VfxCenter" type="Marker2D" parent="."]
+position = Vector2(1480, 776)
+
+[node name="AttackHint" type="AnimatedSprite2D" parent="."]
+position = Vector2(1480, 784)
+scale = Vector2(2.7, 2.7)
+sprite_frames = SubResource("SpriteFrames_eumsa")
+animation = &"prepare"
+flip_h = true
+
+[node name="ShieldController" type="Node" parent="."]
+script = ExtResource("6_fffn3")
+
+[node name="VfxRoot" type="Node2D" parent="." groups=["vfx_root"]]
+
+[node name="StanceMarker" type="Marker2D" parent="."]
+position = Vector2(1488, 880)
+
+[node name="Muzzle" type="Marker2D" parent="."]
+position = Vector2(1136, 680)

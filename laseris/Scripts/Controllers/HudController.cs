@@ -1,40 +1,98 @@
 using Godot;
-using System.Collections.Generic;
 
-public partial class HUDController : Control
+namespace Game.UI;
+
+public partial class HUDController : CanvasLayer
 {
-	private Dictionary<Key, TextureRect> _icons = new();
+	private Label _phaseLabel;
+	private ProgressBar _turnBar;
+	private ProgressBar _flowBar;
+	public HealthBarController MageHP { get; private set; }
+	public HealthBarController EnemyHP { get; private set; }
+	private Control _ringsLayer;
+	private RandomNumberGenerator _rng;
+	public JudgementCornerController Judgement { get; private set; }
+
+	public ElementBarController ElementBar { get; private set; }
+
+	[ExportGroup("Rings")]
+	[Export] public PackedScene AttackRingScene;     // arraste res://Scenes/UI/AttackRing.tscn
+	[Export] public Vector2 RingSize = new Vector2(220, 220);
+	[Export] public Vector2 Padding = new Vector2(20, 140); // evita topo da HUD
 
 	public override void _Ready()
 	{
-		// Mapeamento das teclas para seus ícones
-		_icons[Key.Q] = GetNode<TextureRect>("Icon_Fogo");
-		_icons[Key.W] = GetNode<TextureRect>("Icon_Gelo");
-		_icons[Key.E] = GetNode<TextureRect>("Icon_Raio");
-		_icons[Key.R] = GetNode<TextureRect>("Icon_Veneno");
+		Judgement = GetNode<JudgementCornerController>("Root/JudgementCorner");
+		_phaseLabel = GetNode<Label>("Root/PhaseLabel");
+		_turnBar = GetNode<ProgressBar>("Root/TurnBar");
+		_flowBar = GetNode<ProgressBar>("Root/FlowBar");
 
-		_icons[Key.U] = GetNode<TextureRect>("Icon_Terra");
-		_icons[Key.I] = GetNode<TextureRect>("Icon_Luz");
-		_icons[Key.O] = GetNode<TextureRect>("Icon_Sombra");
-		_icons[Key.P] = GetNode<TextureRect>("Icon_Ar");
+		_ringsLayer = GetNode<Control>("Root/RingsLayer");
+		ElementBar = GetNode<ElementBarController>("Root/ElementBar");
+
+		_rng = new RandomNumberGenerator();
+		_rng.Randomize();
+		MageHP = GetNode<HealthBarController>("Root/HPBars/MageHP");
+		EnemyHP = GetNode<HealthBarController>("Root/HPBars/EnemyHP");
+
+		MageHP.SetName("Mago");
+		EnemyHP.SetName("Inimigo");
+	}
+	public void ShowJudgement(JudgementGrade grade)
+	{
+		Judgement?.Show(grade);
+	}
+	public void SetPhaseName(string name) => _phaseLabel.Text = name ?? "";
+
+	public void SetTurnProgress(double now, double start, double end)
+	{
+		double denom = System.Math.Max(0.0001, end - start);
+		double t = (now - start) / denom;
+		t = System.Math.Clamp(t, 0.0, 1.0);
+		_turnBar.Value = t * 100.0;
 	}
 
-	public override void _Process(double delta)
+	public void SetFlow(int stacks, int maxStacks)
 	{
-		foreach (var entry in _icons)
-		{
-			bool isDown = Input.IsPhysicalKeyPressed(entry.Key);
+		if (maxStacks <= 0) { _flowBar.Value = 0; return; }
+		_flowBar.Value = (double)stacks / maxStacks * 100.0;
+	}
 
-			if (isDown)
-			{
-				// brilho dourado quando pressionado
-				entry.Value.Modulate = new Color(1f, 0.85f, 0.5f);
-			}
-			else
-			{
-				// volta ao normal
-				entry.Value.Modulate = Colors.White;
-			}
+	public void SpawnRing(double startSec, double beatSec, double hitWindowSec)
+	{
+		if (AttackRingScene == null)
+		{
+			GD.PushError("HUDController: AttackRingScene não foi setado no Inspector.");
+			return;
 		}
+
+		var inst = AttackRingScene.Instantiate();
+		if (inst is not AttackRingController ring)
+		{
+			GD.PushError("HUDController: AttackRingScene não instancia AttackRingController.");
+			inst.QueueFree();
+			return;
+		}
+
+		_ringsLayer.AddChild(ring);
+
+		// define tamanho
+		ring.SetAnchorsPreset(Control.LayoutPreset.TopLeft);
+		ring.CustomMinimumSize = RingSize;
+
+		// posição aleatória dentro do viewport, com padding
+		Vector2 vp = GetViewport().GetVisibleRect().Size;
+
+		float minX = Padding.X;
+		float minY = Padding.Y;
+		float maxX = Mathf.Max(minX, vp.X - RingSize.X - Padding.X);
+		float maxY = Mathf.Max(minY, vp.Y - RingSize.Y - Padding.X);
+
+		float x = _rng.RandfRange(minX, maxX);
+		float y = _rng.RandfRange(minY, maxY);
+
+		ring.Position = new Vector2(x, y);
+
+		ring.Arm(startSec, beatSec, hitWindowSec);
 	}
 }

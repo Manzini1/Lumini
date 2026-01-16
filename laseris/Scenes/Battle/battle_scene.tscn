@@ -1,0 +1,79 @@
+[gd_scene load_steps=14 format=3 uid="uid://k77em0ts4tg7"]
+
+[ext_resource type="Script" uid="uid://coc8w2xsksd0x" path="res://Scripts/Battle/BattleController.cs" id="1_02hj4"]
+[ext_resource type="PackedScene" uid="uid://nvoxx5jrd2g3" path="res://Scenes/Actors/Mage/Mage.tscn" id="2_5mge4"]
+[ext_resource type="AudioStream" uid="uid://6r0q4hl3h2xx" path="res://Audio/Battle/A rogue with no stealth skills.ogg" id="2_hopcy"]
+[ext_resource type="Script" uid="uid://bcnklqjcg5wwp" path="res://Scripts/Data/PhaseDefinition.cs" id="3_68j0i"]
+[ext_resource type="PackedScene" uid="uid://bkqnb7eycpjn4" path="res://Scenes/Enemies/skeleton_archer.tscn" id="3_hopcy"]
+[ext_resource type="Script" uid="uid://b5o5rt8uxflug" path="res://Scripts/Battle/BeatScheduler.cs" id="4_68j0i"]
+[ext_resource type="Script" uid="uid://dyuemocsthcd8" path="res://Scripts/Battle/TurnManager.cs" id="5_36cr5"]
+[ext_resource type="Script" uid="uid://bdh7m4tsvc1xr" path="res://Scripts/Battle/InputJudge.cs" id="6_6tvrj"]
+[ext_resource type="Script" uid="uid://dl7uwh5uj2vlc" path="res://Scripts/Battle/AttackPattern.cs" id="7_ik5sk"]
+[ext_resource type="Script" uid="uid://d1y1qdubx4x0p" path="res://Scripts/Battle/FlowMeter.cs" id="8_sufya"]
+[ext_resource type="PackedScene" uid="uid://cjlpsqmplebt7" path="res://Scenes/HUD/hud.tscn" id="9_n1ain"]
+[ext_resource type="Texture2D" uid="uid://4lwdexkkbsx8" path="res://Sprites/Backgrounds/TrainingGrounds/tg1.png" id="12_68j0i"]
+
+[sub_resource type="Resource" id="Resource_36cr5"]
+script = ExtResource("3_68j0i")
+Music = ExtResource("2_hopcy")
+BeatmapJsonPath = "res://SongMarkers/A rogue with no stealth skills/beatmap.json"
+PrepareLeadSeconds = 0.4
+HitWindowSeconds = 0.3
+metadata/_custom_type_script = "uid://bcnklqjcg5wwp"
+
+[node name="BattleScene" type="Node2D"]
+script = ExtResource("1_02hj4")
+Phase = SubResource("Resource_36cr5")
+
+[node name="World" type="Node2D" parent="."]
+
+[node name="Characters" type="Node2D" parent="World"]
+
+[node name="Mage" parent="World/Characters" instance=ExtResource("2_5mge4")]
+position = Vector2(32, -24)
+
+[node name="Enemy" parent="World/Characters" instance=ExtResource("3_hopcy")]
+position = Vector2(104, -40)
+
+[node name="Vfx" type="Node2D" parent="World"]
+
+[node name="Projectiles" type="Node2D" parent="World"]
+
+[node name="HUD" parent="." instance=ExtResource("9_n1ain")]
+RingSize = Vector2(180, 180)
+
+[node name="JudgementCorner" parent="HUD/Root" index="5"]
+offset_left = 328.0
+offset_top = 456.00003
+offset_right = 428.0
+offset_bottom = 556.0
+
+[node name="Background" type="Sprite2D" parent="."]
+z_index = -999
+position = Vector2(960, 552.00006)
+scale = Vector2(1.2562444, 1.0712978)
+texture = ExtResource("12_68j0i")
+
+[node name="Systems" type="Node" parent="."]
+
+[node name="MusicPlayer" type="AudioStreamPlayer" parent="Systems"]
+bus = &"Music"
+
+[node name="BeatScheduler" type="Node" parent="Systems"]
+script = ExtResource("4_68j0i")
+
+[node name="TurnManager" type="Node" parent="Systems"]
+script = ExtResource("5_36cr5")
+
+[node name="InputJudge" type="Node" parent="Systems"]
+script = ExtResource("6_6tvrj")
+
+[node name="AttackPattern" type="Node" parent="Systems"]
+script = ExtResource("7_ik5sk")
+
+[node name="FlowMeter" type="Node" parent="Systems"]
+script = ExtResource("8_sufya")
+
+[editable path="World/Characters/Enemy"]
+[editable path="HUD"]
+[editable path="HUD/Root/ElementBar"]

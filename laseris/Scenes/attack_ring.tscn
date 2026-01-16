@@ -1,0 +1,15 @@
+[gd_scene load_steps=2 format=3 uid="uid://c6ke6rhxkcjaw"]
+
+[ext_resource type="Script" uid="uid://3ytrx7an82ve" path="res://Scenes/AttackRingController.cs" id="1_1873j"]
+
+[node name="AttackRing" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_1873j")
+LineWidth = 4.0
+HoldAfterBeatSeconds = 0.3
+FadeOutSeconds = 0.1

@@ -1,0 +1,128 @@
+[gd_scene load_steps=20 format=3 uid="uid://btcgvkhyvkksg"]
+
+[ext_resource type="PackedScene" uid="uid://nvoxx5jrd2g3" path="res://Scenes/Actors/Mage/Mage.tscn" id="1_jkru8"]
+[ext_resource type="PackedScene" uid="uid://bkqnb7eycpjn4" path="res://Scenes/Enemies/skeleton_archer.tscn" id="2_fydr6"]
+[ext_resource type="PackedScene" uid="uid://2tmenp3pypu5" path="res://rhythm_projectile.tscn" id="3_ffwpv"]
+[ext_resource type="Script" uid="uid://cjm3u4me0qk1d" path="res://Scenes/CombatRhythmController.cs" id="3_xvuga"]
+[ext_resource type="Script" uid="uid://dkiuktmiv4lau" path="res://Scenes/RhythmHud.cs" id="4_ffwpv"]
+[ext_resource type="Script" uid="uid://i8v4xmcluf8o" path="res://Scripts/Combat/ElementCounterTable.cs" id="5_pdfhy"]
+[ext_resource type="Script" uid="uid://d38tcj1sixajg" path="res://Scripts/Controllers/ElementController.cs" id="6_ffwpv"]
+[ext_resource type="Texture2D" uid="uid://4lwdexkkbsx8" path="res://Sprites/Backgrounds/TrainingGrounds/tg1.png" id="6_pdfhy"]
+[ext_resource type="Script" uid="uid://dli8gedcp281f" path="res://Scripts/UI/TugHud.cs" id="7_dn8aq"]
+[ext_resource type="PackedScene" uid="uid://djfgdh73ic5jb" path="res://Scenes/Audio/SfxPlayer.tscn" id="10_kviqn"]
+[ext_resource type="Script" uid="uid://b702oaihjcf81" path="res://SelectionCircleRouterSingle.cs" id="11_dn8aq"]
+[ext_resource type="SpriteFrames" uid="uid://b3f43p8fr1lwp" path="res://Data/Shields/shield_circle_bank.tres" id="12_a4c26"]
+[ext_resource type="Script" uid="uid://drq573gmw5bei" path="res://Scenes/SelectionCircleManager.cs" id="13_ibx37"]
+[ext_resource type="Script" uid="uid://cbd1foelgsc25" path="res://Scripts/VFX/VfxManager.cs" id="14_g8he3"]
+[ext_resource type="Resource" uid="uid://bpdqe75qdl8pk" path="res://Data/SpellVfxBank.tres" id="15_w21i4"]
+[ext_resource type="Script" uid="uid://cylra5w8u00qi" path="res://Scripts/VFX/SelectionCircleBank.cs" id="16_kviqn"]
+
+[sub_resource type="Resource" id="Resource_iru3d"]
+script = ExtResource("5_pdfhy")
+metadata/_custom_type_script = "uid://i8v4xmcluf8o"
+
+[sub_resource type="CSharpScript" id="CSharpScript_uv6bb"]
+
+[sub_resource type="Resource" id="Resource_a4c26"]
+script = ExtResource("16_kviqn")
+metadata/_custom_type_script = "uid://cylra5w8u00qi"
+
+[node name="World" type="Node2D"]
+
+[node name="Mage" parent="." instance=ExtResource("1_jkru8")]
+position = Vector2(64, -152)
+ElementControllerPath = NodePath("../ElementController")
+
+[node name="Sprite" parent="Mage" index="0"]
+position = Vector2(392.00003, 880)
+scale = Vector2(3, 3.015)
+
+[node name="SkeletonArcher" parent="." instance=ExtResource("2_fydr6")]
+position = Vector2(24, -184)
+
+[node name="AnimPath" parent="SkeletonArcher" index="0"]
+position = Vector2(1504, 904)
+scale = Vector2(2.7, 2.7)
+animation = &"default"
+frame = 0
+frame_progress = 0.0
+
+[node name="EnemyRhythmAttacker" parent="SkeletonArcher" index="3"]
+ProjectileScene = ExtResource("3_ffwpv")
+
+[node name="StanceMarker" parent="SkeletonArcher" index="6"]
+position = Vector2(1440, 1016)
+
+[node name="CombatRhythmController" type="Node" parent="."]
+script = ExtResource("3_xvuga")
+EnemyPath = NodePath("../SkeletonArcher")
+EnemyAttackerPath = NodePath("../SkeletonArcher/EnemyRhythmAttacker")
+RhythmHudPath = NodePath("../RhythmHud")
+BeatMapJsonPath = "res://SongMarkers/A rogue with no stealth skills/beatmap.json"
+CounterTable = SubResource("Resource_iru3d")
+
+[node name="RhythmHud" type="CanvasLayer" parent="."]
+
+[node name="RhythmHud" type="Control" parent="RhythmHud"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("4_ffwpv")
+
+[node name="TugHud" type="Control" parent="RhythmHud"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("7_dn8aq")
+
+[node name="Background" type="Sprite2D" parent="."]
+z_index = -100
+position = Vector2(964, 548)
+scale = Vector2(1.2538822, 1.0670806)
+texture = ExtResource("6_pdfhy")
+
+[node name="ElementController" type="Node" parent="."]
+script = ExtResource("6_ffwpv")
+
+[node name="MusicPlayer" type="AudioStreamPlayer" parent="."]
+
+[node name="SfxPlayer" parent="." instance=ExtResource("10_kviqn")]
+
+[node name="VfxRoot" type="Node2D" parent="." groups=["vfx_root"]]
+
+[node name="SelectionCircleRouter" type="Node2D" parent="."]
+script = ExtResource("11_dn8aq")
+GroundMarkerPath = NodePath("../SkeletonArcher/VfxCenter")
+
+[node name="CircleSprite" type="AnimatedSprite2D" parent="SelectionCircleRouter"]
+sprite_frames = ExtResource("12_a4c26")
+animation = &"earth"
+
+[node name="DamagePopUpManager" type="Node" parent="." groups=["damage_popup_manager"]]
+
+[node name="VfxManager" type="Node" parent="."]
+script = ExtResource("14_g8he3")
+Bank = ExtResource("15_w21i4")
+
+[node name="CircleManager" type="Node" parent="."]
+script = ExtResource("13_ibx37")
+
+[node name="Tug" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("7_dn8aq")
+
+[node name="SelectionCircleManager" type="Node2D" parent="."]
+script = ExtResource("13_ibx37")
+CircleSpritePath = NodePath("../SelectionCircleRouter/CircleSprite")
+Bank = SubResource("Resource_a4c26")
+
+[editable path="Mage"]
+[editable path="Mage/WeaponSocket/Weapon/StaffBasic"]
+[editable path="SkeletonArcher"]

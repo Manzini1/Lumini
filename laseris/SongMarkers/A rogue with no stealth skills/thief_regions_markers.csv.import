@@ -1,0 +1,17 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://cj1bppd3voo7h"
+
+[deps]
+
+files=["res://SongMarkers/A rogue with no stealth skills/thief_regions_markers.Name.translation", "res://SongMarkers/A rogue with no stealth skills/thief_regions_markers.Start.translation", "res://SongMarkers/A rogue with no stealth skills/thief_regions_markers.End.translation", "res://SongMarkers/A rogue with no stealth skills/thief_regions_markers.Length.translation", "res://SongMarkers/A rogue with no stealth skills/thief_regions_markers.Color.translation"]
+
+source_file="res://SongMarkers/A rogue with no stealth skills/thief_regions_markers.csv"
+dest_files=["res://SongMarkers/A rogue with no stealth skills/thief_regions_markers.Name.translation", "res://SongMarkers/A rogue with no stealth skills/thief_regions_markers.Start.translation", "res://SongMarkers/A rogue with no stealth skills/thief_regions_markers.End.translation", "res://SongMarkers/A rogue with no stealth skills/thief_regions_markers.Length.translation", "res://SongMarkers/A rogue with no stealth skills/thief_regions_markers.Color.translation"]
+
+[params]
+
+compress=true
+delimiter=0

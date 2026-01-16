@@ -1,0 +1,16 @@
+[gd_scene load_steps=2 format=3 uid="uid://cfl8ak4a3iox8"]
+
+[ext_resource type="Script" uid="uid://uy5osqvtm4op" path="res://Scripts/GameRoot.cs" id="1_y37ms"]
+
+[node name="GameRoot" type="Node"]
+script = ExtResource("1_y37ms")
+
+[node name="SceneHost" type="Node" parent="."]
+
+[node name="Overlay" type="CanvasLayer" parent="."]
+
+[node name="OverlayRoot" type="Control" parent="Overlay"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0

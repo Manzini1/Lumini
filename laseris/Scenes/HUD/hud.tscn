@@ -1,0 +1,121 @@
+[gd_scene load_steps=11 format=3 uid="uid://cjlpsqmplebt7"]
+
+[ext_resource type="PackedScene" uid="uid://c6ke6rhxkcjaw" path="res://Scenes/attack_ring.tscn" id="1_5aai8"]
+[ext_resource type="Script" uid="uid://q3ip6t83kbe7" path="res://Scripts/Controllers/HUDController.cs" id="1_a56j6"]
+[ext_resource type="PackedScene" uid="uid://dfbvhy3mx0bgs" path="res://Scenes/element_bar.tscn" id="2_a56j6"]
+[ext_resource type="Script" uid="uid://sug4mwjh5aod" path="res://Scenes/HUD/JudgementCornerController.cs" id="4_k83ni"]
+[ext_resource type="Texture2D" uid="uid://deabq8l4yxs5l" path="res://Sprites/HUD/perfect.png" id="5_1owdh"]
+[ext_resource type="Texture2D" uid="uid://b3icsb5mdxs68" path="res://Sprites/HUD/good.png" id="6_ewgg5"]
+[ext_resource type="Texture2D" uid="uid://d2ebjnc6qiul8" path="res://Sprites/HUD/miss.png" id="7_isc6x"]
+[ext_resource type="Script" uid="uid://klihvf2gd4jr" path="res://Scripts/UI/HealthBarController.cs" id="8_7hg1w"]
+[ext_resource type="Texture2D" uid="uid://cmyiltjp2cyea" path="res://Sprites/HUD/hp_bar.png" id="8_isc6x"]
+[ext_resource type="Texture2D" uid="uid://b4vr4085ayf7i" path="res://Sprites/HUD/hp_value.png" id="9_7hg1w"]
+
+[node name="HUD" type="CanvasLayer"]
+script = ExtResource("1_a56j6")
+AttackRingScene = ExtResource("1_5aai8")
+
+[node name="Root" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="PhaseLabel" type="Label" parent="Root"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="TurnBar" type="ProgressBar" parent="Root"]
+layout_mode = 0
+offset_right = 4.0
+offset_bottom = 27.0
+
+[node name="FlowBar" type="ProgressBar" parent="Root"]
+layout_mode = 0
+offset_right = 4.0
+offset_bottom = 27.0
+
+[node name="ElementBar" parent="Root" instance=ExtResource("2_a56j6")]
+layout_mode = 1
+
+[node name="RingsLayer" type="Control" parent="Root"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="JudgementCorner" type="TextureRect" parent="Root"]
+layout_mode = 0
+offset_left = 248.0
+offset_top = 432.0
+offset_right = 348.0
+offset_bottom = 532.0
+scale = Vector2(3, 3)
+expand_mode = 3
+script = ExtResource("4_k83ni")
+PerfectTexture = ExtResource("5_1owdh")
+GoodTexture = ExtResource("6_ewgg5")
+MissTexture = ExtResource("7_isc6x")
+
+[node name="HPBars" type="Control" parent="Root"]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="MageHP" type="Control" parent="Root/HPBars"]
+anchors_preset = 0
+offset_left = 96.0
+offset_top = 1008.0
+offset_right = 136.0
+offset_bottom = 1048.0
+script = ExtResource("8_7hg1w")
+
+[node name="Name" type="Label" parent="Root/HPBars/MageHP"]
+visible = false
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="Bar" type="TextureProgressBar" parent="Root/HPBars/MageHP"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+texture_under = ExtResource("8_isc6x")
+texture_over = ExtResource("8_isc6x")
+texture_progress = ExtResource("9_7hg1w")
+
+[node name="Value" type="Label" parent="Root/HPBars/MageHP"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="EnemyHP" type="Control" parent="Root/HPBars"]
+anchors_preset = 0
+offset_left = 1592.0
+offset_top = 1008.0
+offset_right = 1632.0
+offset_bottom = 1048.0
+script = ExtResource("8_7hg1w")
+
+[node name="Bar" type="TextureProgressBar" parent="Root/HPBars/EnemyHP"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+texture_under = ExtResource("8_isc6x")
+texture_over = ExtResource("8_isc6x")
+texture_progress = ExtResource("9_7hg1w")
+
+[node name="Name" type="Label" parent="Root/HPBars/EnemyHP"]
+visible = false
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="Value" type="Label" parent="Root/HPBars/EnemyHP"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 23.0

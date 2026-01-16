@@ -21,13 +21,13 @@ public partial class ShieldVisibilityBySelection : Node
 		// estado inicial
 		GetParent<Node>()?.SetDeferred("visible", _enemy.IsSelected);
 
-		_enemy.SelectedChanged += OnSelectedChanged;
+	//	_enemy.SelectedChanged += OnSelectedChanged;
 	}
 
 	public override void _ExitTree()
 	{
-		if (_enemy != null)
-			_enemy.SelectedChanged -= OnSelectedChanged;
+//		if (_enemy != null)
+//			_enemy.SelectedChanged -= OnSelectedChanged;
 	}
 
 	private void OnSelectedChanged(Enemy who, bool selected)

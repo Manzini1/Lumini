@@ -1,27 +1,20 @@
 using Godot;
-using System.Collections.Generic;
+using System;
 
 public partial class SelectionCircleManager : Node2D
 {
 	[ExportCategory("Refs")]
-	[Export] public NodePath CircleSpritePath = "Circle";
+	[Export] public NodePath CircleSpritePath = "CircleSprite"; // AnimatedSprite2D
 
-	[ExportCategory("Visual")]
-	[Export] public SpriteFrames Frames;               // ShieldCircles.tres (8 anims)
-	[Export] public float SpeedScale = 1.0f;
-	[Export] public bool VisibleWhenActive = true;
-	[ExportCategory("Visual")]
-	[Export] public float CircleScale = 1.0f;
-	[ExportCategory("Fallback")]
-	[Export] public string DefaultAnim = "fire";       // se vier vazio / null
+	[ExportCategory("Data")]
+	[Export] public SelectionCircleBank Bank;
+	[Export] public bool DebugLog = false;
 
 	private AnimatedSprite2D _sprite;
+	private ElementType _current;
 
 	public override void _Ready()
 	{
-		GD.Print($"[SelectionCircleManager] _sprite={_sprite?.Name} path={_sprite?.GetPath()} parent={_sprite?.GetParent()?.GetPath()} owner={_sprite?.Owner?.GetPath()}");
-		Scale = Vector2.One * CircleScale; // escala o Node2D inteiro
-
 		_sprite = GetNodeOrNull<AnimatedSprite2D>(CircleSpritePath);
 		if (_sprite == null)
 		{
@@ -29,81 +22,55 @@ public partial class SelectionCircleManager : Node2D
 			return;
 		}
 
-		if (Frames != null)
-			_sprite.SpriteFrames = Frames;
-
-		_sprite.SpeedScale = SpeedScale;
-		_sprite.Visible = false;
+		// começa escondido
+		HideCircle();
 	}
 
-	public void Hide()
+	public void HideCircle()
 	{
-		GD.Print($"[SelectionCircleManager] Hide() hiding sprite path={_sprite?.GetPath()}");
-
-		if (_sprite == null) return;
-		_sprite.Stop();
-		_sprite.Visible = false;
+		if (_sprite != null) _sprite.Visible = false;
+		Visible = false;
 	}
 
-	public void ShowForElements(IReadOnlyList<ElementType> active)
+	public void ShowCircle()
 	{
-		if (_sprite == null) return;
+		if (_sprite != null) _sprite.Visible = true;
+		Visible = true;
+	}
 
-		// Se não tiver elementos -> esconde
-		if (active == null || active.Count == 0)
+	public void SetElement(ElementType element)
+	{
+		_current = element;
+
+		if (_sprite == null) return;
+		if (Bank == null)
 		{
-			Hide();
+			GD.PushWarning("[SelectionCircleManager] Bank = null (sem dados de spriteframes).");
 			return;
 		}
 
-		var anim = AnimFromElement(active[0]);
-		PlayAnim(anim);
-	}
-
-	public void PlayAnim(string animName)
-	{
-		if (_sprite == null) return;
-
-		if (_sprite.SpriteFrames == null)
+		var entry = Bank.Get(element);
+		if (entry == null || entry.Frames == null)
 		{
-			GD.PushWarning("[SelectionCircleManager] SpriteFrames null (não tem animações).");
+			GD.PushWarning($"[SelectionCircleManager] Bank sem entry/frames para {element}.");
 			return;
 		}
 
-		if (string.IsNullOrWhiteSpace(animName))
-			animName = DefaultAnim;
+		_sprite.SpriteFrames = entry.Frames;
 
-		if (!_sprite.SpriteFrames.HasAnimation(animName))
+		string anim = string.IsNullOrWhiteSpace(entry.AnimationName) ? "loop" : entry.AnimationName;
+		if (!_sprite.SpriteFrames.HasAnimation(anim))
 		{
-			GD.PushWarning($"[SelectionCircleManager] Não existe animação '{animName}'. Usando DefaultAnim='{DefaultAnim}'.");
-			animName = DefaultAnim;
+			// fallback: tenta qualquer animação existente
+			anim = _sprite.SpriteFrames.GetAnimationNames().Length > 0
+				? _sprite.SpriteFrames.GetAnimationNames()[0]
+				: anim;
 		}
 
-		if (!_sprite.SpriteFrames.HasAnimation(animName))
-		{
-			GD.PushWarning($"[SelectionCircleManager] DefaultAnim '{DefaultAnim}' também não existe. Nada a tocar.");
-			return;
-		}
+		_sprite.SpeedScale = Mathf.Max(0.01f, entry.SpeedScale);
+		_sprite.Play(anim);
 
-		_sprite.SpeedScale = SpeedScale;
-		_sprite.Visible = VisibleWhenActive;
-		_sprite.Play(animName);
-	}
-
-	private static string AnimFromElement(ElementType e)
-	{
-		// ✅ nomes das animações no seu SpriteFrames (ShieldCircles.tres)
-		return e switch
-		{
-			ElementType.Fire => "fire",
-			ElementType.Ice => "ice",
-			ElementType.Lightning => "lightning",
-			ElementType.Poison => "poison",
-			ElementType.Earth => "earth",
-			ElementType.Air => "air",
-			ElementType.Light => "light",
-			ElementType.Shadow => "shadow",
-			_ => "fire"
-		};
+		if (DebugLog)
+			GD.Print($"[Circle] SetElement {element} anim={anim} speed={_sprite.SpeedScale:0.00}");
 	}
 }
