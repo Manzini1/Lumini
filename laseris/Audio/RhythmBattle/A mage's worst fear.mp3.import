@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://rvn68386ylqs"
+path="res://.godot/imported/A mage's worst fear.mp3-8ad5c3bc2c58124faee7e5e262acdc47.mp3str"
+
+[deps]
+
+source_file="res://Audio/RhythmBattle/A mage's worst fear.mp3"
+dest_files=["res://.godot/imported/A mage's worst fear.mp3-8ad5c3bc2c58124faee7e5e262acdc47.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

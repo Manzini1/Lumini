@@ -10,9 +10,13 @@ public partial class InputJudge : Node
 	[Signal] public delegate void DefenseResolvedEventHandler(int beatIndex, bool success);
 	[Signal] public delegate void AttackResolvedEventHandler(int beatIndex, bool success);
 
-	// ✅ novos sinais com grade (0=Miss, 1=Good, 2=Perfect) + erro absoluto
 	[Signal] public delegate void DefenseJudgedEventHandler(int beatIndex, int gradeId, double absErrorSec);
 	[Signal] public delegate void AttackJudgedEventHandler(int beatIndex, int gradeId, double absErrorSec);
+
+	[Signal] public delegate void ElementPressedEventHandler(int elementId);
+
+	[ExportGroup("Debug")]
+	[Export] public bool DebugLogs = true;
 
 	private struct Pending
 	{
@@ -24,28 +28,20 @@ public partial class InputJudge : Node
 	}
 
 	private readonly List<Pending> _pending = new();
+
 	private double _hitWindowSec = 0.12;
-	private double _perfectWindowSec = 0.045; // default, recalculado no Configure
 	private double _songNow;
+
+	[Export] public float PerfectWindowFraction = 0.35f;
 
 	private ElementBarController _elementBar;
 
-	// ajuste fino: PERFECT é uma fração da janela total
-	private const double PERFECT_FRACTION = 0.35; // 35% da hit window
-
 	public void Configure(double hitWindowSec, ElementBarController elementBar)
 	{
-		_hitWindowSec = hitWindowSec;
-		_perfectWindowSec = Math.Max(0.01, hitWindowSec * PERFECT_FRACTION);
+		_hitWindowSec = Math.Max(0.001, hitWindowSec);
 		_elementBar = elementBar;
-	}
+		GD.Print($"[InputJudge] Config hitWindow={_hitWindowSec:0.000} perfectFrac={PerfectWindowFraction:0.00}");
 
-	// se quiser customizar perfeito separado:
-	public void Configure(double hitWindowSec, double perfectWindowSec, ElementBarController elementBar)
-	{
-		_hitWindowSec = hitWindowSec;
-		_perfectWindowSec = Math.Max(0.001, Math.Min(perfectWindowSec, hitWindowSec));
-		_elementBar = elementBar;
 	}
 
 	public void SetSongTime(double songNowSec) => _songNow = songNowSec;
@@ -62,6 +58,9 @@ public partial class InputJudge : Node
 			Side = TurnSide.Enemy,
 			Resolved = false
 		});
+
+		if (DebugLogs)
+			GD.Print($"[InputJudge] Queue DEF  beat={beatIndex} beatSec={beatSec:0.000} reqE={requiredElementId}");
 	}
 
 	public void QueueAttack(int beatIndex, double beatSec, int requiredElementId)
@@ -74,32 +73,45 @@ public partial class InputJudge : Node
 			Side = TurnSide.Player,
 			Resolved = false
 		});
+
+		if (DebugLogs)
+			GD.Print($"[InputJudge] Queue ATK  beat={beatIndex} beatSec={beatSec:0.000} reqE={requiredElementId}");
 	}
 
 	public override void _UnhandledInput(InputEvent e)
 	{
-		if (_pending.Count == 0) return;
-
-		int idx = GetNextPendingIndex();
-		if (idx < 0) return;
-
-		var p = _pending[idx];
-
-		if (p.Side == TurnSide.Enemy && e.IsActionPressed("defend"))
+		int pressedElement = GetPressedElementId(e);
+		if (pressedElement > 0)
 		{
-			var (gradeId, absErr) = EvaluateGrade(p);
-			Resolve(idx, gradeId, absErr);
-		}
-		else if (p.Side == TurnSide.Player && e.IsActionPressed("attack"))
-		{
-			var (gradeId, absErr) = EvaluateGrade(p);
-			Resolve(idx, gradeId, absErr);
+			EmitSignal(SignalName.ElementPressed, pressedElement);
+			_elementBar?.SetSelectedElement(pressedElement);
+
+			if (_pending.Count == 0)
+			{
+				if (DebugLogs)
+					GD.Print($"[InputJudge] Press e{pressedElement} (no pending) now={_songNow:0.000}");
+				return;
+			}
+
+			int idx = GetNextPendingIndex();
+			if (idx < 0) return;
+
+			var p = _pending[idx];
+			var (grade, absErr) = EvaluateGrade(p, pressedElement);
+
+			if (DebugLogs)
+			{
+				string side = p.Side == TurnSide.Enemy ? "DEF" : "ATK";
+				GD.Print($"[InputJudge] Press e{pressedElement} -> {side} beat={p.BeatIndex} reqE={p.RequiredElementId} now={_songNow:0.000} beatSec={p.BeatSec:0.000} absErr={absErr:0.0000} grade={grade}");
+			}
+
+			Resolve(idx, grade, absErr);
+			return;
 		}
 	}
 
 	public void UpdateJudge()
 	{
-		// passou do beat + janela => MISS automático
 		for (int i = 0; i < _pending.Count; i++)
 		{
 			var p = _pending[i];
@@ -108,9 +120,25 @@ public partial class InputJudge : Node
 			if (_songNow > p.BeatSec + _hitWindowSec)
 			{
 				double absErr = Math.Abs(_songNow - p.BeatSec);
-				Resolve(i, (int)JudgementGrade.Miss, absErr);
+
+				if (DebugLogs)
+				{
+					string side = p.Side == TurnSide.Enemy ? "DEF" : "ATK";
+					GD.Print($"[InputJudge] AUTO MISS {side} beat={p.BeatIndex} now={_songNow:0.000} beatSec={p.BeatSec:0.000} absErr={absErr:0.0000}");
+				}
+
+				Resolve(i, JudgementGrade.Miss, absErr);
 			}
 		}
+	}
+
+	private int GetPressedElementId(InputEvent e)
+	{
+		for (int id = 1; id <= 6; id++)
+			if (e.IsActionPressed($"e{id}"))
+				return id;
+
+		return -1;
 	}
 
 	private int GetNextPendingIndex()
@@ -121,7 +149,6 @@ public partial class InputJudge : Node
 		for (int i = 0; i < _pending.Count; i++)
 		{
 			if (_pending[i].Resolved) continue;
-
 			if (_pending[i].BeatSec < bestBeat)
 			{
 				bestBeat = _pending[i].BeatSec;
@@ -132,25 +159,26 @@ public partial class InputJudge : Node
 		return bestIdx;
 	}
 
-	private (int gradeId, double absErrorSec) EvaluateGrade(Pending p)
+	private (JudgementGrade grade, double absErr) EvaluateGrade(Pending p, int pressedElementId)
 	{
 		double absErr = Math.Abs(_songNow - p.BeatSec);
-		bool timingOk = absErr <= _hitWindowSec;
 
-		int selected = _elementBar != null ? _elementBar.SelectedElementId : 1;
-		bool elementOk = selected == p.RequiredElementId;
+		if (pressedElementId != p.RequiredElementId)
+			return (JudgementGrade.Miss, absErr);
 
-		if (!timingOk || !elementOk)
-			return ((int)JudgementGrade.Miss, absErr);
+		if (absErr > _hitWindowSec)
+			return (JudgementGrade.Miss, absErr);
 
-		// timing + elemento ok => PERFECT ou GOOD
-		if (absErr <= _perfectWindowSec)
-			return ((int)JudgementGrade.Perfect, absErr);
+		double frac = Math.Clamp(PerfectWindowFraction, 0.01f, 0.99f);
+		double perfectWindow = _hitWindowSec * frac;
 
-		return ((int)JudgementGrade.Good, absErr);
+		if (absErr <= perfectWindow)
+			return (JudgementGrade.Perfect, absErr);
+
+		return (JudgementGrade.Good, absErr);
 	}
 
-	private void Resolve(int index, int gradeId, double absErrorSec)
+	private void Resolve(int index, JudgementGrade grade, double absErr)
 	{
 		var p = _pending[index];
 		if (p.Resolved) return;
@@ -158,17 +186,17 @@ public partial class InputJudge : Node
 		p.Resolved = true;
 		_pending[index] = p;
 
-		bool success = gradeId != (int)JudgementGrade.Miss;
+		bool success = grade != JudgementGrade.Miss;
 
 		if (p.Side == TurnSide.Enemy)
 		{
+			EmitSignal(SignalName.DefenseJudged, p.BeatIndex, (int)grade, absErr);
 			EmitSignal(SignalName.DefenseResolved, p.BeatIndex, success);
-			EmitSignal(SignalName.DefenseJudged, p.BeatIndex, gradeId, absErrorSec);
 		}
 		else
 		{
+			EmitSignal(SignalName.AttackJudged, p.BeatIndex, (int)grade, absErr);
 			EmitSignal(SignalName.AttackResolved, p.BeatIndex, success);
-			EmitSignal(SignalName.AttackJudged, p.BeatIndex, gradeId, absErrorSec);
 		}
 	}
 }

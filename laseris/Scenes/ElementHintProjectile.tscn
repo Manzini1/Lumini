@@ -1,0 +1,73 @@
+[gd_scene load_steps=8 format=3 uid="uid://dus87xeqhl6p6"]
+
+[ext_resource type="Script" uid="uid://fvlb2h8wnayf" path="res://Scenes/ElementHintProjectile.cs" id="1_k3wd2"]
+[ext_resource type="Texture2D" uid="uid://ctxmadcf6qxgd" path="res://Sprites/HUD/hint.png" id="3_1ylfs"]
+[ext_resource type="Texture2D" uid="uid://resj70jrdb3" path="res://Sprites/Sparks/a5ec75b4-483e-4d93-adfc-ae9d362d7506.png" id="4_jgq66"]
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_d8ycr"]
+particle_flag_disable_z = true
+emission_shape = 1
+emission_sphere_radius = 24.1
+angle_min = 1.0728835e-05
+angle_max = 115.60001
+spread = 131.736
+gravity = Vector3(0, 98, 0)
+scale_min = 0.19999999
+scale_max = 0.19999999
+
+[sub_resource type="Animation" id="Animation_h4vqk"]
+resource_name = "active_pulse"
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_55i5y"]
+_data = {
+&"active_pulse": SubResource("Animation_h4vqk")
+}
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_55i5y"]
+lifetime_randomness = 0.56
+particle_flag_disable_z = true
+emission_shape = 1
+emission_sphere_radius = 105.6
+gravity = Vector3(0, 98, 0)
+scale_min = 0.39999998
+scale_max = 0.39999998
+
+[node name="Node2D" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_k3wd2")
+HintSpritePath = NodePath("Dot")
+HitParticlesPath = NodePath("Dot/Trail")
+
+[node name="Impact" type="GPUParticles2D" parent="."]
+z_index = 3
+texture = ExtResource("4_jgq66")
+lifetime = 0.27
+preprocess = 1.3
+speed_scale = 1.42
+explosiveness = 0.37
+randomness = 0.22
+process_material = SubResource("ParticleProcessMaterial_d8ycr")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+&"": SubResource("AnimationLibrary_55i5y")
+}
+
+[node name="Dot" type="Sprite2D" parent="."]
+z_index = 100
+scale = Vector2(0.7, 0.7)
+texture = ExtResource("3_1ylfs")
+
+[node name="Trail" type="GPUParticles2D" parent="Dot"]
+scale = Vector2(0.99999994, 0.99999994)
+amount = 40
+texture = ExtResource("4_jgq66")
+lifetime = 0.2
+explosiveness = 0.3
+randomness = 1.0
+process_material = SubResource("ParticleProcessMaterial_55i5y")

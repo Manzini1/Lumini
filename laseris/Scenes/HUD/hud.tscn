@@ -1,8 +1,10 @@
-[gd_scene load_steps=11 format=3 uid="uid://cjlpsqmplebt7"]
+[gd_scene load_steps=23 format=3 uid="uid://cjlpsqmplebt7"]
 
 [ext_resource type="PackedScene" uid="uid://c6ke6rhxkcjaw" path="res://Scenes/attack_ring.tscn" id="1_5aai8"]
 [ext_resource type="Script" uid="uid://q3ip6t83kbe7" path="res://Scripts/Controllers/HUDController.cs" id="1_a56j6"]
 [ext_resource type="PackedScene" uid="uid://dfbvhy3mx0bgs" path="res://Scenes/element_bar.tscn" id="2_a56j6"]
+[ext_resource type="Texture2D" uid="uid://j4rp5d7g3f2m" path="res://Sprites/HUD/attack.png" id="2_buuh3"]
+[ext_resource type="Texture2D" uid="uid://cwqv47tssnqb" path="res://Sprites/HUD/defend.png" id="3_sgblu"]
 [ext_resource type="Script" uid="uid://sug4mwjh5aod" path="res://Scenes/HUD/JudgementCornerController.cs" id="4_k83ni"]
 [ext_resource type="Texture2D" uid="uid://deabq8l4yxs5l" path="res://Sprites/HUD/perfect.png" id="5_1owdh"]
 [ext_resource type="Texture2D" uid="uid://b3icsb5mdxs68" path="res://Sprites/HUD/good.png" id="6_ewgg5"]
@@ -10,6 +12,84 @@
 [ext_resource type="Script" uid="uid://klihvf2gd4jr" path="res://Scripts/UI/HealthBarController.cs" id="8_7hg1w"]
 [ext_resource type="Texture2D" uid="uid://cmyiltjp2cyea" path="res://Sprites/HUD/hp_bar.png" id="8_isc6x"]
 [ext_resource type="Texture2D" uid="uid://b4vr4085ayf7i" path="res://Sprites/HUD/hp_value.png" id="9_7hg1w"]
+[ext_resource type="Texture2D" uid="uid://cixu4np5a1npu" path="res://Sprites/Element Stones - Sheets-20251216T032321Z-3-001/Element Stones - Sheets/FIRESTONE1.png" id="11_jx11y"]
+[ext_resource type="Script" uid="uid://dfcm5draqvgsv" path="res://Scripts/UI/EnemyIntentController.cs" id="11_oqfm8"]
+[ext_resource type="Texture2D" uid="uid://bxpar4vq61bem" path="res://Sprites/Element Stones - Sheets-20251216T032321Z-3-001/Element Stones - Sheets/WATERSTONE2.PNG" id="12_oqfm8"]
+[ext_resource type="Texture2D" uid="uid://c04iqtvse3djm" path="res://Sprites/Element Stones - Sheets-20251216T032321Z-3-001/Element Stones - Sheets/EARTHSTONE2.png" id="13_bw5kp"]
+[ext_resource type="Texture2D" uid="uid://2kckge8c2l8f" path="res://Sprites/Element Stones - Sheets-20251216T032321Z-3-001/Element Stones - Sheets/WINDSTONE2.png" id="14_buuh3"]
+[ext_resource type="Texture2D" uid="uid://cmqforhr7pt6" path="res://Sprites/Element Stones - Sheets-20251216T032321Z-3-001/Element Stones - Sheets/LIGHTNINGSTONE2.PNG" id="15_sgblu"]
+[ext_resource type="Texture2D" uid="uid://bsjbo7ipyl1xq" path="res://Sprites/Element Stones - Sheets-20251216T032321Z-3-001/Element Stones - Sheets/LUZ3.png" id="16_m64fl"]
+[ext_resource type="PackedScene" uid="uid://dus87xeqhl6p6" path="res://Scenes/ElementHintProjectile.tscn" id="20_sgblu"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_buuh3"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_buuh3")
+}],
+"loop": true,
+"name": &"attack",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("3_sgblu")
+}],
+"loop": true,
+"name": &"defend",
+"speed": 5.0
+}]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_7hg1w"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("11_jx11y")
+}],
+"loop": true,
+"name": &"e1",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("14_buuh3")
+}],
+"loop": true,
+"name": &"e2",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("12_oqfm8")
+}],
+"loop": true,
+"name": &"e3",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("15_sgblu")
+}],
+"loop": true,
+"name": &"e4",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("16_m64fl")
+}],
+"loop": true,
+"name": &"e5",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("13_bw5kp")
+}],
+"loop": true,
+"name": &"e6",
+"speed": 5.0
+}]
 
 [node name="HUD" type="CanvasLayer"]
 script = ExtResource("1_a56j6")
@@ -23,21 +103,30 @@ offset_bottom = 40.0
 
 [node name="PhaseLabel" type="Label" parent="Root"]
 layout_mode = 0
-offset_right = 40.0
-offset_bottom = 23.0
+offset_left = 96.0
+offset_top = 16.0
+offset_right = 136.0
+offset_bottom = 39.0
 
 [node name="TurnBar" type="ProgressBar" parent="Root"]
 layout_mode = 0
-offset_right = 4.0
-offset_bottom = 27.0
+offset_left = 48.0
+offset_top = 16.0
+offset_right = 52.0
+offset_bottom = 43.0
 
 [node name="FlowBar" type="ProgressBar" parent="Root"]
 layout_mode = 0
-offset_right = 4.0
-offset_bottom = 27.0
+offset_left = 128.0
+offset_top = 16.0
+offset_right = 132.0
+offset_bottom = 43.0
 
 [node name="ElementBar" parent="Root" instance=ExtResource("2_a56j6")]
 layout_mode = 1
+HintProjectileScene = ExtResource("20_sgblu")
+HintParentPath = NodePath("../ElementHints2/HintLayer")
+VfxParentPath = NodePath("../VfxLayer")
 
 [node name="RingsLayer" type="Control" parent="Root"]
 layout_mode = 1
@@ -84,6 +173,7 @@ offset_bottom = 23.0
 layout_mode = 0
 offset_right = 40.0
 offset_bottom = 40.0
+value = 100.0
 texture_under = ExtResource("8_isc6x")
 texture_over = ExtResource("8_isc6x")
 texture_progress = ExtResource("9_7hg1w")
@@ -105,8 +195,8 @@ script = ExtResource("8_7hg1w")
 layout_mode = 0
 offset_right = 40.0
 offset_bottom = 40.0
+value = 100.0
 texture_under = ExtResource("8_isc6x")
-texture_over = ExtResource("8_isc6x")
 texture_progress = ExtResource("9_7hg1w")
 
 [node name="Name" type="Label" parent="Root/HPBars/EnemyHP"]
@@ -119,3 +209,48 @@ offset_bottom = 23.0
 layout_mode = 0
 offset_right = 40.0
 offset_bottom = 23.0
+
+[node name="EnemyIntent" type="CanvasLayer" parent="Root"]
+visible = false
+script = ExtResource("11_oqfm8")
+
+[node name="ModeIcon" type="AnimatedSprite2D" parent="Root/EnemyIntent"]
+sprite_frames = SubResource("SpriteFrames_buuh3")
+animation = &"defend"
+
+[node name="ElementIcon" type="AnimatedSprite2D" parent="Root/EnemyIntent"]
+position = Vector2(24, -8)
+scale = Vector2(0.5, 0.5)
+sprite_frames = SubResource("SpriteFrames_7hg1w")
+animation = &"e3"
+
+[node name="VfxLayer" type="Control" parent="Root"]
+z_index = 50
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="ElementHints2" type="CanvasLayer" parent="Root"]
+layer = 2
+
+[node name="HintLayer" type="Control" parent="Root/ElementHints2"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="ElementHints" parent="Root/ElementHints2/HintLayer" instance=ExtResource("20_sgblu")]
+layout_mode = 0
+anchors_preset = 0
+anchor_right = 0.0
+anchor_bottom = 0.0
+grow_horizontal = 1
+grow_vertical = 1
+HintSpritePath = NodePath("Dot")
+HitParticlesPath = NodePath("Dot/Trail")
+
+[node name="Dot" parent="Root/ElementHints2/HintLayer/ElementHints" index="4"]
+modulate = Color(1, 1, 1, 1)
+self_modulate = Color(1, 1, 1, 1)
+
+[editable path="Root/ElementHints2/HintLayer/ElementHints"]

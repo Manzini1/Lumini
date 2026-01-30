@@ -15,10 +15,15 @@ public partial class FlowMeter : Node
 		Stacks = 0;
 	}
 
-	public void OnAttackHit()
+	public void Add(int amount)
 	{
 		if (MaxStacks <= 0) return;
-		Stacks = Mathf.Min(MaxStacks, Stacks + 1);
+		Stacks = Mathf.Clamp(Stacks + amount, 0, MaxStacks);
+	}
+
+	public void OnAttackHit()
+	{
+		Add(1);
 	}
 
 	public void OnAttackMiss()
@@ -26,7 +31,6 @@ public partial class FlowMeter : Node
 		Stacks = 0;
 	}
 
-	// multiplicador total (ex: 0 stacks = 1.0, 5 stacks com 0.08 = 1.40)
 	public float GetDamageMultiplier()
 	{
 		return 1f + (Stacks * DamagePerStack);

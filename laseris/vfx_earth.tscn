@@ -1,0 +1,29 @@
+[gd_scene load_steps=5 format=3 uid="uid://btxnac1kjb7dj"]
+
+[ext_resource type="Texture2D" uid="uid://dp3rok8iele05" path="res://Sprites/Sparks/rock.png" id="1_cwl24"]
+[ext_resource type="Script" uid="uid://cdwpuwnnrfnmc" path="res://RockRiseVfx.cs" id="1_fnjfo"]
+[ext_resource type="Texture2D" uid="uid://cixhn6dbuaktr" path="res://Sprites/Spells/boulder.png" id="2_kt35f"]
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_kt35f"]
+particle_flag_disable_z = true
+spread = 168.822
+initial_velocity_min = 368.61
+initial_velocity_max = 616.79
+gravity = Vector3(0, 98, 0)
+
+[node name="Vfx_Earth" type="Node2D"]
+z_index = 500
+script = ExtResource("1_fnjfo")
+
+[node name="Burst" type="GPUParticles2D" parent="."]
+emitting = false
+amount = 30
+texture = ExtResource("1_cwl24")
+lifetime = 0.23
+one_shot = true
+explosiveness = 0.91
+randomness = 1.0
+process_material = SubResource("ParticleProcessMaterial_kt35f")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2_kt35f")

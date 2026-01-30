@@ -6,18 +6,21 @@ public partial class HealthBarController : Control
 {
 	[ExportCategory("Refs")]
 	[Export] public NodePath NameLabelPath = "Name";
-	[Export] public NodePath BarPath = "Bar";
+	[Export] public NodePath BarPath = "Bar"; // agora aponta para TextureProgressBar
 	[Export] public NodePath ValueLabelPath = "Value";
 
 	private Label _name;
-	private ProgressBar _bar;
+	private TextureProgressBar _bar;
 	private Label _value;
 
 	public override void _Ready()
 	{
 		_name = GetNodeOrNull<Label>(NameLabelPath);
-		_bar = GetNodeOrNull<ProgressBar>(BarPath);
+		_bar  = GetNodeOrNull<TextureProgressBar>(BarPath);
 		_value = GetNodeOrNull<Label>(ValueLabelPath);
+
+		GD.Print($"[HealthBar] Ready at {GetPath()}");
+		GD.Print($"[HealthBar] refs: name={_name!=null} bar={_bar!=null} value={_value!=null}");
 
 		// defaults seguros
 		if (_bar != null)
@@ -26,6 +29,7 @@ public partial class HealthBarController : Control
 			_bar.MaxValue = 100;
 			_bar.Value = 100;
 		}
+
 		if (_value != null)
 			_value.Text = "";
 	}

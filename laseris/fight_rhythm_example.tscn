@@ -2,7 +2,7 @@
 
 [ext_resource type="PackedScene" uid="uid://nvoxx5jrd2g3" path="res://Scenes/Actors/Mage/Mage.tscn" id="1_jkru8"]
 [ext_resource type="PackedScene" uid="uid://bkqnb7eycpjn4" path="res://Scenes/Enemies/skeleton_archer.tscn" id="2_fydr6"]
-[ext_resource type="PackedScene" uid="uid://2tmenp3pypu5" path="res://rhythm_projectile.tscn" id="3_ffwpv"]
+[ext_resource type="PackedScene" uid="uid://2tmenp3pypu5" path="res://fire_arrow.tscn" id="3_ffwpv"]
 [ext_resource type="Script" uid="uid://cjm3u4me0qk1d" path="res://Scenes/CombatRhythmController.cs" id="3_xvuga"]
 [ext_resource type="Script" uid="uid://dkiuktmiv4lau" path="res://Scenes/RhythmHud.cs" id="4_ffwpv"]
 [ext_resource type="Script" uid="uid://i8v4xmcluf8o" path="res://Scripts/Combat/ElementCounterTable.cs" id="5_pdfhy"]

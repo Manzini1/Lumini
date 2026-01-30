@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://c0h61gspgrm3b"]
+
+[ext_resource type="Texture2D" uid="uid://bbqc64a6f4ny6" path="res://Sprites/Element Stones - Sheets-20251216T032321Z-3-001/Element Stones - Sheets/husk.png" id="1_ir5rp"]
+
+[node name="Hint" type="Node2D"]
+
+[node name="HintSprite" type="Sprite2D" parent="."]
+texture = ExtResource("1_ir5rp")

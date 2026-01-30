@@ -1,4 +1,4 @@
-[gd_scene load_steps=42 format=3 uid="uid://y8elah67a2l5"]
+[gd_scene load_steps=39 format=3 uid="uid://y8elah67a2l5"]
 
 [ext_resource type="Texture2D" uid="uid://4lwdexkkbsx8" path="res://Sprites/Backgrounds/TrainingGrounds/tg1.png" id="1_iessl"]
 [ext_resource type="Script" uid="uid://da3bj42sd1s37" path="res://Scripts/Controllers/TargetController.cs" id="1_nd45q"]
@@ -21,13 +21,10 @@
 [ext_resource type="PackedScene" uid="uid://bfa8nl2bkifkm" path="res://Scenes/VFX/Shields/shield_aura_vfx.tscn" id="12_yb1cs"]
 [ext_resource type="Script" uid="uid://cg1xcebur56j" path="res://Scripts/Controllers/EnemySpawner.cs" id="13_jh4eh"]
 [ext_resource type="PackedScene" uid="uid://cs5fwr1hp3mq0" path="res://Scenes/VFX/Frames/impact.tscn" id="13_kf538"]
-[ext_resource type="Script" uid="uid://cr8f8fsvx2wy" path="res://Scripts/Enemies/EnemyData.cs" id="14_lqmdg"]
 [ext_resource type="Script" uid="uid://bwpsu4720ss1v" path="res://Scenes/CameraShake2D.cs" id="15_eh108"]
 [ext_resource type="Resource" uid="uid://10x6ls6i6x31" path="res://Data/Enemies/TargetDummy.tres" id="15_kijot"]
-[ext_resource type="Script" uid="uid://6y0e6om13xay" path="res://Scenes/SelectionCircleRouter.cs" id="16_vpk1m"]
 [ext_resource type="Script" uid="uid://dli8gedcp281f" path="res://Scripts/UI/TugHud.cs" id="16_yb1cs"]
 [ext_resource type="PackedScene" uid="uid://gh64gkf53635" path="res://Scenes/UI/channel_cast_bar.tscn" id="17_kf538"]
-[ext_resource type="PackedScene" uid="uid://c47vuenj2kwlr" path="res://Scenes/selection_circle.tscn" id="17_wiiyd"]
 [ext_resource type="Script" uid="uid://gkrsohxktluh" path="res://Scenes/StunOverlay.cs" id="19_ea06w"]
 [ext_resource type="AudioStream" uid="uid://dujkbe2l7pom3" path="res://Audio/HUDSFX/impact_cinematic.ogg" id="20_ud4jx"]
 [ext_resource type="Script" uid="uid://novdwbcjm2eb" path="res://Scenes/StunFeedbackController.cs" id="21_1npqg"]
@@ -127,12 +124,6 @@ position = Vector2(1448, 864)
 position = Vector2(1720, 880)
 
 [node name="SelectionCircleRouter" type="Node" parent="World"]
-script = ExtResource("16_vpk1m")
-TargetControllerPath = NodePath("../TargetController")
-SelectionCircleScene = ExtResource("17_wiiyd")
-ExtraOffset = Vector2(0, 10)
-ZBelowEnemy = -1
-SlotCircleMarkers = Array[NodePath]([NodePath("../SelectionAnchors/Enemy_0"), NodePath("../SelectionAnchors/Enemy_1"), NodePath("../SelectionAnchors/Enemy_2")])
 
 [node name="HUD" type="CanvasLayer" parent="."]
 
@@ -218,6 +209,30 @@ text = "Back"
 [node name="HBoxContainer" parent="HUD/ElementHUD" index="0"]
 offset_top = 656.0
 offset_bottom = 696.0
+
+[node name="FogoSprite" parent="HUD/ElementHUD/HBoxContainer" index="0"]
+script = null
+
+[node name="SombraSprite" parent="HUD/ElementHUD/HBoxContainer" index="1"]
+script = null
+
+[node name="RaioSprite" parent="HUD/ElementHUD/HBoxContainer" index="2"]
+script = null
+
+[node name="GeloSprite" parent="HUD/ElementHUD/HBoxContainer" index="3"]
+script = null
+
+[node name="TerraSprite" parent="HUD/ElementHUD/HBoxContainer" index="4"]
+script = null
+
+[node name="Vento" parent="HUD/ElementHUD/HBoxContainer" index="5"]
+script = null
+
+[node name="VenenoSprite" parent="HUD/ElementHUD/HBoxContainer" index="6"]
+script = null
+
+[node name="LuzSprite" parent="HUD/ElementHUD/HBoxContainer" index="7"]
+script = null
 
 [node name="ElementController" parent="HUD/ElementHUD" index="1" groups=["element_controller"]]
 TugManagerPath = NodePath("")
@@ -340,7 +355,7 @@ script = ExtResource("13_jh4eh")
 EnemiesParentPath = NodePath("../World/Enemies")
 EnemyScene = ExtResource("1_pxb5y")
 SlotMarkers = Array[NodePath]([NodePath("../SpawnSlots/Slot1"), NodePath("../SpawnSlots/Slot2"), NodePath("../SpawnSlots/Slot3")])
-EnemiesToSpawn = Array[ExtResource("14_lqmdg")]([ExtResource("15_kijot"), ExtResource("15_kijot"), ExtResource("15_kijot")])
+EnemiesToSpawn = [ExtResource("15_kijot"), ExtResource("15_kijot"), ExtResource("15_kijot")]
 
 [node name="SfxPlayer" type="Node" parent="."]
 script = ExtResource("30_6hcab")

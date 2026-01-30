@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3 uid="uid://k77em0ts4tg7"]
+[gd_scene load_steps=18 format=3 uid="uid://k77em0ts4tg7"]
 
 [ext_resource type="Script" uid="uid://coc8w2xsksd0x" path="res://Scripts/Battle/BattleController.cs" id="1_02hj4"]
 [ext_resource type="PackedScene" uid="uid://nvoxx5jrd2g3" path="res://Scenes/Actors/Mage/Mage.tscn" id="2_5mge4"]
@@ -9,44 +9,85 @@
 [ext_resource type="Script" uid="uid://dyuemocsthcd8" path="res://Scripts/Battle/TurnManager.cs" id="5_36cr5"]
 [ext_resource type="Script" uid="uid://bdh7m4tsvc1xr" path="res://Scripts/Battle/InputJudge.cs" id="6_6tvrj"]
 [ext_resource type="Script" uid="uid://dl7uwh5uj2vlc" path="res://Scripts/Battle/AttackPattern.cs" id="7_ik5sk"]
+[ext_resource type="PackedScene" uid="uid://dskdgkpsg2ad6" path="res://attack_circle.tscn" id="7_sufya"]
 [ext_resource type="Script" uid="uid://d1y1qdubx4x0p" path="res://Scripts/Battle/FlowMeter.cs" id="8_sufya"]
 [ext_resource type="PackedScene" uid="uid://cjlpsqmplebt7" path="res://Scenes/HUD/hud.tscn" id="9_n1ain"]
 [ext_resource type="Texture2D" uid="uid://4lwdexkkbsx8" path="res://Sprites/Backgrounds/TrainingGrounds/tg1.png" id="12_68j0i"]
+[ext_resource type="Script" uid="uid://bf2vsyi1to3sg" path="res://Scripts/Combat/ElementVfxLibrary.cs" id="14_6tvrj"]
+[ext_resource type="PackedScene" uid="uid://btxnac1kjb7dj" path="res://vfx_earth.tscn" id="15_ik5sk"]
+[ext_resource type="PackedScene" uid="uid://dgld5kxx6w8i8" path="res://Scenes/VFX/beam_spell_vfx.tscn" id="17_n1ain"]
 
 [sub_resource type="Resource" id="Resource_36cr5"]
 script = ExtResource("3_68j0i")
 Music = ExtResource("2_hopcy")
 BeatmapJsonPath = "res://SongMarkers/A rogue with no stealth skills/beatmap.json"
 PrepareLeadSeconds = 0.4
-HitWindowSeconds = 0.3
+HitWindowSeconds = 0.2
 metadata/_custom_type_script = "uid://bcnklqjcg5wwp"
 
 [node name="BattleScene" type="Node2D"]
 script = ExtResource("1_02hj4")
 Phase = SubResource("Resource_36cr5")
+EnemyElementCyclePath = NodePath("World/Characters/Enemy/EnemyElementCycleController")
 
 [node name="World" type="Node2D" parent="."]
 
 [node name="Characters" type="Node2D" parent="World"]
 
 [node name="Mage" parent="World/Characters" instance=ExtResource("2_5mge4")]
-position = Vector2(32, -24)
+position = Vector2(352, 736)
+
+[node name="Shield" parent="World/Characters/Mage" index="5"]
+animation = &"e4"
 
 [node name="Enemy" parent="World/Characters" instance=ExtResource("3_hopcy")]
 position = Vector2(104, -40)
 
+[node name="Protection" parent="World/Characters/Enemy" index="8"]
+ChangeEverySeconds = 4.1
+
 [node name="Vfx" type="Node2D" parent="World"]
+
+[node name="AttackCircle" parent="World/Vfx" instance=ExtResource("7_sufya")]
 
 [node name="Projectiles" type="Node2D" parent="World"]
 
 [node name="HUD" parent="." instance=ExtResource("9_n1ain")]
 RingSize = Vector2(180, 180)
 
+[node name="PhaseLabel" parent="HUD/Root" index="0"]
+offset_left = 640.0
+offset_top = 64.0
+offset_right = 680.0
+offset_bottom = 87.0
+
+[node name="TurnBar" parent="HUD/Root" index="1"]
+offset_left = 392.0
+offset_top = 56.0
+offset_right = 396.0
+offset_bottom = 83.0
+
+[node name="FlowBar" parent="HUD/Root" index="2"]
+offset_left = 512.0
+offset_top = 56.0
+offset_right = 516.0
+offset_bottom = 83.0
+
+[node name="ElementBar" parent="HUD/Root" index="3"]
+DifficultyMode = 1
+
 [node name="JudgementCorner" parent="HUD/Root" index="5"]
 offset_left = 328.0
 offset_top = 456.00003
 offset_right = 428.0
 offset_bottom = 556.0
+
+[node name="ModeIcon" parent="HUD/Root/EnemyIntent" index="0"]
+position = Vector2(168, 144)
+scale = Vector2(3.4893692, 3.381637)
+
+[node name="ElementIcon" parent="HUD/Root/EnemyIntent" index="1"]
+position = Vector2(1832, 1016)
 
 [node name="Background" type="Sprite2D" parent="."]
 z_index = -999
@@ -67,6 +108,7 @@ script = ExtResource("5_36cr5")
 
 [node name="InputJudge" type="Node" parent="Systems"]
 script = ExtResource("6_6tvrj")
+PerfectWindowFraction = 0.3
 
 [node name="AttackPattern" type="Node" parent="Systems"]
 script = ExtResource("7_ik5sk")
@@ -74,6 +116,15 @@ script = ExtResource("7_ik5sk")
 [node name="FlowMeter" type="Node" parent="Systems"]
 script = ExtResource("8_sufya")
 
+[node name="ElementVfxLibrary" type="Node" parent="Systems"]
+script = ExtResource("14_6tvrj")
+MageCastAnimByElementId = PackedStringArray("e3", "e3", "e3", "e3", "e3", "e3", "e3")
+CastVfxByElementId = [ExtResource("15_ik5sk"), ExtResource("15_ik5sk"), ExtResource("15_ik5sk"), ExtResource("15_ik5sk"), ExtResource("15_ik5sk"), ExtResource("15_ik5sk"), ExtResource("17_n1ain")]
+ImpactVfxByElementId = [null, null, null, null, null, null, ExtResource("17_n1ain"), null]
+
+[editable path="World/Characters/Mage"]
+[editable path="World/Characters/Mage/WeaponSocket/Weapon/StaffBasic"]
 [editable path="World/Characters/Enemy"]
 [editable path="HUD"]
 [editable path="HUD/Root/ElementBar"]
+[editable path="HUD/Root/ElementHints2/HintLayer/ElementHints"]

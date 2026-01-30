@@ -1,5 +1,5 @@
 using Godot;
-using System;
+using Game.Combat;
 
 namespace Game.Characters;
 
@@ -8,117 +8,89 @@ public partial class EnemyController : Node2D
 	[Signal] public delegate void HealthChangedEventHandler(int current, int max);
 	[Signal] public delegate void DiedEventHandler();
 
-	public AnimatedSprite2D Sprite { get; private set; }
-	public AnimatedSprite2D AttackHint { get; private set; }
-	public Marker2D Muzzle { get; private set; }
-	public Sprite2D StanceIcon { get; private set; }
-
-	[ExportGroup("Projectile")]
-	[Export] public PackedScene RhythmProjectileScene;
-	[Export] public int BaseDamage = 10;
-
 	[ExportGroup("Stats")]
 	[Export] public int MaxHp = 80;
-	[Export] public bool DebugPrints = false;
+	[Export] public int BaseDamage = 10;
 
-	// ======================
-	// STANCES (por tempo)
-	// ======================
-	[ExportGroup("Stances")]
-	[Export] public int StanceCount = 1;          // 1 ou 2
-	[Export] public int StanceAElementId = 1;     // 1..N
-	[Export] public int StanceBElementId = 2;     // 1..N (se StanceCount=2)
+	[ExportGroup("Projectile (fallback)")]
+	[Export] public PackedScene RhythmProjectileScene;
 
-	// Fração do turno em stance A (0.5 = metade/metade)
-	[Export(PropertyHint.Range, "0.0,1.0,0.01")]
-	public float StanceSplit = 0.5f;
+	[ExportGroup("Elemental Projectiles")]
+	[Export] public PackedScene[] ProjectileByElementId = new PackedScene[8]; // 1..6
 
-	// Texturas por elemento: index = elementId-1
-	[ExportGroup("Stances")]
-	[Export] public Godot.Collections.Array<Texture2D> ElementTextures = new();
+	[ExportGroup("Refs")]
+	[Export] public NodePath SpritePath = "Sprite";
+	[Export] public NodePath MuzzlePath = "WeaponSocket";
+	[Export] public NodePath GroundPointPath = "GroundPoint";
+	[Export] public NodePath HitPointPath = "HitPoint";
 
-	[ExportGroup("Stances")]
-	[Export] public bool PulseIconOnChange = true;
+	[ExportGroup("Stance (opcional)")]
+	[Export] public NodePath StanceIconPath = "StanceIcon";
+
+	[ExportGroup("VFX (opcional)")]
+	[Export] public PackedScene DamagePopupScene;
+	[Export] public NodePath DamagePopupParentPath = "../../Vfx";
+	[Export] public Vector2 DamagePopupOffset = new Vector2(0, -48);
+
+	private AnimatedSprite2D _sprite;
+	private Marker2D _muzzle;
+	private Marker2D _groundPoint;
+	private Marker2D _hitPoint;
+
+	private Node _stanceIcon;
+	private Node2D _damagePopupParent;
 
 	public int Hp { get; private set; }
 	public bool IsDead => Hp <= 0;
 
+	public int CurrentStanceElement { get; private set; } = 1;
+
 	public override void _Ready()
 	{
-		Sprite = GetNode<AnimatedSprite2D>("Sprite");
-		AttackHint = GetNode<AnimatedSprite2D>("AttackHint");
-		Muzzle = GetNode<Marker2D>("Muzzle");
+		_sprite = GetNodeOrNull<AnimatedSprite2D>(SpritePath);
+		_muzzle = GetNodeOrNull<Marker2D>(MuzzlePath);
+		_groundPoint = GetNodeOrNull<Marker2D>(GroundPointPath);
+		_hitPoint = GetNodeOrNull<Marker2D>(HitPointPath);
 
-		StanceIcon = GetNodeOrNull<Sprite2D>("StanceIcon");
-		SetStanceIconVisible(false);
+		_stanceIcon = GetNodeOrNull<Node>(StanceIconPath);
+		_damagePopupParent = GetNodeOrNull<Node2D>(DamagePopupParentPath);
 
 		Hp = MaxHp;
 		EmitSignal(SignalName.HealthChanged, Hp, MaxHp);
 
-		PlayIfExists(Sprite, "idle"); // se você usa "default", troque aqui
+		PlayIdle();
 	}
 
-	// progress01 = 0..1 dentro do turno atual do inimigo
-	public int GetStanceElementForTurnProgress(double progress01)
+	public Vector2 GetMuzzleGlobal() => _muzzle != null ? _muzzle.GlobalPosition : GlobalPosition;
+	public Vector2 GetGroundPointGlobal() => _groundPoint != null ? _groundPoint.GlobalPosition : GlobalPosition;
+	public Vector2 GetHitPointGlobal() => _hitPoint != null ? _hitPoint.GlobalPosition : GlobalPosition;
+
+	public void PlayPrepare() => PlayAny(_sprite, "prepare");
+	public void PlayShoot() => PlayAny(_sprite, "shoot");
+	public void PlayHit() => PlayAny(_sprite, "hit");
+	private void PlayIdle() => PlayAny(_sprite, "default", "idle");
+
+	private static bool PlayAny(AnimatedSprite2D sprite, params string[] anims)
 	{
-		if (StanceCount <= 1) return StanceAElementId;
+		if (sprite?.SpriteFrames == null) return false;
 
-		double p = Math.Clamp(progress01, 0.0, 1.0);
-		return p < StanceSplit ? StanceAElementId : StanceBElementId;
-	}
-
-	public void SetStanceIconVisible(bool visible)
-	{
-		if (StanceIcon != null) StanceIcon.Visible = visible;
-	}
-
-	public void SetStanceElementHint(int elementId, bool pulse)
-	{
-		if (StanceIcon == null) return;
-
-		int idx = elementId - 1;
-		if (idx >= 0 && idx < ElementTextures.Count && ElementTextures[idx] != null)
-			StanceIcon.Texture = ElementTextures[idx];
-
-		if (pulse && PulseIconOnChange)
+		foreach (var a in anims)
 		{
-			var t = CreateTween();
-			StanceIcon.Scale = Vector2.One * 0.9f;
-
-			t.TweenProperty(StanceIcon, "scale", Vector2.One * 1.15f, 0.06f)
-			 .SetEase(Tween.EaseType.Out).SetTrans(Tween.TransitionType.Back);
-			t.TweenProperty(StanceIcon, "scale", Vector2.One, 0.10f)
-			 .SetEase(Tween.EaseType.Out).SetTrans(Tween.TransitionType.Sine);
+			if (sprite.SpriteFrames.HasAnimation(a))
+			{
+				if (sprite.Animation == a && sprite.IsPlaying()) return true;
+				sprite.Play(a);
+				return true;
+			}
 		}
+		return false;
 	}
 
-	public void PlayPrepare() => PlayIfExists(AttackHint, "prepare");
-	public void PlayShoot() => PlayIfExists(AttackHint, "shoot");
-
-	public void ShootAt(Node2D projectilesParent, Node2D mage, int damage, bool blocked)
+	public PackedScene GetProjectileSceneForElement(int elementId)
 	{
-		if (RhythmProjectileScene == null || projectilesParent == null || mage == null)
-			return;
-
-		var inst = RhythmProjectileScene.Instantiate();
-		if (inst is not Node2D projNode)
-		{
-			inst.QueueFree();
-			return;
-		}
-
-		projectilesParent.AddChild(projNode);
-
-		if (projNode.HasMethod("Launch"))
-			projNode.Call("Launch", Muzzle.GlobalPosition, mage, damage, blocked);
-		else
-		{
-			GD.PushError("Projectile scene não tem método Launch(startWorld, mage, damage, blocked).");
-			projNode.QueueFree();
-		}
-
-		if (DebugPrints)
-			GD.Print($"[Enemy] ShootAt blocked={blocked} dmg={damage}");
+		if (ProjectileByElementId == null) return null;
+		if (elementId < 1 || elementId >= ProjectileByElementId.Length) return null;
+		return ProjectileByElementId[elementId];
 	}
 
 	public void ApplyDamage(int amount)
@@ -127,22 +99,69 @@ public partial class EnemyController : Node2D
 
 		int dmg = Mathf.Max(0, amount);
 		Hp = Mathf.Max(0, Hp - dmg);
+
 		EmitSignal(SignalName.HealthChanged, Hp, MaxHp);
 
-		PlayIfExists(Sprite, "hurt"); // se você usa "hit", troque aqui
+		if (dmg > 0)
+			ShowDamagePopupText(dmg.ToString(), Colors.OrangeRed, 1.7f);
+
+		PlayHit();
 
 		if (Hp <= 0)
-		{
-			PlayIfExists(Sprite, "dead");
 			EmitSignal(SignalName.Died);
+	}
+
+	public void ShowDamagePopupText(string text, Color color, float scaleMult = 1.0f)
+	{
+		if (DamagePopupScene == null || _damagePopupParent == null) return;
+
+		var inst = DamagePopupScene.Instantiate();
+		if (inst is not Node2D popupNode) { inst.QueueFree(); return; }
+
+		_damagePopupParent.AddChild(popupNode);
+		popupNode.GlobalPosition = GlobalPosition + DamagePopupOffset;
+
+		if (inst.HasMethod("ShowText"))
+			inst.Call("ShowText", text, color, scaleMult);
+	}
+
+	public void SetStanceElementHint(int elementId, bool pulse)
+	{
+		CurrentStanceElement = elementId;
+
+		if (_stanceIcon is AnimatedSprite2D stanceSprite && stanceSprite.SpriteFrames != null)
+		{
+			string anim = $"e{elementId}";
+			if (stanceSprite.SpriteFrames.HasAnimation(anim))
+			{
+				stanceSprite.Visible = true;
+				stanceSprite.Play(anim);
+			}
+
+			if (pulse)
+			{
+				stanceSprite.Scale = Vector2.One * 1.1f;
+				var tw = CreateTween();
+				tw.TweenProperty(stanceSprite, "scale", Vector2.One, 0.08f);
+			}
 		}
 	}
 
-	private static void PlayIfExists(AnimatedSprite2D spr, string anim)
+	public RhythmProjectile ShootAt(Node2D projectilesParent, MageController mage, int damageOnHit)
 	{
-		if (spr?.SpriteFrames == null) return;
-		if (!spr.SpriteFrames.HasAnimation(anim)) return;
-		if (spr.Animation == anim && spr.IsPlaying()) return;
-		spr.Play(anim);
+		if (RhythmProjectileScene == null) { GD.PushWarning("EnemyController: RhythmProjectileScene null."); return null; }
+		if (projectilesParent == null || mage == null) return null;
+
+		var inst = RhythmProjectileScene.Instantiate();
+		if (inst is not RhythmProjectile proj) { inst.QueueFree(); return null; }
+
+		projectilesParent.AddChild(proj);
+
+		Vector2 start = GetMuzzleGlobal();
+		Vector2 block = mage.GetBlockPointGlobal();
+		Vector2 hit = mage.GetHitPointGlobal();
+
+		proj.Launch(start, mage, block, hit, damageOnHit);
+		return proj;
 	}
 }
