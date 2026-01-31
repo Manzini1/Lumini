@@ -75,6 +75,7 @@ offset_bottom = 83.0
 
 [node name="ElementBar" parent="HUD/Root" index="3"]
 DifficultyMode = 1
+TurnOverlayPath = NodePath("../ColorRect")
 
 [node name="JudgementCorner" parent="HUD/Root" index="5"]
 offset_left = 328.0

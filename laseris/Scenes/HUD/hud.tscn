@@ -1,4 +1,4 @@
-[gd_scene load_steps=23 format=3 uid="uid://cjlpsqmplebt7"]
+[gd_scene load_steps=25 format=3 uid="uid://cjlpsqmplebt7"]
 
 [ext_resource type="PackedScene" uid="uid://c6ke6rhxkcjaw" path="res://Scenes/attack_ring.tscn" id="1_5aai8"]
 [ext_resource type="Script" uid="uid://q3ip6t83kbe7" path="res://Scripts/Controllers/HUDController.cs" id="1_a56j6"]
@@ -20,6 +20,8 @@
 [ext_resource type="Texture2D" uid="uid://cmqforhr7pt6" path="res://Sprites/Element Stones - Sheets-20251216T032321Z-3-001/Element Stones - Sheets/LIGHTNINGSTONE2.PNG" id="15_sgblu"]
 [ext_resource type="Texture2D" uid="uid://bsjbo7ipyl1xq" path="res://Sprites/Element Stones - Sheets-20251216T032321Z-3-001/Element Stones - Sheets/LUZ3.png" id="16_m64fl"]
 [ext_resource type="PackedScene" uid="uid://dus87xeqhl6p6" path="res://Scenes/ElementHintProjectile.tscn" id="20_sgblu"]
+[ext_resource type="Script" uid="uid://dm0obhwmh5rjh" path="res://Scenes/HUD/TurnOverlayController.cs" id="21_m64fl"]
+[ext_resource type="PackedScene" uid="uid://d2k23gclvvenn" path="res://TurnBanner.tscn" id="22_fdfw3"]
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_buuh3"]
 animations = [{
@@ -246,11 +248,20 @@ anchor_right = 0.0
 anchor_bottom = 0.0
 grow_horizontal = 1
 grow_vertical = 1
-HintSpritePath = NodePath("Dot")
-HitParticlesPath = NodePath("Dot/Trail")
 
-[node name="Dot" parent="Root/ElementHints2/HintLayer/ElementHints" index="4"]
-modulate = Color(1, 1, 1, 1)
-self_modulate = Color(1, 1, 1, 1)
+[node name="ColorRect" type="ColorRect" parent="Root"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(50.080544, 27.199532)
+mouse_filter = 2
+mouse_behavior_recursive = 1
+color = Color(1, 1, 1, 0)
+script = ExtResource("21_m64fl")
+
+[node name="Canvas" parent="Root" instance=ExtResource("22_fdfw3")]
 
 [editable path="Root/ElementHints2/HintLayer/ElementHints"]

@@ -1,0 +1,40 @@
+[gd_scene load_steps=3 format=3 uid="uid://d2k23gclvvenn"]
+
+[ext_resource type="Script" uid="uid://n24ekg6mqrx5" path="res://Scripts/UI/TurnBanner.cs" id="1_cugpi"]
+[ext_resource type="FontFile" uid="uid://cv4ep4688461r" path="res://fonts/Jacquard_12/Jacquard12-Regular.ttf" id="2_m7nr3"]
+
+[node name="Canvas" type="CanvasLayer"]
+
+[node name="TurnBanner" type="Control" parent="."]
+custom_minimum_size = Vector2(520, 64)
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+pivot_offset = Vector2(260, 32)
+mouse_filter = 2
+script = ExtResource("1_cugpi")
+BackdropPath = NodePath("ColorRect")
+
+[node name="Label" type="Label" parent="TurnBanner"]
+layout_mode = 0
+offset_right = 54.0
+offset_bottom = 23.0
+theme_override_colors/font_color = Color(1, 1, 1, 0.8352941)
+theme_override_constants/outline_size = 8
+theme_override_fonts/font = ExtResource("2_m7nr3")
+theme_override_font_sizes/font_size = 44
+text = "Attack!"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_trim_flags = 0
+
+[node name="ColorRect" type="ColorRect" parent="TurnBanner"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.5
+anchor_right = 0.5
+offset_right = 40.0
+offset_bottom = 40.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0)

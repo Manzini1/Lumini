@@ -9,6 +9,9 @@ namespace Game.UI
 	{
 		public enum HintDifficulty { Normal = 0, Hard = 1 }
 
+		[ExportGroup("Debug")]
+		[Export] public bool DebugLogs = false;
+
 		[ExportGroup("Difficulty")]
 		[Export] public HintDifficulty DifficultyMode = HintDifficulty.Normal;
 
@@ -30,7 +33,10 @@ namespace Game.UI
 		[Export] public float DefaultLeadSeconds = 0.50f;
 
 		[ExportGroup("Hard Mode Decoys")]
-		[Export] public float HardDecoyFadeOut = 0.08f;     // os 5 decoys somem rápido sem shake
+		[Export] public float HardDecoyFadeOut = 0.08f;
+
+		[ExportGroup("Turn Visual Overlay")]
+		[Export] public NodePath TurnOverlayPath;          // ColorRect com TurnOverlayController (opcional)
 
 		[ExportGroup("VFX")]
 		[Export] public PackedScene RuneHitVfxScene;
@@ -51,14 +57,15 @@ namespace Game.UI
 		private int[] _beatToken = Array.Empty<int>();
 		private int[] _resolveToken = Array.Empty<int>();
 
-		private Node _hintParent;
+		private Control _hintParent; // IMPORTANT: Control (CanvasItem) pra usar GlobalPosition
+		private TurnOverlayController _turnOverlay;
 
 		// ===== Active hints management =====
 		private class ActiveHint
 		{
 			public ElementHintProjectile Proj;
-			public int RuneIdx;              // 0..N-1 (coluna)
-			public int CounterElementId;     // elemento do counter desta nota
+			public int RuneIdx;              // coluna 0..N-1
+			public int CounterElementId;     // elemento do counter da nota
 			public double BeatSec;
 		}
 
@@ -79,7 +86,14 @@ namespace Game.UI
 			LoadElements();
 			CacheBaseScales();
 			ResolveHintParent();
+			ResolveTurnOverlay();
 			ClearAll();
+
+			if (DebugLogs)
+			{
+				GD.Print($"[ElementBar] Ready. elems={_elems.Length} hintParent={_hintParent?.GetPath()}");
+				GD.Print($"[ElementBar] HintProjectileScene={(HintProjectileScene != null ? "OK" : "NULL")}");
+			}
 		}
 
 		private void ResolveHintParent()
@@ -88,18 +102,34 @@ namespace Game.UI
 
 			if (HintParentPath == null || HintParentPath.IsEmpty)
 			{
-				GD.PushWarning("[ElementBar] HintParentPath vazio. Vou usar o próprio ElementBar como parent.");
+				GD.PushWarning("[ElementBar] HintParentPath vazio. Vou usar o próprio ElementBar como parent (pode dar clipping).");
 				return;
 			}
 
 			var p = GetNodeOrNull<Node>(HintParentPath);
 			if (p == null)
 			{
-				GD.PushWarning($"[ElementBar] Não achei parent em HintParentPath: {HintParentPath}. Vou usar ElementBar.");
+				GD.PushWarning($"[ElementBar] Não achei node em HintParentPath: {HintParentPath}. Vou usar ElementBar.");
 				return;
 			}
 
-			_hintParent = p;
+			if (p is not Control c)
+			{
+				GD.PushWarning($"[ElementBar] HintParentPath aponta para {p.GetType().Name}, mas precisa ser Control. Vou usar ElementBar.");
+				return;
+			}
+
+			_hintParent = c;
+		}
+
+		private void ResolveTurnOverlay()
+		{
+			_turnOverlay = null;
+			if (TurnOverlayPath == null || TurnOverlayPath.IsEmpty) return;
+
+			_turnOverlay = GetNodeOrNull<TurnOverlayController>(TurnOverlayPath);
+			if (_turnOverlay == null)
+				GD.PushWarning($"[ElementBar] TurnOverlayPath não achou TurnOverlayController: {TurnOverlayPath}");
 		}
 
 		// ============================
@@ -111,11 +141,13 @@ namespace Game.UI
 		public void SetMode(int sideId)
 		{
 			_modeSideId = sideId;
-			bool isPlayerTurn = sideId == 1;
+			bool isPlayerTurn = sideId == 1; // 1=ATK, 0=DEF
 			_hintsEnabledThisTurn = isPlayerTurn;
 
+			_turnOverlay?.SetTurn(sideId);
+
 			if (HideHintsOnDefense && !isPlayerTurn)
-				StopAllHints();
+				StopAllHints(); // se você quiser “deixar completar” em vez de matar, a gente ajusta aqui
 		}
 
 		public void ClearAll()
@@ -174,15 +206,11 @@ namespace Game.UI
 
 			float usedLead = leadSeconds > 0 ? leadSeconds : DefaultLeadSeconds;
 
-			var batch = new CueBatch
-			{
-				CounterElementId = counterElementId,
-				BeatSec = beatSec
-			};
+			var batch = new CueBatch { CounterElementId = counterElementId, BeatSec = beatSec };
 
 			if (DifficultyMode == HintDifficulty.Normal)
 			{
-				// NORMAL: nasce só na coluna do counter, com cor do counter
+				// nasce só na coluna do counter e com cor do counter
 				if (!TryGetIdx(counterElementId, out int idx)) return;
 
 				Color counterColor = GetElementColor(counterElementId);
@@ -191,19 +219,22 @@ namespace Game.UI
 			}
 			else
 			{
-				// HARD: nasce nas 6 colunas, cada uma com sua cor respectiva
+				// HARD: nasce nas colunas, cada uma com a cor da própria lane
 				for (int i = 0; i < _elems.Length; i++)
 				{
 					if (_elems[i] == null) continue;
 
-					Color laneColor = GetElementColor(i + 1); // <<< cor da coluna
+					Color laneColor = GetElementColor(i + 1); // cor da coluna
 					var h = SpawnHintOnRune(i, counterElementId, beatSec, nowSec, usedLead, laneColor);
 					if (h != null) batch.Hints.Add(h);
 				}
 			}
 
 			if (batch.Hints.Count > 0)
+			{
 				_pendingCueBatches.Enqueue(batch);
+				if (DebugLogs) GD.Print($"[ElementBar] Cue batch queued: counter={counterElementId} beat={beatSec:0.000} hints={batch.Hints.Count}");
+			}
 		}
 
 		public void BeatPop(int elementId)
@@ -219,8 +250,7 @@ namespace Game.UI
 		public void Resolve(int pressedElementId, int gradeId)
 		{
 			ulong frame = Engine.GetProcessFrames();
-			if (_lastResolveFrame == frame)
-				return;
+			if (_lastResolveFrame == frame) return;
 			_lastResolveFrame = frame;
 
 			// feedback na barra do botão apertado
@@ -243,9 +273,8 @@ namespace Game.UI
 				}
 			}
 
-			// aplica no batch FIFO (1 só)
-			if (_pendingCueBatches.Count == 0)
-				return;
+			// aplica em 1 batch FIFO
+			if (_pendingCueBatches.Count == 0) return;
 
 			var batch = _pendingCueBatches.Dequeue();
 			var gradeFinal = (JudgementGrade)gradeId;
@@ -254,11 +283,14 @@ namespace Game.UI
 			RemoveBatchFromActive(batch);
 		}
 
+		// ============================
+		// Hint feedback
+		// ============================
+
 		private void ApplyHintFeedback(CueBatch batch, JudgementGrade grade)
 		{
 			if (batch == null) return;
 
-			// NORMAL: batch tem 1 hint só
 			if (DifficultyMode == HintDifficulty.Normal)
 			{
 				for (int i = 0; i < batch.Hints.Count; i++)
@@ -272,8 +304,7 @@ namespace Game.UI
 				return;
 			}
 
-			// HARD:
-			// Só o hint da coluna do counter recebe hit/miss.
+			// HARD: só coluna do counter recebe hit/miss; decoys somem suave
 			int counterIdx = batch.CounterElementId - 1;
 
 			for (int i = 0; i < batch.Hints.Count; i++)
@@ -329,13 +360,17 @@ namespace Game.UI
 			}
 		}
 
+		// ============================
+		// Spawning
+		// ============================
+
 		private ActiveHint SpawnHintOnRune(
 			int runeIdx,
 			int counterElementId,
 			double beatSec,
 			double nowSec,
 			float leadSeconds,
-			Color spawnColor) // <<< cor que realmente vai no projétil
+			Color spawnColor)
 		{
 			var rune = _elems[runeIdx];
 			if (rune == null) return null;
@@ -348,12 +383,21 @@ namespace Game.UI
 				return null;
 			}
 
+			// adiciona no parent correto (Control dentro do CanvasLayer)
 			_hintParent.AddChild(proj);
 
-			Vector2 runeCenter = rune.GetGlobalTransformWithCanvas().Origin;
+			// segurança: evita herdar transform estranho
+			proj.TopLevel = true;
+
+			Vector2 runeCenterCanvas = rune.GetGlobalTransformWithCanvas().Origin;
 
 			proj.LeadSeconds = leadSeconds;
-			proj.Arm(runeCenter, beatSec, nowSec, spawnColor); // <<< usa a cor passada
+			proj.Arm(runeCenterCanvas, beatSec, nowSec, spawnColor);
+
+			if (DebugLogs)
+			{
+				GD.Print($"[ElementBar] Spawn proj lane={runeIdx} counter={counterElementId} color={spawnColor} runeCenter={runeCenterCanvas}");
+			}
 
 			var h = new ActiveHint
 			{
@@ -371,13 +415,13 @@ namespace Game.UI
 		{
 			return elementId switch
 			{
-				1 => new Color(1.00f, 0.40f, 0.15f),
-				2 => new Color(0.35f, 0.65f, 1.00f),
-				3 => new Color(0.35f, 1.00f, 0.45f),
-				4 => new Color(0.80f, 0.85f, 0.90f),
-				5 => new Color(0.95f, 0.90f, 0.35f),
-				6 => new Color(0.95f, 0.85f, 0.25f),
-				7 => new Color(0.55f, 0.35f, 0.90f),
+				1 => new Color(1.00f, 0.40f, 0.15f), // fogo
+				2 => new Color(0.35f, 0.65f, 1.00f), // água
+				3 => new Color(0.35f, 1.00f, 0.45f), // terra
+				4 => new Color(0.80f, 0.85f, 0.90f), // ar
+				5 => new Color(0.95f, 0.90f, 0.35f), // raio
+				6 => new Color(0.95f, 0.85f, 0.25f), // luz (dourado)
+				7 => new Color(0.55f, 0.35f, 0.90f), // trevas
 				_ => Colors.White
 			};
 		}
@@ -396,7 +440,7 @@ namespace Game.UI
 		}
 
 		// ============================
-		// Existing internals (igual ao seu)
+		// Existing internals (UI anim)
 		// ============================
 
 		private void LoadElements()

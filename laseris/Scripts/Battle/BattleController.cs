@@ -342,7 +342,7 @@ public partial class BattleController : Node2D
 
 		_hud.ElementBar.ClearAll();
 		_hud.ElementBar.SetMode(sideId);
-
+		
 		_beatScheduler.OnTurnWindow(startSec, endSec, Phase.PrepareLeadSeconds, now);
 
 		// círculo sempre visível e apontando o elemento atual do inimigo
