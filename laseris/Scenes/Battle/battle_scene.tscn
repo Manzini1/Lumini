@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=3 uid="uid://k77em0ts4tg7"]
+[gd_scene load_steps=20 format=3 uid="uid://k77em0ts4tg7"]
 
 [ext_resource type="Script" uid="uid://coc8w2xsksd0x" path="res://Scripts/Battle/BattleController.cs" id="1_02hj4"]
 [ext_resource type="PackedScene" uid="uid://nvoxx5jrd2g3" path="res://Scenes/Actors/Mage/Mage.tscn" id="2_5mge4"]
@@ -10,6 +10,7 @@
 [ext_resource type="Script" uid="uid://bdh7m4tsvc1xr" path="res://Scripts/Battle/InputJudge.cs" id="6_6tvrj"]
 [ext_resource type="Script" uid="uid://dl7uwh5uj2vlc" path="res://Scripts/Battle/AttackPattern.cs" id="7_ik5sk"]
 [ext_resource type="PackedScene" uid="uid://dskdgkpsg2ad6" path="res://attack_circle.tscn" id="7_sufya"]
+[ext_resource type="Shader" uid="uid://ct01x8c2mt7h5" path="res://Scenes/Battle/glow.gdshader" id="8_n1ain"]
 [ext_resource type="Script" uid="uid://d1y1qdubx4x0p" path="res://Scripts/Battle/FlowMeter.cs" id="8_sufya"]
 [ext_resource type="PackedScene" uid="uid://cjlpsqmplebt7" path="res://Scenes/HUD/hud.tscn" id="9_n1ain"]
 [ext_resource type="Texture2D" uid="uid://4lwdexkkbsx8" path="res://Sprites/Backgrounds/TrainingGrounds/tg1.png" id="12_68j0i"]
@@ -23,12 +24,28 @@ Music = ExtResource("2_hopcy")
 BeatmapJsonPath = "res://SongMarkers/A rogue with no stealth skills/beatmap.json"
 PrepareLeadSeconds = 0.4
 HitWindowSeconds = 0.2
+FlowMaxStacks = 30
 metadata/_custom_type_script = "uid://bcnklqjcg5wwp"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_4pmf7"]
+shader = ExtResource("8_n1ain")
+shader_parameter/fill01 = 0.0
+shader_parameter/wobble = 0.0
+shader_parameter/time = 0.0
+shader_parameter/flash01 = 0.0
+shader_parameter/charged01 = 0.0
+shader_parameter/center_uv = Vector2(0.5, 0.53)
+shader_parameter/inner_radius = 0.285
+shader_parameter/halo_inner_thickness = 0.02
+shader_parameter/halo_outer_thickness = 0.03
+shader_parameter/halo_softness = 0.02
+shader_parameter/glow_color = Vector3(0.157, 0.686, 0.976)
 
 [node name="BattleScene" type="Node2D"]
 script = ExtResource("1_02hj4")
 Phase = SubResource("Resource_36cr5")
 EnemyElementCyclePath = NodePath("World/Characters/Enemy/EnemyElementCycleController")
+TurnBannerPath = NodePath("HUD/Root/Canvas/TurnBanner")
 
 [node name="World" type="Node2D" parent="."]
 
@@ -74,14 +91,7 @@ offset_right = 516.0
 offset_bottom = 83.0
 
 [node name="ElementBar" parent="HUD/Root" index="3"]
-DifficultyMode = 1
 TurnOverlayPath = NodePath("../ColorRect")
-
-[node name="JudgementCorner" parent="HUD/Root" index="5"]
-offset_left = 328.0
-offset_top = 456.00003
-offset_right = 428.0
-offset_bottom = 556.0
 
 [node name="ModeIcon" parent="HUD/Root/EnemyIntent" index="0"]
 position = Vector2(168, 144)
@@ -90,9 +100,26 @@ scale = Vector2(3.4893692, 3.381637)
 [node name="ElementIcon" parent="HUD/Root/EnemyIntent" index="1"]
 position = Vector2(1832, 1016)
 
+[node name="TurnBanner" parent="HUD/Root/Canvas" index="0"]
+scale = Vector2(3, 3)
+Y = 140.0
+
+[node name="Liquid" parent="HUD/Root/FlowVial" index="0"]
+offset_left = 0.0
+offset_top = 6.71
+offset_right = 90.0
+offset_bottom = 96.71
+
+[node name="Glow" type="ColorRect" parent="HUD/Root/FlowVial" index="1"]
+material = SubResource("ShaderMaterial_4pmf7")
+layout_mode = 0
+offset_top = 6.710456
+offset_right = 90.0
+offset_bottom = 96.71046
+
 [node name="Background" type="Sprite2D" parent="."]
 z_index = -999
-position = Vector2(960, 552.00006)
+position = Vector2(960, 552)
 scale = Vector2(1.2562444, 1.0712978)
 texture = ExtResource("12_68j0i")
 
@@ -129,3 +156,4 @@ ImpactVfxByElementId = [null, null, null, null, null, null, ExtResource("17_n1ai
 [editable path="HUD"]
 [editable path="HUD/Root/ElementBar"]
 [editable path="HUD/Root/ElementHints2/HintLayer/ElementHints"]
+[editable path="HUD/Root/Canvas"]

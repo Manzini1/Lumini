@@ -59,15 +59,11 @@ public partial class BattleController : Node2D
 	private readonly Dictionary<int, JudgementGrade> _attackGrade = new();
 	private readonly Dictionary<int, TurnSide> _beatOwner = new();
 
-	// ✅ qual elemento deve ser apertado nesse beat (defesa OU ataque)
 	private readonly Dictionary<int, int> _requiredElementByBeat = new();
-
-	// ✅ trava o elemento “fonte” por beat pra não ficar mudando no meio do preparo
 	private readonly Dictionary<int, int> _enemyElementLockedByBeat = new();
 
 	private readonly Dictionary<int, RhythmProjectile> _enemyProjectiles = new();
 
-	// ✅ elemento “atual” exigido no turno do player (pra OnElementPressed não ficar lendo o ciclo ao vivo)
 	private int _playerRequiredElementNow = -1;
 
 	[ExportGroup("Damage")]
@@ -77,9 +73,12 @@ public partial class BattleController : Node2D
 	[Export] public float EnemyTravelToHitSeconds = 0.10f;
 	[Export] public float EnemyHoldOnBlockSeconds = 0.12f;
 
-	[ExportGroup("Defense Rewards")]
+	// Flow agora é: Perfect = +2, Good = +1, Miss = reset (ataque e defesa)
+	[ExportGroup("Flow Points")]
 	[Export] public int PerfectFlowGain = 2;
 	[Export] public int GoodFlowGain = 1;
+
+	[ExportGroup("Defense Rewards")]
 	[Export] public float PerfectTurnReduceMult = 1.0f;
 	[Export] public float GoodTurnReduceMult = 0.6f;
 
@@ -98,6 +97,28 @@ public partial class BattleController : Node2D
 
 	[ExportGroup("Debug")]
 	[Export] public bool DebugLogs = true;
+
+	// =========================
+	// TURN VISUALS (Overlay + Banner)
+	// =========================
+	[ExportGroup("Turn Visuals")]
+	[Export] public NodePath BackgroundPath = "Background";     // Sprite2D
+	[Export] public NodePath TurnBannerPath = "HUD/TurnBanner";  // TurnBanner (script)
+
+	[Export] public Color NeutralBgModulate = new Color(1, 1, 1, 1);
+	[Export] public Color AttackBgModulate = new Color(1.10f, 0.92f, 0.92f, 1);
+	[Export] public Color DefendBgModulate = new Color(0.92f, 0.98f, 1.10f, 1);
+	[Export] public float TurnOverlayTweenTime = 0.18f;
+
+	private Sprite2D _background;
+	private TurnBanner _turnBanner;
+	private Tween _bgTween;
+
+	// =========================
+	// Turn transition safety
+	// =========================
+	[ExportGroup("Turn Transition Safety")]
+	[Export] public bool DelayNewTurnCuesForFullLead = true;
 
 	public override void _Ready()
 	{
@@ -141,7 +162,12 @@ public partial class BattleController : Node2D
 		_enemyCycle = GetNodeOrNull<EnemyElementCycleController>(EnemyElementCyclePath);
 		if (_enemyCycle == null) GD.PushWarning($"BattleController: não achei EnemyElementCycle em {EnemyElementCyclePath}");
 
-		// Proteção só influencia visual se NÃO tiver cycle
+		_background = GetNodeOrNull<Sprite2D>(BackgroundPath);
+		if (_background == null) GD.PushWarning($"BattleController: não achei Background Sprite2D em {BackgroundPath}");
+
+		_turnBanner = GetNodeOrNull<TurnBanner>(TurnBannerPath);
+		if (_turnBanner == null) GD.PushWarning($"BattleController: não achei TurnBanner em {TurnBannerPath}");
+
 		if (_enemyProtection != null)
 		{
 			_enemyProtection.ProtectionChanged += (int elem) =>
@@ -151,7 +177,6 @@ public partial class BattleController : Node2D
 			};
 		}
 
-		// Cycle sempre manda no círculo (elemento atual do inimigo)
 		if (_enemyCycle != null)
 		{
 			_enemyCycle.ElementChanged += (int elem) =>
@@ -162,7 +187,9 @@ public partial class BattleController : Node2D
 		}
 
 		_hud.SetPhaseName(Phase.PhaseName);
-		_pattern.ElementCount = 7; // agora temos 1..7 (com Darkness)
+		_pattern.ElementCount = 7;
+
+		// IMPORTANTE: pra "20 pontos pra encher", Phase.FlowMaxStacks precisa ser 20 no inspector.
 		_flow.Configure(Phase.FlowMaxStacks, Phase.FlowDamagePerStack);
 
 		_beats = BeatmapData.LoadBeatsFromJson(Phase.BeatmapJsonPath);
@@ -192,10 +219,10 @@ public partial class BattleController : Node2D
 
 		double now = AudioClock.GetSongTimeSeconds(_music);
 
-		// inicia o cycle já no começo (círculo sempre estável)
 		_enemyCycle?.Start(now);
-
 		_turnManager.StartFirstTurn(now);
+
+		ApplyTurnVisuals((_turnManager.CurrentSide == TurnSide.Player) ? 1 : 0);
 
 		if (DebugLogs)
 			GD.Print($"[Battle] LateBlock config: Perfect allow={AllowLatePerfectBlock} grace={LateBlockGraceSecondsPerfect:0.000}s | Good allow={AllowLateGoodBlock} grace={LateBlockGraceSecondsGood:0.000}s");
@@ -224,12 +251,10 @@ public partial class BattleController : Node2D
 		_hud.ElementBar.SetSongTime(now);
 
 		_inputJudge.UpdateJudge();
-		double nowSec = now;
-//		_elementBar.SetSongTime(nowSec);
+
 		_hud.SetTurnProgress(now, _turnManager.TurnStartSec, _turnManager.TurnEndSec);
 		_hud.SetFlow(_flow.Stacks, Phase.FlowMaxStacks);
 
-		// círculo sempre colado no chão do inimigo
 		if (_attackCircle != null)
 		{
 			Vector2 g = (_enemyGround != null) ? _enemyGround.GlobalPosition : _enemy.GetGroundPointGlobal();
@@ -237,7 +262,7 @@ public partial class BattleController : Node2D
 		}
 	}
 
-	// ===== elemento “atual” do inimigo (visual / lógica fonte) =====
+	// ===== elemento atual do inimigo =====
 	private int GetEnemyCurrentElement()
 	{
 		if (_enemyCycle != null) return _enemyCycle.CurrentElement;
@@ -247,68 +272,44 @@ public partial class BattleController : Node2D
 	}
 
 	// =========================
-	// INPUT
+	// FLOW helpers
+	// =========================
+	private void ResetFlow()
+	{
+		// reseta exatamente para 0 (sem depender de clamp interno)
+		int cur = _flow.Stacks;
+		if (cur != 0) _flow.Add(-cur);
+	}
+
+	private void AddFlowFromGrade(JudgementGrade grade)
+	{
+		if (grade == JudgementGrade.Perfect) _flow.Add(PerfectFlowGain); // +2
+		else if (grade == JudgementGrade.Good) _flow.Add(GoodFlowGain);  // +1
+		else ResetFlow(); // Miss => zera
+	}
+
+	// =========================
+	// INPUT (só feedback de animação; o julgamento é no InputJudge)
 	// =========================
 	private void OnElementPressed(int elementId)
 	{
 		_hud.ElementBar.SetSelectedElement(elementId);
 
-		GD.Print($"[Battle] OnElementPressed e{elementId} side={_turnManager.CurrentSide} playerReqNow={_playerRequiredElementNow} enemyElemNow={GetEnemyCurrentElement()}");
-	
+		if (DebugLogs)
+			GD.Print($"[Battle] Press e{elementId} side={_turnManager.CurrentSide}");
 
-		// DEFESA: player escolhe shield; o Judge já vai avaliar o timing no beat
 		if (_turnManager.CurrentSide == TurnSide.Enemy)
 		{
 			_mage.SetShieldElement(elementId);
 			_mage.PlayRandomDefendAnim();
 			return;
 		}
+
 		_mage.PlayRandomAttackAnim();
-		// ATAQUE: usa o required “travado” do último BeatPrepare do turno do player
-		int required = _playerRequiredElementNow;
-		if (required < 1)
-		{
-			// fallback (não deveria acontecer, mas evita null logic)
-			int lockedProtection = GetEnemyCurrentElement();
-			required = AttackCounter(lockedProtection);
-		}
-
-		if (elementId != required)
-		{
-			GD.Print($"[Battle] ATK PRESS mismatch: pressed={elementId} required={required} (playerReqNow={_playerRequiredElementNow})");
-			_hud.ElementBar.Resolve(elementId, (int)JudgementGrade.Miss);
-			return;
-		}
-
-		// por enquanto: “hit” instantâneo (você pode migrar isso pro OnAttackResolved depois)
-		_hud.ElementBar.Resolve(elementId, (int)JudgementGrade.Good);
-		GD.Print($"[Battle] ATK PRESS OK: pressed={elementId} required={required} -> will play anim/vfx + dmg={PlayerBaseDamage}");
-		GD.Print($"[Battle] VFX refs: vfxLib={(_vfxLib!=null)} mageAnim={(_mageAnim!=null)} mageCast={(_mageCast!=null)} enemyHit={(_enemyHit!=null)} enemyGround={(_enemyGround!=null)} parentPath={WorldVfxParentPath}");
-		// anima do mago por elemento (AnimationPlayer)
-		
-
-		_enemy.ApplyDamage(PlayerBaseDamage);
-
-		var parent = GetNodeOrNull<Node>(WorldVfxParentPath) ?? this;
-
-		Vector2 hit = (_enemyHit != null) ? _enemyHit.GlobalPosition : _enemy.GetHitPointGlobal();
-		Vector2 ground = (_enemyGround != null) ? _enemyGround.GlobalPosition : _enemy.GetGroundPointGlobal();
-		Vector2 cast = (_mageCast != null) ? _mageCast.GlobalPosition : _mage.GlobalPosition;
-
-		_vfxLib.SpawnCastVfx(elementId, parent, cast);
-		GD.Print($"[Battle] Calling SpawnCastVfx elem={elementId} castPos={cast} parent={(parent!=null ? parent.GetPath() : "<null>")}");
-		GD.Print($"[Battle] Calling SpawnImpactVfx elem={elementId} hitPos={hit} (earth? {elementId==3})");
-		if (elementId == 3) // Terra
-			_vfxLib.SpawnEarthRock(parent, ground, hit);
-		else
-			_vfxLib.SpawnImpactVfx(elementId, parent, hit);
-		
-		_mage.PlayIdle();
 	}
 
-
 	// =========================
-	// PROJECTILES SAFETY (troca de turno)
+	// PROJECTILES SAFETY
 	// =========================
 	private void CleanupEnemyProjectiles()
 	{
@@ -328,7 +329,6 @@ public partial class BattleController : Node2D
 	{
 		double now = AudioClock.GetSongTimeSeconds(_music);
 
-		// ✅ primeiro cancela projéteis pendentes (pra não levar dano “de graça” ao virar turno)
 		CleanupEnemyProjectiles();
 
 		_inputJudge.ClearPending();
@@ -340,36 +340,51 @@ public partial class BattleController : Node2D
 
 		_playerRequiredElementNow = -1;
 
-		_hud.ElementBar.ClearAll();
 		_hud.ElementBar.SetMode(sideId);
-		
+
+		ApplyTurnVisuals(sideId);
+		_turnBanner?.ShowTurn(sideId);
+
 		_beatScheduler.OnTurnWindow(startSec, endSec, Phase.PrepareLeadSeconds, now);
 
-		// círculo sempre visível e apontando o elemento atual do inimigo
 		if (_attackCircle != null)
 		{
 			_attackCircle.Visible = true;
-			_attackCircle.Start(now); // assinatura Start(double) (sem CS7036)
+			_attackCircle.Start(now);
 			_attackCircle.SetElement(GetEnemyCurrentElement());
 		}
 	}
 
 	private void OnBeatPrepare(int beatIndex, double beatSec)
 	{
+		double now = AudioClock.GetSongTimeSeconds(_music);
+
+		// 1) Safety: se não há lead suficiente, não cria hint/projétil (evita "quase em cima da hora")
+		if (DelayNewTurnCuesForFullLead)
+		{
+			double lead = beatSec - now;
+			double need = Phase.PrepareLeadSeconds;
+
+			// tolerância pequena
+			if (lead < need * 0.90)
+			{
+				if (DebugLogs)
+					GD.Print($"[Battle] SKIP BeatPrepare beat={beatIndex} lead={lead:0.000}s need={need:0.000}s side={_turnManager.CurrentSide}");
+				return;
+			}
+		}
+
+		// 2) Agora sim gravamos owner/lock (só para beats que realmente vamos usar)
 		var side = _turnManager.CurrentSide;
 		_beatOwner[beatIndex] = side;
-	
-		// ✅ trava o elemento “fonte” nesse beat
+
 		int lockedEnemyElem = GetEnemyCurrentElement();
 		_enemyElementLockedByBeat[beatIndex] = lockedEnemyElem;
-//		_elementBar.CueElement(reqElement, leadSeconds, beatSec, nowSec);
-		// círculo SEMPRE reflete o elemento travado do beat (para parar “hint adoidados”)
+
 		_attackCircle?.SetElement(lockedEnemyElem);
-		double now = AudioClock.GetSongTimeSeconds(_music);
-		
+
 		if (side == TurnSide.Enemy)
 		{
-			// INIMIGO ATACA COM lockedEnemyElem => DEFENDO COM DefenseCounter
 			int requiredDefenseElement = DefenseCounter(lockedEnemyElem);
 			_requiredElementByBeat[beatIndex] = requiredDefenseElement;
 
@@ -379,10 +394,6 @@ public partial class BattleController : Node2D
 
 			_enemy.PlayPrepare();
 
-		
-			//_hud.ElementBar.CueElement(requiredDefenseElement, (float)Phase.PrepareLeadSeconds, beatSec, now);
-
-
 			_mage.ArmDefenseWindow(Phase.PrepareLeadSeconds + EnemyHoldOnBlockSeconds);
 			_inputJudge.QueueDefense(beatIndex, beatSec, requiredDefenseElement);
 
@@ -390,15 +401,12 @@ public partial class BattleController : Node2D
 			return;
 		}
 
-		// PLAYER ATACA a proteção/elemento lockedEnemyElem => usa AttackCounter
+		// player turn
 		int requiredAttackElement = AttackCounter(lockedEnemyElem);
 		_requiredElementByBeat[beatIndex] = requiredAttackElement;
-
-		// ✅ atualiza o “required atual” para o OnElementPressed não ficar lendo o ciclo ao vivo
 		_playerRequiredElementNow = requiredAttackElement;
 
 		_hud.ElementBar.CueElement(requiredAttackElement, (float)Phase.PrepareLeadSeconds, beatSec, now);
-
 		_inputJudge.QueueAttack(beatIndex, beatSec, requiredAttackElement);
 	}
 
@@ -412,13 +420,12 @@ public partial class BattleController : Node2D
 	}
 
 	// =========================
-	// ENEMY PROJECTILES (por elemento)
+	// ENEMY PROJECTILES
 	// =========================
 	private void SpawnEnemyProjectileForBeat(int beatIndex, int enemyElement)
 	{
 		PackedScene scene = null;
 
-		// ✅ sem depender de método C# (compila mesmo se o EnemyController não tiver a função)
 		if (_enemy != null && _enemy.HasMethod("GetProjectileSceneForElement"))
 		{
 			var v = _enemy.Call("GetProjectileSceneForElement", enemyElement);
@@ -426,7 +433,6 @@ public partial class BattleController : Node2D
 				scene = ps;
 		}
 
-		// fallback
 		scene ??= _enemy.RhythmProjectileScene;
 
 		if (scene == null)
@@ -468,7 +474,7 @@ public partial class BattleController : Node2D
 		var grade = (JudgementGrade)gradeId;
 		_defenseGrade[beatIndex] = grade;
 		_hud.ShowJudgement(grade);
-
+		_hud.OnJudgement(grade);
 		if (_requiredElementByBeat.TryGetValue(beatIndex, out int reqElem))
 			_hud.ElementBar.Resolve(reqElem, gradeId);
 
@@ -500,7 +506,7 @@ public partial class BattleController : Node2D
 		var grade = (JudgementGrade)gradeId;
 		_attackGrade[beatIndex] = grade;
 		_hud.ShowJudgement(grade);
-
+		_hud.OnJudgement(grade);
 		if (_requiredElementByBeat.TryGetValue(beatIndex, out int reqElem))
 			_hud.ElementBar.Resolve(reqElem, gradeId);
 
@@ -508,72 +514,149 @@ public partial class BattleController : Node2D
 			GD.Print($"[Battle] ATK JUDGED beat={beatIndex} grade={grade} absErr={absErr:0.0000}");
 	}
 
+	// =========================
+	// RESOLVED (onde a regra do Flow e o dano ficam 100% coerentes)
+	// =========================
 	private void OnDefenseResolved(int beatIndex, bool success)
 	{
-		if (_turnManager.CurrentSide != TurnSide.Enemy) return;
-
 		_defenseGrade.TryGetValue(beatIndex, out var grade);
-		bool blocked = grade != JudgementGrade.Miss;
 
-		if (blocked)
-		{
-			_mage.OnDefendSuccess();
-
-			if (grade == JudgementGrade.Perfect)
-			{
-				_flow.Add(PerfectFlowGain);
-				_turnManager.ReduceCurrentTurnEnd(Phase.DefenseSuccessReduceEnemySeconds * PerfectTurnReduceMult);
-			}
-			else
-			{
-				_flow.Add(GoodFlowGain);
-				_turnManager.ReduceCurrentTurnEnd(Phase.DefenseSuccessReduceEnemySeconds * GoodTurnReduceMult);
-			}
-		}
-		else
+		if (!success || grade == JudgementGrade.Miss)
 		{
 			_mage.OnDefendFail();
+			ResetFlow(); // miss reseta
+			return;
 		}
+
+		_mage.OnDefendSuccess();
+		AddFlowFromGrade(grade);
+
+		float mult = (grade == JudgementGrade.Perfect) ? PerfectTurnReduceMult : GoodTurnReduceMult;
+		ReduceTurnEndSafe(Phase.DefenseSuccessReduceEnemySeconds * mult);
 	}
 
 	private void OnAttackResolved(int beatIndex, bool success)
 	{
-		// Por enquanto o ataque é instantâneo no OnElementPressed.
-		// Depois a gente move dano+VFX pra cá com timing correto.
+		_attackGrade.TryGetValue(beatIndex, out var grade);
+
+		if (!success || grade == JudgementGrade.Miss)
+		{
+			ResetFlow(); // miss reseta
+			return;
+		}
+
+		AddFlowFromGrade(grade);
+
+		// Dano por grade
+		float dmgMult = (grade == JudgementGrade.Perfect) ? 1.0f : PlayerGoodDamageMultiplier;
+		int dmg = Mathf.RoundToInt(PlayerBaseDamage * dmgMult);
+		_enemy.ApplyDamage(dmg);
+
+		// VFX no inimigo (random até 3 variações)
+		if (_requiredElementByBeat.TryGetValue(beatIndex, out int elemId))
+		{
+			var parent = GetNodeOrNull<Node>(WorldVfxParentPath) ?? this;
+			Vector2 hit = (_enemyHit != null) ? _enemyHit.GlobalPosition : _enemy.GetHitPointGlobal();
+
+			_vfxLib.SpawnAttackImpactRandom(elemId, parent, hit);
+		}
+
+		_mage.PlayIdle();
+	}
+
+	// =========================
+	// "SAFE REDUCE" para não cortar lead do próximo beat
+	// =========================
+	private double GetNextBeatAfter(double now)
+	{
+		if (_beats == null || _beats.Length == 0) return double.PositiveInfinity;
+
+		int lo = 0, hi = _beats.Length - 1, ans = _beats.Length;
+		while (lo <= hi)
+		{
+			int mid = (lo + hi) >> 1;
+			if (_beats[mid] > now) { ans = mid; hi = mid - 1; }
+			else lo = mid + 1;
+		}
+
+		return (ans < _beats.Length) ? _beats[ans] : double.PositiveInfinity;
+	}
+
+	private void ReduceTurnEndSafe(double reduceBySeconds)
+	{
+		if (reduceBySeconds <= 0) return;
+
+		if (!DelayNewTurnCuesForFullLead)
+		{
+			_turnManager.ReduceCurrentTurnEnd(reduceBySeconds);
+			return;
+		}
+
+		double now = AudioClock.GetSongTimeSeconds(_music);
+		double nextBeat = GetNextBeatAfter(now);
+		if (double.IsInfinity(nextBeat))
+		{
+			_turnManager.ReduceCurrentTurnEnd(reduceBySeconds);
+			return;
+		}
+
+		double minEnd = nextBeat - Phase.PrepareLeadSeconds;
+		double proposedEnd = _turnManager.TurnEndSec - reduceBySeconds;
+
+		if (proposedEnd < minEnd)
+			reduceBySeconds = Math.Max(0.0, _turnManager.TurnEndSec - minEnd);
+
+		if (reduceBySeconds > 0)
+			_turnManager.ReduceCurrentTurnEnd(reduceBySeconds);
+	}
+
+	// =========================
+	// TURN VISUALS HELPERS
+	// =========================
+	private void ApplyTurnVisuals(int sideId)
+	{
+		Color target = NeutralBgModulate;
+		if (sideId == 1) target = AttackBgModulate;
+		else target = DefendBgModulate;
+
+		if (_background == null) return;
+
+		if (_bgTween != null && GodotObject.IsInstanceValid(_bgTween)) _bgTween.Kill();
+		_bgTween = CreateTween();
+		_bgTween.TweenProperty(_background, "modulate", target, Mathf.Max(0.01f, TurnOverlayTweenTime))
+			.SetTrans(Tween.TransitionType.Quad)
+			.SetEase(Tween.EaseType.Out);
 	}
 
 	// =========================
 	// TABLES
 	// =========================
-
-	// INIMIGO ATACA COM X => DEFENDO COM Y
 	private int DefenseCounter(int enemyAttackElement)
 	{
 		return enemyAttackElement switch
 		{
-			2 => 5, // Água -> Raio
-			3 => 1, // Terra -> Fogo
-			4 => 3, // Vento/Ar -> Terra
-			1 => 2, // Fogo -> Água
-			5 => 3, // Raio -> Terra
-			6 => 7, // Luz -> Trevas
-			7 => 6, // Trevas -> Luz
+			2 => 5,
+			3 => 1,
+			4 => 3,
+			1 => 2,
+			5 => 3,
+			6 => 7,
+			7 => 6,
 			_ => 1
 		};
 	}
 
-	// PROTEÇÃO / ELEMENTO ATIVO DO INIMIGO = X => ATACO COM Y
 	private int AttackCounter(int enemyProtectionElement)
 	{
 		return enemyProtectionElement switch
 		{
-			1 => 2, // Proteção Fogo -> Água
-			7 => 6, // Proteção Trevas -> Luz
-			2 => 5, // Proteção Água -> Raio
-			3 => 1, // Proteção Terra -> Fogo
-			5 => 3, // Proteção Raio -> Terra
-			4 => 5, // Proteção Vento -> Raio
-			6 => 7, // Proteção Luz -> Trevas (se quiser)
+			1 => 2,
+			7 => 6,
+			2 => 5,
+			3 => 1,
+			5 => 3,
+			4 => 5,
+			6 => 7,
 			_ => 1
 		};
 	}
@@ -588,13 +671,12 @@ public partial class BattleController : Node2D
 	}
 
 	/*
-	IDs oficiais (referência):
 	1 Fogo
 	2 Água
 	3 Terra
 	4 Ar/Vento
 	5 Raio
 	6 Luz
-	7 Trevas/Darkness
+	7 Trevas
 	*/
 }

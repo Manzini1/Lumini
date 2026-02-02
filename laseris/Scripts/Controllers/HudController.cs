@@ -11,11 +11,13 @@ private CanvasItem _enemyIntent;
 	public HealthBarController MageHP { get; private set; }
 	public HealthBarController EnemyHP { get; private set; }
 
+public FlippingStoneController FlippingStone { get; private set; }
 	private Control _ringsLayer;
 	private RandomNumberGenerator _rng;
 
 	public JudgementCornerController Judgement { get; private set; }
 	public ElementBarController ElementBar { get; private set; }
+	public FlowVialCircleController FlowVial { get; private set; }
 
 	// =========================
 	// Enemy Intent (Opcional)
@@ -48,7 +50,8 @@ private CanvasItem _enemyIntent;
 		_phaseLabel = GetNodeOrNull<Label>("Root/PhaseLabel");
 		_turnBar = GetNodeOrNull<ProgressBar>("Root/TurnBar");
 		_flowBar = GetNodeOrNull<ProgressBar>("Root/FlowBar");
-
+		 FlowVial = GetNodeOrNull<FlowVialCircleController>("Root/FlowVial");
+		FlippingStone = GetNodeOrNull<FlippingStoneController>("Root/FlippingStone");
 		_ringsLayer = GetNodeOrNull<Control>("Root/RingsLayer");
 		ElementBar = GetNodeOrNull<ElementBarController>("Root/ElementBar");
 
@@ -150,13 +153,24 @@ private CanvasItem _enemyIntent;
 		t = System.Math.Clamp(t, 0.0, 1.0);
 		_turnBar.Value = t * 100.0;
 	}
+	public void OnJudgement(JudgementGrade grade)
+{
+	if (FlippingStone == null) return;
 
+	if (grade == JudgementGrade.Perfect) FlippingStone.OnPerfect();
+	else if (grade == JudgementGrade.Good) FlippingStone.OnGood();
+	else FlippingStone.OnMiss();
+}
 	public void SetFlow(int stacks, int maxStacks)
 	{
-		if (_flowBar == null) return;
+		if (_flowBar != null)
+		{
+			_flowBar.Value = (maxStacks <= 0) ? 0 : (double)stacks / maxStacks * 100.0;
+		}
 
-		if (maxStacks <= 0) { _flowBar.Value = 0; return; }
-		_flowBar.Value = (double)stacks / maxStacks * 100.0;
+		float fill01 = (maxStacks <= 0) ? 0f : (float)stacks / maxStacks;
+				GD.Print($"[HUD] Flow stacks={stacks} max={maxStacks} fill01={fill01:0.00}");
+		FlowVial?.SetFill01(fill01);
 	}
 
 	public void SpawnRing(double startSec, double beatSec, double hitWindowSec)

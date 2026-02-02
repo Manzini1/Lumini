@@ -1,14 +1,10 @@
-[gd_scene load_steps=25 format=3 uid="uid://cjlpsqmplebt7"]
+[gd_scene load_steps=28 format=3 uid="uid://cjlpsqmplebt7"]
 
 [ext_resource type="PackedScene" uid="uid://c6ke6rhxkcjaw" path="res://Scenes/attack_ring.tscn" id="1_5aai8"]
 [ext_resource type="Script" uid="uid://q3ip6t83kbe7" path="res://Scripts/Controllers/HUDController.cs" id="1_a56j6"]
 [ext_resource type="PackedScene" uid="uid://dfbvhy3mx0bgs" path="res://Scenes/element_bar.tscn" id="2_a56j6"]
 [ext_resource type="Texture2D" uid="uid://j4rp5d7g3f2m" path="res://Sprites/HUD/attack.png" id="2_buuh3"]
 [ext_resource type="Texture2D" uid="uid://cwqv47tssnqb" path="res://Sprites/HUD/defend.png" id="3_sgblu"]
-[ext_resource type="Script" uid="uid://sug4mwjh5aod" path="res://Scenes/HUD/JudgementCornerController.cs" id="4_k83ni"]
-[ext_resource type="Texture2D" uid="uid://deabq8l4yxs5l" path="res://Sprites/HUD/perfect.png" id="5_1owdh"]
-[ext_resource type="Texture2D" uid="uid://b3icsb5mdxs68" path="res://Sprites/HUD/good.png" id="6_ewgg5"]
-[ext_resource type="Texture2D" uid="uid://d2ebjnc6qiul8" path="res://Sprites/HUD/miss.png" id="7_isc6x"]
 [ext_resource type="Script" uid="uid://klihvf2gd4jr" path="res://Scripts/UI/HealthBarController.cs" id="8_7hg1w"]
 [ext_resource type="Texture2D" uid="uid://cmyiltjp2cyea" path="res://Sprites/HUD/hp_bar.png" id="8_isc6x"]
 [ext_resource type="Texture2D" uid="uid://b4vr4085ayf7i" path="res://Sprites/HUD/hp_value.png" id="9_7hg1w"]
@@ -22,6 +18,12 @@
 [ext_resource type="PackedScene" uid="uid://dus87xeqhl6p6" path="res://Scenes/ElementHintProjectile.tscn" id="20_sgblu"]
 [ext_resource type="Script" uid="uid://dm0obhwmh5rjh" path="res://Scenes/HUD/TurnOverlayController.cs" id="21_m64fl"]
 [ext_resource type="PackedScene" uid="uid://d2k23gclvvenn" path="res://TurnBanner.tscn" id="22_fdfw3"]
+[ext_resource type="Script" uid="uid://l8xvl8hcao70" path="res://Scenes/HUD/FlowVialCircleController.cs" id="23_4so15"]
+[ext_resource type="Texture2D" uid="uid://dv6dt0803shjl" path="res://Sprites/HUD/flow_and_feedback2.png" id="23_b4qo4"]
+[ext_resource type="Shader" uid="uid://bcrwni8hvsg61" path="res://Scenes/HUD/liquid.gdshader" id="24_vc458"]
+[ext_resource type="Texture2D" uid="uid://bd55k1hj4yfga" path="res://Sprites/HUD/flow_and_feedback2 - Copy.png" id="24_vywpl"]
+[ext_resource type="Texture2D" uid="uid://p03g0t56lfl6" path="res://Sprites/HUD/stones.png" id="25_vywpl"]
+[ext_resource type="Script" uid="uid://56tfpfkisjbl" path="res://Scenes/HUD/FlippingStoneController.cs" id="27_y2lcl"]
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_buuh3"]
 animations = [{
@@ -93,6 +95,23 @@ animations = [{
 "speed": 5.0
 }]
 
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_y2lcl"]
+shader = ExtResource("24_vc458")
+shader_parameter/fill01 = 0.0
+shader_parameter/wobble = 0.0
+shader_parameter/time = 0.0
+shader_parameter/flash01 = 0.0
+shader_parameter/center_uv = Vector2(0.5, 0.53)
+shader_parameter/inner_radius = 0.285
+shader_parameter/feather = 0.004
+shader_parameter/wave_amp = 0.02
+shader_parameter/wave_freq = 2.2
+shader_parameter/wave_speed = 3.2
+shader_parameter/color_orange = Vector3(1, 0.45, 0.12)
+shader_parameter/color_blood = Vector3(0.55, 0.03, 0.02)
+shader_parameter/rim_glow_color = Vector3(1.1, 0.55, 0.2)
+shader_parameter/surface_highlight = Vector3(1.2, 0.75, 0.35)
+
 [node name="HUD" type="CanvasLayer"]
 script = ExtResource("1_a56j6")
 AttackRingScene = ExtResource("1_5aai8")
@@ -126,9 +145,51 @@ offset_bottom = 43.0
 
 [node name="ElementBar" parent="Root" instance=ExtResource("2_a56j6")]
 layout_mode = 1
+offset_top = -175.99998
+offset_bottom = -175.99998
+scale = Vector2(0.99282306, 1.0008985)
 HintProjectileScene = ExtResource("20_sgblu")
 HintParentPath = NodePath("../ElementHints2/HintLayer")
 VfxParentPath = NodePath("../VfxLayer")
+
+[node name="Elem1" parent="Root/ElementBar" index="1"]
+position = Vector2(636.5686, 1134.9802)
+scale = Vector2(0.7024844, 0.80156785)
+
+[node name="Marker2D" parent="Root/ElementBar/Elem1" index="0"]
+position = Vector2(0, -3.4332275e-05)
+
+[node name="Elem2" parent="Root/ElementBar" index="2"]
+position = Vector2(725.2048, 1134.9802)
+scale = Vector2(0.75, 0.8028858)
+
+[node name="Marker2D" parent="Root/ElementBar/Elem2" index="0"]
+position = Vector2(0, -1.5258789e-05)
+
+[node name="Elem3" parent="Root/ElementBar" index="3"]
+position = Vector2(813.8409, 1134.9802)
+scale = Vector2(0.71444446, 0.72645885)
+
+[node name="Marker2D" parent="Root/ElementBar/Elem3" index="0"]
+position = Vector2(0, 7.6293945e-06)
+
+[node name="Elem4" parent="Root/ElementBar" index="4"]
+position = Vector2(1023.34454, 1134.9802)
+scale = Vector2(0.689413, 0.7886745)
+
+[node name="Marker2D" parent="Root/ElementBar/Elem4" index="0"]
+position = Vector2(-8.917205e-05, 1.5258789e-05)
+
+[node name="Elem5" parent="Root/ElementBar" index="5"]
+position = Vector2(1111.9806, 1134.9802)
+scale = Vector2(0.76867104, 0.7634878)
+
+[node name="Marker2D" parent="Root/ElementBar/Elem5" index="0"]
+position = Vector2(0, 0)
+
+[node name="Elem6" parent="Root/ElementBar" index="6"]
+position = Vector2(1200.6167, 1134.9803)
+scale = Vector2(0.7600985, 0.74677837)
 
 [node name="RingsLayer" type="Control" parent="Root"]
 layout_mode = 1
@@ -139,19 +200,6 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="JudgementCorner" type="TextureRect" parent="Root"]
-layout_mode = 0
-offset_left = 248.0
-offset_top = 432.0
-offset_right = 348.0
-offset_bottom = 532.0
-scale = Vector2(3, 3)
-expand_mode = 3
-script = ExtResource("4_k83ni")
-PerfectTexture = ExtResource("5_1owdh")
-GoodTexture = ExtResource("6_ewgg5")
-MissTexture = ExtResource("7_isc6x")
-
 [node name="HPBars" type="Control" parent="Root"]
 anchors_preset = 0
 offset_right = 40.0
@@ -159,10 +207,10 @@ offset_bottom = 40.0
 
 [node name="MageHP" type="Control" parent="Root/HPBars"]
 anchors_preset = 0
-offset_left = 96.0
-offset_top = 1008.0
-offset_right = 136.0
-offset_bottom = 1048.0
+offset_left = 56.0
+offset_top = 1000.0
+offset_right = 96.0
+offset_bottom = 1040.0
 script = ExtResource("8_7hg1w")
 
 [node name="Name" type="Label" parent="Root/HPBars/MageHP"]
@@ -187,10 +235,10 @@ offset_bottom = 23.0
 
 [node name="EnemyHP" type="Control" parent="Root/HPBars"]
 anchors_preset = 0
-offset_left = 1592.0
-offset_top = 1008.0
-offset_right = 1632.0
-offset_bottom = 1048.0
+offset_left = 1640.0
+offset_top = 1000.0
+offset_right = 1680.0
+offset_bottom = 1040.0
 script = ExtResource("8_7hg1w")
 
 [node name="Bar" type="TextureProgressBar" parent="Root/HPBars/EnemyHP"]
@@ -261,7 +309,65 @@ mouse_filter = 2
 mouse_behavior_recursive = 1
 color = Color(1, 1, 1, 0)
 script = ExtResource("21_m64fl")
+AttackColor = Color(1, 0.19966345, 0.19966345, 0.002)
+DefenseColor = Color(0.25030932, 0.45043758, 1, 0.002)
 
 [node name="Canvas" parent="Root" instance=ExtResource("22_fdfw3")]
 
+[node name="TurnBanner" parent="Root/Canvas" index="0"]
+anchors_preset = 0
+
+[node name="FlowVial" type="Control" parent="Root"]
+anchors_preset = 0
+offset_left = 800.0
+offset_top = 816.00006
+offset_right = 900.0
+offset_bottom = 916.00006
+scale = Vector2(2.4253953, 2.38433)
+script = ExtResource("23_4so15")
+
+[node name="Liquid" type="ColorRect" parent="Root/FlowVial"]
+material = SubResource("ShaderMaterial_y2lcl")
+layout_mode = 0
+offset_left = -26.38746
+offset_top = -30.197163
+offset_right = 73.61254
+offset_bottom = 69.80284
+mouse_filter = 2
+
+[node name="FlippingStone" type="Sprite2D" parent="Root"]
+position = Vector2(911.99994, 1023.99994)
+scale = Vector2(1.269308, 1.3333508)
+skew = -0.019818664
+texture = ExtResource("25_vywpl")
+script = ExtResource("27_y2lcl")
+
+[node name="HudComponent" type="Sprite2D" parent="Root"]
+z_index = 50
+position = Vector2(912, 967.99994)
+scale = Vector2(1.25, 1.321)
+texture = ExtResource("23_b4qo4")
+
+[node name="RuneSlot" type="Sprite2D" parent="Root/HudComponent"]
+position = Vector2(-224.00003, -6.056018)
+scale = Vector2(1.0331304, 1.0416716)
+texture = ExtResource("24_vywpl")
+
+[node name="RuneSlot2" type="Sprite2D" parent="Root/HudComponent"]
+position = Vector2(-153.60004, -6.056018)
+scale = Vector2(1.0331304, 1.0416716)
+texture = ExtResource("24_vywpl")
+
+[node name="RuneSlot3" type="Sprite2D" parent="Root/HudComponent"]
+position = Vector2(153.59995, -6.056018)
+scale = Vector2(1.0331304, 1.0416716)
+texture = ExtResource("24_vywpl")
+
+[node name="RuneSlot4" type="Sprite2D" parent="Root/HudComponent"]
+position = Vector2(223.99994, -6.056018)
+scale = Vector2(1.0331304, 1.0416716)
+texture = ExtResource("24_vywpl")
+
+[editable path="Root/ElementBar"]
 [editable path="Root/ElementHints2/HintLayer/ElementHints"]
+[editable path="Root/Canvas"]
