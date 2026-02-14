@@ -1,0 +1,184 @@
+[gd_scene load_steps=22 format=3 uid="uid://uwnjrmubkcwf"]
+
+[ext_resource type="Script" uid="uid://41m8ntlxk1ck" path="res://Scripts/ElementAuraController.cs" id="1_72xmj"]
+[ext_resource type="Shader" uid="uid://dkjy85uqquu1y" path="res://ElementAura.gdshader" id="2_q7ii3"]
+[ext_resource type="Texture2D" uid="uid://d2570u1b1v83n" path="res://Scripts/NoiseTexture.tres" id="3_aqenf"]
+[ext_resource type="Texture2D" uid="uid://bp2yj6lsqpely" path="res://Sprites/Aura/fire_sprite2.png" id="4_qdnrg"]
+[ext_resource type="Texture2D" uid="uid://d0n4wukpdvewl" path="res://Sprites/gota.png" id="5_qdnrg"]
+[ext_resource type="Texture2D" uid="uid://mj2004ykqn8v" path="res://Sprites/Aura/download.png" id="5_y52qb"]
+[ext_resource type="Texture2D" uid="uid://dj23w0yy55c7e" path="res://Sprites/Aura/wind.png" id="6_8jw2v"]
+[ext_resource type="Texture2D" uid="uid://c0www8v6iggmr" path="res://Sprites/Aura/thunder.png" id="7_2oj2j"]
+[ext_resource type="Texture2D" uid="uid://bidf1m5wir0oj" path="res://Sprites/Aura/water.png" id="8_2oj2j"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_aqenf"]
+shader = ExtResource("2_q7ii3")
+shader_parameter/noise_tex = ExtResource("3_aqenf")
+shader_parameter/aura_color = Color(0.2, 0.69803923, 1, 0.12156863)
+shader_parameter/noise_scale = 1.0
+shader_parameter/speed = 6.0
+shader_parameter/radius = 1.0
+shader_parameter/ellipse = Vector2(4, 2)
+shader_parameter/wobble = 0.3
+shader_parameter/edge_soft = 1.0
+shader_parameter/texture_influence = 1.0
+shader_parameter/uv_warp = 0.05
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_qdnrg"]
+atlas = ExtResource("4_qdnrg")
+region = Rect2(0, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_gcauh"]
+atlas = ExtResource("4_qdnrg")
+region = Rect2(128, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_lojr3"]
+atlas = ExtResource("4_qdnrg")
+region = Rect2(0, 128, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_pjybq"]
+atlas = ExtResource("4_qdnrg")
+region = Rect2(128, 128, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_jjidy"]
+atlas = ExtResource("5_y52qb")
+region = Rect2(0, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_y52qb"]
+atlas = ExtResource("4_qdnrg")
+region = Rect2(0, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_cul03"]
+atlas = ExtResource("4_qdnrg")
+region = Rect2(128, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_8jw2v"]
+atlas = ExtResource("4_qdnrg")
+region = Rect2(0, 128, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_2oj2j"]
+atlas = ExtResource("4_qdnrg")
+region = Rect2(128, 128, 128, 128)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_wc0kq"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_qdnrg")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_gcauh")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_lojr3")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_pjybq")
+}],
+"loop": true,
+"name": &"darkness",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_jjidy")
+}],
+"loop": true,
+"name": &"earth",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_y52qb")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_cul03")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_8jw2v")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_2oj2j")
+}],
+"loop": true,
+"name": &"fire",
+"speed": 8.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("6_8jw2v")
+}],
+"loop": true,
+"name": &"light",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("7_2oj2j")
+}],
+"loop": true,
+"name": &"lightning",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("8_2oj2j")
+}],
+"loop": true,
+"name": &"water",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("6_8jw2v")
+}],
+"loop": true,
+"name": &"wind",
+"speed": 5.0
+}]
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_qdnrg"]
+particle_flag_disable_z = true
+emission_shape = 3
+emission_box_extents = Vector3(32, 32, 0)
+direction = Vector3(0, -1, 0)
+initial_velocity_min = 10.0
+initial_velocity_max = 25.0
+gravity = Vector3(0, -30, 0)
+damping_min = 0.5
+damping_max = 1.5000001
+scale_min = 30.0
+scale_max = 30.0
+turbulence_enabled = true
+turbulence_noise_strength = 11.0
+turbulence_noise_speed_random = 1.0
+
+[node name="ElementAura" type="Node2D"]
+script = ExtResource("1_72xmj")
+BodyPath = NodePath("LiquidBody")
+BodyAlphaMult = 0.4
+
+[node name="Particles" type="GPUParticles2D" parent="."]
+
+[node name="Glow" type="DirectionalLight2D" parent="."]
+blend_mode = 2
+
+[node name="LiquidBody" type="AnimatedSprite2D" parent="."]
+modulate = Color(1, 1, 1, 0.08235294)
+material = SubResource("ShaderMaterial_aqenf")
+position = Vector2(1, -64)
+sprite_frames = SubResource("SpriteFrames_wc0kq")
+animation = &"wind"
+
+[node name="Drops" type="GPUParticles2D" parent="."]
+z_index = 20
+scale = Vector2(10, 10)
+skew = 0.04712389
+amount = 300
+texture = ExtResource("5_qdnrg")
+lifetime = 1.5
+speed_scale = 1.43
+explosiveness = 0.18
+collision_base_size = 22.75
+process_material = SubResource("ParticleProcessMaterial_qdnrg")
+
+[node name="Wisps" type="GPUParticles2D" parent="."]

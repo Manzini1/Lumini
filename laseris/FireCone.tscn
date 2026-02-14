@@ -1,0 +1,74 @@
+[gd_scene load_steps=9 format=3 uid="uid://coiqukbfdrigo"]
+
+[ext_resource type="Script" uid="uid://bqoekvr1y61h2" path="res://Scripts/FireConeVfx.cs" id="1_8x7mx"]
+[ext_resource type="Shader" uid="uid://bnqcv62pchmpe" path="res://FireCone.gdshader" id="1_mmy0f"]
+[ext_resource type="Texture2D" uid="uid://brh6cchw82uig" path="res://Sprites/Projectiles/fire_texture.png" id="3_34u3f"]
+[ext_resource type="Texture2D" uid="uid://dypii1jaydnuq" path="res://Sprites/Projectiles/sparks - Copy.png" id="4_34u3f"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_8x7mx"]
+shader = ExtResource("1_mmy0f")
+shader_parameter/progress = 0.0
+shader_parameter/fade = 1.0
+shader_parameter/dissolve = 0.0
+shader_parameter/intensity = 1.0
+shader_parameter/width_boost = 1.0
+shader_parameter/start_width = 0.12
+shader_parameter/end_width = 1.0
+shader_parameter/noise_scale = 6.0
+shader_parameter/noise_speed = 3.0
+shader_parameter/edge_softness = 0.6
+shader_parameter/heat_warp = 0.06
+shader_parameter/arc_up = 0.0
+shader_parameter/tip_uv = 0.07
+shader_parameter/cap_roundness = 0.85
+shader_parameter/core_color = Color(1, 0.95, 0.6, 1)
+shader_parameter/mid_color = Color(1, 0.55, 0.2, 1)
+shader_parameter/glow_color = Color(1, 0.45, 0.12, 1)
+
+[sub_resource type="QuadMesh" id="QuadMesh_7iadu"]
+size = Vector2(200, 80)
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_8x7mx"]
+particle_flag_disable_z = true
+emission_shape = 1
+emission_sphere_radius = 28.15
+spread = 70.0
+initial_velocity_min = 80.0
+initial_velocity_max = 200.0
+gravity = Vector3(0, 300, 0)
+scale_min = 0.19999999
+scale_max = 0.19999999
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_4lue2"]
+particle_flag_disable_z = true
+spread = 120.0
+initial_velocity_min = 120.0
+initial_velocity_max = 320.0
+gravity = Vector3(0, 450, 0)
+
+[node name="FireFlames" type="Node2D"]
+script = ExtResource("1_8x7mx")
+ConeMeshPath = NodePath("MeshInstance2D")
+
+[node name="MeshInstance2D" type="MeshInstance2D" parent="."]
+material = SubResource("ShaderMaterial_8x7mx")
+mesh = SubResource("QuadMesh_7iadu")
+
+[node name="EndFlames" type="GPUParticles2D" parent="."]
+scale = Vector2(4, 4)
+emitting = false
+amount = 300
+texture = ExtResource("3_34u3f")
+lifetime = 0.18000000000000002
+one_shot = true
+explosiveness = 0.9
+process_material = SubResource("ParticleProcessMaterial_8x7mx")
+
+[node name="EndEmbers" type="GPUParticles2D" parent="."]
+visible = false
+emitting = false
+amount = 300
+texture = ExtResource("4_34u3f")
+lifetime = 0.3
+one_shot = true
+process_material = SubResource("ParticleProcessMaterial_4lue2")

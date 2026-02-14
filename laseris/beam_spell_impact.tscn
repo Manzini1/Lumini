@@ -1,0 +1,37 @@
+[gd_scene load_steps=4 format=3 uid="uid://bwd1cr1adudch"]
+
+[ext_resource type="Texture2D" uid="uid://cjydkmf1ku4xj" path="res://Sprites/HUD/lightsparks.png" id="1_fmeem"]
+[ext_resource type="Script" uid="uid://cv8nddbwwcyrw" path="res://Scenes/Attack/Ice/AutoDespawnParticles2D.cs" id="1_vr4rb"]
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_vr4rb"]
+lifetime_randomness = 1.0
+particle_flag_disable_z = true
+emission_shape = 1
+emission_sphere_radius = 108.56
+angle_min = 295.40002
+angle_max = 295.40002
+spread = 135.0
+angular_velocity_min = -137.15001
+angular_velocity_max = -73.85001
+orbit_velocity_min = -0.30899993
+orbit_velocity_max = -0.063999906
+gravity = Vector3(0, 0, 100)
+scale_min = 2.0
+scale_max = 2.0
+
+[node name="BeamSpellImpact" type="Node2D"]
+script = ExtResource("1_vr4rb")
+
+[node name="P" type="GPUParticles2D" parent="."]
+rotation = 1.6126842
+scale = Vector2(10, 10)
+skew = -0.0418879
+emitting = false
+amount = 30
+texture = ExtResource("1_fmeem")
+lifetime = 0.79
+one_shot = true
+speed_scale = 1.01
+explosiveness = 1.0
+randomness = 0.77
+process_material = SubResource("ParticleProcessMaterial_vr4rb")

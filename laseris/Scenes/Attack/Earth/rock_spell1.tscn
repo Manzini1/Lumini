@@ -1,0 +1,21 @@
+[gd_scene load_steps=4 format=3 uid="uid://b32y7iml2ifw6"]
+
+[ext_resource type="Texture2D" uid="uid://garfmch3vshh" path="res://Sprites/Projectiles/boulder.png" id="1_5yba8"]
+[ext_resource type="Script" uid="uid://bo5fbsxpv1hux" path="res://Scripts/VFX/AutoVfxSprite.cs" id="1_6gdtc"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_6gdtc"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_5yba8")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}]
+
+[node name="RockSpell1" type="Node2D"]
+script = ExtResource("1_6gdtc")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+sprite_frames = SubResource("SpriteFrames_6gdtc")

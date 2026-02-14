@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3 uid="uid://k77em0ts4tg7"]
+[gd_scene load_steps=32 format=3 uid="uid://k77em0ts4tg7"]
 
 [ext_resource type="Script" uid="uid://coc8w2xsksd0x" path="res://Scripts/Battle/BattleController.cs" id="1_02hj4"]
 [ext_resource type="PackedScene" uid="uid://nvoxx5jrd2g3" path="res://Scenes/Actors/Mage/Mage.tscn" id="2_5mge4"]
@@ -8,15 +8,26 @@
 [ext_resource type="Script" uid="uid://b5o5rt8uxflug" path="res://Scripts/Battle/BeatScheduler.cs" id="4_68j0i"]
 [ext_resource type="Script" uid="uid://dyuemocsthcd8" path="res://Scripts/Battle/TurnManager.cs" id="5_36cr5"]
 [ext_resource type="Script" uid="uid://bdh7m4tsvc1xr" path="res://Scripts/Battle/InputJudge.cs" id="6_6tvrj"]
+[ext_resource type="PackedScene" uid="uid://uwnjrmubkcwf" path="res://ElementAura.tscn" id="7_brxyk"]
 [ext_resource type="Script" uid="uid://dl7uwh5uj2vlc" path="res://Scripts/Battle/AttackPattern.cs" id="7_ik5sk"]
 [ext_resource type="PackedScene" uid="uid://dskdgkpsg2ad6" path="res://attack_circle.tscn" id="7_sufya"]
 [ext_resource type="Shader" uid="uid://ct01x8c2mt7h5" path="res://Scenes/Battle/glow.gdshader" id="8_n1ain"]
 [ext_resource type="Script" uid="uid://d1y1qdubx4x0p" path="res://Scripts/Battle/FlowMeter.cs" id="8_sufya"]
 [ext_resource type="PackedScene" uid="uid://cjlpsqmplebt7" path="res://Scenes/HUD/hud.tscn" id="9_n1ain"]
+[ext_resource type="PackedScene" uid="uid://bmnqol6ly84fs" path="res://DeltaLabel.tscn" id="10_skgte"]
 [ext_resource type="Texture2D" uid="uid://4lwdexkkbsx8" path="res://Sprites/Backgrounds/TrainingGrounds/tg1.png" id="12_68j0i"]
 [ext_resource type="Script" uid="uid://bf2vsyi1to3sg" path="res://Scripts/Combat/ElementVfxLibrary.cs" id="14_6tvrj"]
 [ext_resource type="PackedScene" uid="uid://btxnac1kjb7dj" path="res://vfx_earth.tscn" id="15_ik5sk"]
+[ext_resource type="PackedScene" uid="uid://coiqukbfdrigo" path="res://FireCone.tscn" id="17_f4hcl"]
+[ext_resource type="PackedScene" uid="uid://j1sy6xvm5ex7" path="res://Scenes/spells/ice_projectile.tscn" id="17_fm2jp"]
 [ext_resource type="PackedScene" uid="uid://dgld5kxx6w8i8" path="res://Scenes/VFX/beam_spell_vfx.tscn" id="17_n1ain"]
+[ext_resource type="Script" uid="uid://bag1wlqx55i08" path="res://Scenes/Battle/DevResolutionTester.cs" id="18_4pmf7"]
+[ext_resource type="PackedScene" uid="uid://bi5xpys1g0fqy" path="res://Scenes/Attack/Ice/IceSpell1.tscn" id="18_q177b"]
+[ext_resource type="PackedScene" uid="uid://bwd1cr1adudch" path="res://beam_spell_impact.tscn" id="19_fm2jp"]
+[ext_resource type="PackedScene" uid="uid://jkccuydy7g0p" path="res://Scenes/spells/fireball_projectile_vfx.tscn" id="19_skgte"]
+[ext_resource type="PackedScene" uid="uid://dyj1rrtspwjo6" path="res://Scenes/Attack/Ice/FireSparks.tscn" id="20_jbiss"]
+[ext_resource type="PackedScene" uid="uid://dnvittboid2fn" path="res://firewhip.tscn" id="21_jbiss"]
+[ext_resource type="Script" uid="uid://cia7rgvindnhk" path="res://Scripts/BattleVfxDirector.cs" id="25_d4k4i"]
 
 [sub_resource type="Resource" id="Resource_36cr5"]
 script = ExtResource("3_68j0i")
@@ -26,6 +37,10 @@ PrepareLeadSeconds = 0.4
 HitWindowSeconds = 0.2
 FlowMaxStacks = 30
 metadata/_custom_type_script = "uid://bcnklqjcg5wwp"
+
+[sub_resource type="Environment" id="Environment_n1ain"]
+glow_enabled = true
+glow_bloom = 0.6
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_4pmf7"]
 shader = ExtResource("8_n1ain")
@@ -44,8 +59,18 @@ shader_parameter/glow_color = Vector3(0.157, 0.686, 0.976)
 [node name="BattleScene" type="Node2D"]
 script = ExtResource("1_02hj4")
 Phase = SubResource("Resource_36cr5")
+ScoreHudPath = NodePath("HUD/Root/ScoreBarsHUD")
+DamageTotalLabelPath = NodePath("HUD/Root/DamageTotalRoot")
+DamageTotalRootPath = NodePath("HUD/Root/DamageTotalRoot")
+EnemyAuraPath = NodePath("World/ElementAura")
+DebugSpawnCastVfxEvenOnMiss = true
+DebugSpawnImpactEvenOnMiss = true
 EnemyElementCyclePath = NodePath("World/Characters/Enemy/EnemyElementCycleController")
+EnemyIndicatorPath = NodePath("World/ElementAura")
 TurnBannerPath = NodePath("HUD/Root/Canvas/TurnBanner")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_n1ain")
 
 [node name="World" type="Node2D" parent="."]
 
@@ -53,6 +78,12 @@ TurnBannerPath = NodePath("HUD/Root/Canvas/TurnBanner")
 
 [node name="Mage" parent="World/Characters" instance=ExtResource("2_5mge4")]
 position = Vector2(352, 736)
+
+[node name="VfxCast" parent="World/Characters/Mage" index="1"]
+position = Vector2(128, -72)
+
+[node name="Hitbox" parent="World/Characters/Mage/WeaponSocket" index="1"]
+position = Vector2(15.800903, -19.756714)
 
 [node name="Shield" parent="World/Characters/Mage" index="5"]
 animation = &"e4"
@@ -66,8 +97,31 @@ ChangeEverySeconds = 4.1
 [node name="Vfx" type="Node2D" parent="World"]
 
 [node name="AttackCircle" parent="World/Vfx" instance=ExtResource("7_sufya")]
+visible = false
 
 [node name="Projectiles" type="Node2D" parent="World"]
+
+[node name="ElementAura" parent="World" instance=ExtResource("7_brxyk")]
+position = Vector2(0, -50)
+scale = Vector2(4, 4)
+AuraOffset = Vector2(0, -2000)
+FollowLerpSpeed = 12.1
+ColorTransitionSeconds = 0.05
+FlashSeconds = 0.05
+FlashStrength = 0.1
+BodyIntensityBase = 0.12
+BodyAlphaMult = 0.21
+ParticlesAlphaMult = 0.38
+AuraSize = Vector2(400, 500)
+
+[node name="LiquidBody" parent="World/ElementAura" index="2"]
+scale = Vector2(3, 3)
+animation = &"fire"
+
+[node name="Drops" parent="World/ElementAura" index="3"]
+scale = Vector2(5, 5)
+
+[node name="VfxProjectiles" type="Node2D" parent="World"]
 
 [node name="HUD" parent="." instance=ExtResource("9_n1ain")]
 RingSize = Vector2(180, 180)
@@ -117,6 +171,44 @@ offset_top = 6.710456
 offset_right = 90.0
 offset_bottom = 96.71046
 
+[node name="DamageTotalRoot" parent="HUD/Root" index="14"]
+visible = false
+offset_left = 112.0
+offset_top = 952.0
+offset_right = 152.0
+offset_bottom = 992.0
+
+[node name="GlowLabel" parent="HUD/Root/DamageTotalRoot" index="1"]
+theme_override_font_sizes/font_size = 34
+text = "teste"
+
+[node name="ScoreBarsHUD" parent="HUD/Root" index="15"]
+PlayerLinePath = NodePath("ScoreLine")
+EnemyLinePath = NodePath("EnemyLine")
+DeltaLayerPath = NodePath("DeltaLayer")
+DeltaLabelScene = ExtResource("10_skgte")
+
+[node name="ScoreLine" parent="HUD/Root/ScoreBarsHUD" index="0"]
+anchors_preset = -1
+anchor_left = 0.041
+anchor_right = 13.175
+
+[node name="EnemyLine" parent="HUD/Root/ScoreBarsHUD" index="1"]
+anchors_preset = -1
+anchor_right = 13.21
+
+[node name="DeltaLayer" type="Control" parent="HUD/Root/ScoreBarsHUD" index="2"]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="DamageTotalLabel" type="Label" parent="HUD"]
+visible = false
+offset_left = 128.0
+offset_top = 960.0
+offset_right = 168.0
+offset_bottom = 983.0
+
 [node name="Background" type="Sprite2D" parent="."]
 z_index = -999
 position = Vector2(960, 552)
@@ -147,13 +239,30 @@ script = ExtResource("8_sufya")
 [node name="ElementVfxLibrary" type="Node" parent="Systems"]
 script = ExtResource("14_6tvrj")
 MageCastAnimByElementId = PackedStringArray("e3", "e3", "e3", "e3", "e3", "e3", "e3")
-CastVfxByElementId = [ExtResource("15_ik5sk"), ExtResource("15_ik5sk"), ExtResource("15_ik5sk"), ExtResource("15_ik5sk"), ExtResource("15_ik5sk"), ExtResource("15_ik5sk"), ExtResource("17_n1ain")]
-ImpactVfxByElementId = [null, null, null, null, null, null, ExtResource("17_n1ain"), null]
+CastVfxByElementId = [ExtResource("17_fm2jp"), ExtResource("19_skgte"), ExtResource("17_fm2jp"), ExtResource("17_fm2jp"), ExtResource("17_fm2jp"), ExtResource("17_n1ain"), ExtResource("17_n1ain")]
+AdvancedCastVfxByElementId = [null, ExtResource("17_f4hcl"), null, null, null, null, null, null]
+ImpactVfxByElementId = [ExtResource("18_q177b"), ExtResource("20_jbiss"), ExtResource("18_q177b"), ExtResource("18_q177b"), ExtResource("18_q177b"), ExtResource("18_q177b"), ExtResource("19_fm2jp"), ExtResource("19_fm2jp")]
+ImpactVfxAlt1ByElementId = [null, null, null, null, null, null, null, ExtResource("21_jbiss")]
+EarthRockScene = ExtResource("15_ik5sk")
+
+[node name="BattleVfxDirector" type="Node" parent="Systems"]
+script = ExtResource("25_d4k4i")
+ElementVfxLibraryPath = NodePath("../ElementVfxLibrary")
+WorldVfxParentPath = NodePath("../../World/Vfx")
+ProjectilesParentPath = NodePath("../../World/Projectiles")
+MageCastPath = NodePath("../../World/Characters/Mage/VfxCast")
+EnemyHitPath = NodePath("../../World/Characters/Enemy/VfxCenter")
+
+[node name="Resolutions" type="Node" parent="."]
+script = ExtResource("18_4pmf7")
 
 [editable path="World/Characters/Mage"]
 [editable path="World/Characters/Mage/WeaponSocket/Weapon/StaffBasic"]
 [editable path="World/Characters/Enemy"]
+[editable path="World/ElementAura"]
 [editable path="HUD"]
 [editable path="HUD/Root/ElementBar"]
 [editable path="HUD/Root/ElementHints2/HintLayer/ElementHints"]
 [editable path="HUD/Root/Canvas"]
+[editable path="HUD/Root/ScoreBarsHUD/ScoreLine"]
+[editable path="HUD/Root/ScoreBarsHUD/EnemyLine"]

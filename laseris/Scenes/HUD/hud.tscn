@@ -1,4 +1,4 @@
-[gd_scene load_steps=28 format=3 uid="uid://cjlpsqmplebt7"]
+[gd_scene load_steps=35 format=3 uid="uid://cjlpsqmplebt7"]
 
 [ext_resource type="PackedScene" uid="uid://c6ke6rhxkcjaw" path="res://Scenes/attack_ring.tscn" id="1_5aai8"]
 [ext_resource type="Script" uid="uid://q3ip6t83kbe7" path="res://Scripts/Controllers/HUDController.cs" id="1_a56j6"]
@@ -22,8 +22,14 @@
 [ext_resource type="Texture2D" uid="uid://dv6dt0803shjl" path="res://Sprites/HUD/flow_and_feedback2.png" id="23_b4qo4"]
 [ext_resource type="Shader" uid="uid://bcrwni8hvsg61" path="res://Scenes/HUD/liquid.gdshader" id="24_vc458"]
 [ext_resource type="Texture2D" uid="uid://bd55k1hj4yfga" path="res://Sprites/HUD/flow_and_feedback2 - Copy.png" id="24_vywpl"]
+[ext_resource type="Script" uid="uid://bbo61qkxmg8n6" path="res://Scenes/Battle/DamageTotalLabelController.cs" id="25_8ujn0"]
 [ext_resource type="Texture2D" uid="uid://p03g0t56lfl6" path="res://Sprites/HUD/stones.png" id="25_vywpl"]
+[ext_resource type="PackedScene" uid="uid://bmnqol6ly84fs" path="res://DeltaLabel.tscn" id="26_vc458"]
 [ext_resource type="Script" uid="uid://56tfpfkisjbl" path="res://Scenes/HUD/FlippingStoneController.cs" id="27_y2lcl"]
+[ext_resource type="Shader" uid="uid://cdt1q6rh1xvri" path="res://Shaders/label_glint.gdshader" id="28_vc458"]
+[ext_resource type="Script" uid="uid://chnh75aru14cs" path="res://Scenes/HUD/DualScoreBarsController.cs" id="29_vb3pr"]
+[ext_resource type="FontFile" uid="uid://cv5awp88npojj" path="res://fonts/starveler/Starveler.ttf" id="29_y2lcl"]
+[ext_resource type="PackedScene" uid="uid://cxh1ocn8rs6yd" path="res://ScoreLine.tscn" id="30_vb3pr"]
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_buuh3"]
 animations = [{
@@ -101,6 +107,7 @@ shader_parameter/fill01 = 0.0
 shader_parameter/wobble = 0.0
 shader_parameter/time = 0.0
 shader_parameter/flash01 = 0.0
+shader_parameter/charged01 = 0.0
 shader_parameter/center_uv = Vector2(0.5, 0.53)
 shader_parameter/inner_radius = 0.285
 shader_parameter/feather = 0.004
@@ -109,8 +116,22 @@ shader_parameter/wave_freq = 2.2
 shader_parameter/wave_speed = 3.2
 shader_parameter/color_orange = Vector3(1, 0.45, 0.12)
 shader_parameter/color_blood = Vector3(0.55, 0.03, 0.02)
-shader_parameter/rim_glow_color = Vector3(1.1, 0.55, 0.2)
-shader_parameter/surface_highlight = Vector3(1.2, 0.75, 0.35)
+shader_parameter/charged_color = Vector3(0.157, 0.686, 0.976)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_vb3pr"]
+shader = ExtResource("28_vc458")
+shader_parameter/glint_pos = -1.0
+shader_parameter/glint_intensity = 0.0
+shader_parameter/glint_dir = Vector2(0.70710677, -0.70710677)
+shader_parameter/glint_width = 0.12
+shader_parameter/glint_core_width = 0.04
+shader_parameter/glint_soft = 0.03
+shader_parameter/glint_color = Color(1, 1, 1, 1)
+shader_parameter/core_color = Color(1, 0.95, 0.75, 1)
+shader_parameter/sparkle_strength = 0.25
+shader_parameter/sparkle_scale = 220.0
+shader_parameter/sparkle_speed = 2.2
+shader_parameter/sparkle_gate = 0.65
 
 [node name="HUD" type="CanvasLayer"]
 script = ExtResource("1_a56j6")
@@ -145,8 +166,8 @@ offset_bottom = 43.0
 
 [node name="ElementBar" parent="Root" instance=ExtResource("2_a56j6")]
 layout_mode = 1
-offset_top = -175.99998
-offset_bottom = -175.99998
+offset_top = -176.00002
+offset_bottom = -176.00002
 scale = Vector2(0.99282306, 1.0008985)
 HintProjectileScene = ExtResource("20_sgblu")
 HintParentPath = NodePath("../ElementHints2/HintLayer")
@@ -201,6 +222,7 @@ grow_vertical = 2
 mouse_filter = 2
 
 [node name="HPBars" type="Control" parent="Root"]
+visible = false
 anchors_preset = 0
 offset_right = 40.0
 offset_bottom = 40.0
@@ -368,6 +390,86 @@ position = Vector2(223.99994, -6.056018)
 scale = Vector2(1.0331304, 1.0416716)
 texture = ExtResource("24_vywpl")
 
+[node name="DamageTotalRoot" type="Control" parent="Root"]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+scale = Vector2(2, 2)
+script = ExtResource("25_8ujn0")
+MainLabelPath = NodePath("MainLabel")
+GlowLabelPath = NodePath("GlowLabel")
+DeltaLabelScene = ExtResource("26_vc458")
+Prefix = ""
+
+[node name="MainLabel" type="Label" parent="Root/DamageTotalRoot"]
+material = SubResource("ShaderMaterial_vb3pr")
+layout_mode = 0
+offset_right = 44.0
+offset_bottom = 32.0
+scale = Vector2(1, 0.9889831)
+theme_override_colors/font_color = Color(0.95359176, 2.117753e-06, 0.5841491, 1)
+theme_override_colors/font_shadow_color = Color(0, 0.7019608, 0.6666667, 0.40784314)
+theme_override_fonts/font = ExtResource("29_y2lcl")
+theme_override_font_sizes/font_size = 32
+text = "teste"
+
+[node name="GlowLabel" type="Label" parent="Root/DamageTotalRoot"]
+modulate = Color(1, 1, 1, 0.56078434)
+layout_mode = 0
+offset_right = 80.0
+offset_bottom = 37.0
+theme_override_colors/font_outline_color = Color(0.9490196, 0.5529412, 0.45882353, 0.99215686)
+theme_override_fonts/font = ExtResource("29_y2lcl")
+theme_override_font_sizes/font_size = 32
+text = "teste2"
+
+[node name="DeltaSpawn" type="Control" parent="Root/DamageTotalRoot"]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 23.0
+scale = Vector2(5, 5)
+
+[node name="ScoreBarsHUD" type="Control" parent="Root"]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("29_vb3pr")
+
+[node name="ScoreLine" parent="Root/ScoreBarsHUD" instance=ExtResource("30_vb3pr")]
+layout_mode = 1
+offset_left = 64.0
+offset_top = 952.0
+offset_right = 64.0
+offset_bottom = 952.0
+TrackPath = NodePath("Track")
+FillMaskPath = NodePath("FillMask")
+FillPath = NodePath("FillMask/Fill")
+TipGlowPath = NodePath("TipGlow")
+FillFromRight = true
+
+[node name="FillMask" parent="Root/ScoreBarsHUD/ScoreLine" index="1"]
+anchors_preset = -1
+anchor_right = 13.0
+offset_bottom = 5.0
+
+[node name="EnemyLine" parent="Root/ScoreBarsHUD" instance=ExtResource("30_vb3pr")]
+layout_mode = 1
+offset_left = 1240.0
+offset_top = 952.0
+offset_right = 1240.0
+offset_bottom = 952.0
+TrackPath = NodePath("Track")
+FillMaskPath = NodePath("FillMask")
+FillPath = NodePath("FillMask/Fill")
+TipGlowPath = NodePath("TipGlow")
+
+[node name="FillMask" parent="Root/ScoreBarsHUD/EnemyLine" index="1"]
+anchors_preset = -1
+anchor_right = 14.0
+offset_bottom = 5.0
+
 [editable path="Root/ElementBar"]
 [editable path="Root/ElementHints2/HintLayer/ElementHints"]
 [editable path="Root/Canvas"]
+[editable path="Root/ScoreBarsHUD/ScoreLine"]
+[editable path="Root/ScoreBarsHUD/EnemyLine"]

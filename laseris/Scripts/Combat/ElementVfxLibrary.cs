@@ -10,7 +10,8 @@ public partial class ElementVfxLibrary : Node
 
 	[ExportGroup("VFX Scenes")]
 	[Export] public PackedScene[] CastVfxByElementId = new PackedScene[8];
-
+	[ExportGroup("Advanced (Flow Full)")]
+	[Export] public PackedScene[] AdvancedCastVfxByElementId = new PackedScene[8];
 	// Base + até 2 alternates (total 3 variações)
 	[Export] public PackedScene[] ImpactVfxByElementId = new PackedScene[8];
 	[Export] public PackedScene[] ImpactVfxAlt1ByElementId = new PackedScene[8];
@@ -134,13 +135,86 @@ public void SpawnEarthRock(Node parent, Vector2 ground, Vector2 hit)
 	TryAutoPlayInHierarchy(node);
 }
 
+public void SpawnCastProjectile(int elementId, Node parent, Vector2 from, Vector2 to, float travelSec = 0.06f)
+{
+	if (parent == null) return;
 
+	var scene = GetScene(CastVfxByElementId, elementId);
+	if (scene == null) return;
+
+	var inst = scene.Instantiate();
+	if (inst is not Node node) { inst.QueueFree(); return; }
+
+	parent.AddChild(node);
+
+	// posiciona já no from (pra não depender do Play)
+	if (node is Node2D n2) n2.GlobalPosition = from;
+	else if (node is Control c) c.GlobalPosition = from;
+
+	// dá play visual nos filhos (AnimatedSprite2D/Particles/AnimationPlayer)
+	TryAutoPlayInHierarchy(node);
+
+	// se o root tiver Play(from,to,sec), chama
+	if (node.HasMethod("Play"))
+	{
+		node.Call("Play", from, to, travelSec);
+	}
+}
+public bool SpawnPlayerCast(int elementId, bool flowFull, Node parent, Vector2 from, Vector2 to, float travelSec)
+{
+	if (parent == null) return false;
+
+	PackedScene scene =
+		flowFull ? GetScene(AdvancedCastVfxByElementId, elementId) : null;
+
+	scene ??= GetScene(CastVfxByElementId, elementId);
+	if (scene == null) return false;
+
+	var inst = scene.Instantiate();
+	if (inst is not Node node) { inst.QueueFree(); return false; }
+
+	parent.AddChild(node);
+
+	if (node is Node2D n2) n2.GlobalPosition = from;
+	else if (node is Control c) c.GlobalPosition = from;
+
+	TryAutoPlayInHierarchy(node);
+
+	// tenta Play(from,to,sec)
+	if (node.HasMethod("Play"))
+		node.Call("Play", from, to, travelSec);
+	else if (node.HasMethod("Launch"))
+		node.Call("Launch", from, to, travelSec);
+
+	return true;
+}
 	private static PackedScene GetScene(PackedScene[] arr, int id)
 	{
 		if (arr == null) return null;
 		if (id < 1 || id >= arr.Length) return null;
 		return arr[id];
 	}
+public void SpawnProjectileCast(int elementId, Node parent, Vector2 from, Vector2 to, float travelSec = 0.08f)
+{
+	var scene = GetScene(CastVfxByElementId, elementId);
+	if (scene == null || parent == null) return;
+
+	var inst = scene.Instantiate();
+	if (inst is not Node node) { inst.QueueFree(); return; }
+
+	parent.AddChild(node);
+
+	// tenta método Play(from,to,travel)
+	if (node.HasMethod("Play"))
+	{
+		node.Call("Play", from, to, travelSec);
+		return;
+	}
+
+	// fallback: posiciona e deixa existir
+	if (TrySetGlobalPosition(node, from))
+		TryAutoPlayInHierarchy(node);
+}
 
 	private static void SpawnScene(PackedScene scene, Node parent, Vector2 globalPos)
 {
@@ -155,18 +229,34 @@ public void SpawnEarthRock(Node parent, Vector2 ground, Vector2 hit)
 
 	parent.AddChild(node);
 
-	// posiciona se der
-	if (node is Node2D n2) n2.GlobalPosition = globalPos;
-	else if (node is Control c) c.GlobalPosition = globalPos;
+	// ✅ tenta posicionar root ou o primeiro Node2D/Control encontrado
+	if (!TrySetGlobalPosition(node, globalPos))
+	{
+		GD.PushWarning($"[VFX] Cena '{scene.ResourcePath}' não tem Node2D/Control (root ou filhos). Vai aparecer no origin do parent.");
+	}
+	GD.Print($"[VFX] scene={scene.ResourcePath} inst_root={node.GetType().Name} parent={parent.GetPath()} pos_in={globalPos}");
 
-	// ✅ tenta autoplay (root + filhos)
 	if (TryAutoPlayInHierarchy(node))
 		return;
 
-	// fallback “seguro” pra cenas custom
 	if (node.HasMethod("PlaySimple"))
 		node.Call("PlaySimple");
 }
+
+private static bool TrySetGlobalPosition(Node node, Vector2 globalPos)
+{
+	if (node is Node2D n2) { n2.GlobalPosition = globalPos; return true; }
+	if (node is Control c) { c.GlobalPosition = globalPos; return true; }
+
+	foreach (var childObj in node.GetChildren())
+	{
+		if (childObj is Node child && TrySetGlobalPosition(child, globalPos))
+			return true;
+	}
+
+	return false;
+}
+
 
 // ✅ procura e dá Play no primeiro “componente animável” que encontrar
 private static bool TryAutoPlayInHierarchy(Node node)

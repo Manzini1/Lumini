@@ -1,0 +1,58 @@
+[gd_scene load_steps=12 format=3 uid="uid://dkbp647c7388n"]
+
+[ext_resource type="Texture2D" uid="uid://cijwpsn0r5pep" path="res://Sprites/Backgrounds/WailingWidow/1.jpg" id="1_iomvk"]
+[ext_resource type="Texture2D" uid="uid://56bew42a2fet" path="res://Sprites/Backgrounds/WailingWidow/2.jpg" id="2_odxkw"]
+[ext_resource type="Texture2D" uid="uid://bss0rbcdq2sd2" path="res://Sprites/Backgrounds/WailingWidow/3.jpg" id="3_m6d43"]
+[ext_resource type="Texture2D" uid="uid://dnge15gcxe8i1" path="res://Sprites/Backgrounds/WailingWidow/4.jpg" id="4_8qoyf"]
+[ext_resource type="Texture2D" uid="uid://13yvapsna065" path="res://Sprites/Backgrounds/WailingWidow/5.jpg" id="5_k84dd"]
+[ext_resource type="Texture2D" uid="uid://clxaltd1r770x" path="res://Sprites/Backgrounds/WailingWidow/6.jpg" id="6_ubttn"]
+[ext_resource type="Texture2D" uid="uid://b31lqwhixs7oq" path="res://Sprites/Backgrounds/WailingWidow/7.jpg" id="7_tjd63"]
+[ext_resource type="Texture2D" uid="uid://brg26p5cy33bu" path="res://Sprites/Backgrounds/WailingWidow/8.jpg" id="8_k5xfy"]
+[ext_resource type="Texture2D" uid="uid://u8q5blnqv1yr" path="res://Sprites/Backgrounds/WailingWidow/9.jpg" id="9_oxiuj"]
+[ext_resource type="Texture2D" uid="uid://dnn0y074t4ped" path="res://Sprites/Backgrounds/WailingWidow/10.jpg" id="10_7j6dh"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_tpsi7"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_iomvk")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_odxkw")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_m6d43")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_8qoyf")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_k84dd")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6_ubttn")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_tjd63")
+}, {
+"duration": 1.0,
+"texture": ExtResource("8_k5xfy")
+}, {
+"duration": 1.0,
+"texture": ExtResource("9_oxiuj")
+}, {
+"duration": 1.0,
+"texture": ExtResource("10_7j6dh")
+}],
+"loop": true,
+"name": &"default",
+"speed": 8.0
+}]
+
+[node name="WailingWidow" type="Node2D"]
+
+[node name="Background" type="AnimatedSprite2D" parent="."]
+position = Vector2(984, 528.00006)
+scale = Vector2(1.5594103, 1.5929607)
+sprite_frames = SubResource("SpriteFrames_tpsi7")
+frame_progress = 0.6045973

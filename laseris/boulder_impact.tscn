@@ -1,0 +1,22 @@
+[gd_scene load_steps=3 format=3 uid="uid://dck8dv55xx1f7"]
+
+[ext_resource type="Texture2D" uid="uid://dp3rok8iele05" path="res://Sprites/Sparks/rock.png" id="1_tp2nm"]
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_pfy36"]
+particle_flag_disable_z = true
+spread = 168.822
+initial_velocity_min = 368.61
+initial_velocity_max = 616.79
+gravity = Vector3(0, 98, 0)
+
+[node name="boulder_impact" type="Node2D"]
+
+[node name="Burst" type="GPUParticles2D" parent="."]
+emitting = false
+amount = 30
+texture = ExtResource("1_tp2nm")
+lifetime = 0.31
+one_shot = true
+explosiveness = 0.98
+randomness = 1.0
+process_material = SubResource("ParticleProcessMaterial_pfy36")

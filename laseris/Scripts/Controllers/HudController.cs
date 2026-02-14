@@ -169,7 +169,7 @@ public FlippingStoneController FlippingStone { get; private set; }
 		}
 
 		float fill01 = (maxStacks <= 0) ? 0f : (float)stacks / maxStacks;
-				GD.Print($"[HUD] Flow stacks={stacks} max={maxStacks} fill01={fill01:0.00}");
+				//GD.Print($"[HUD] Flow stacks={stacks} max={maxStacks} fill01={fill01:0.00}");
 		FlowVial?.SetFill01(fill01);
 	}
 

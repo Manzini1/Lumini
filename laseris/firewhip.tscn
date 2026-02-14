@@ -1,0 +1,128 @@
+[gd_scene load_steps=14 format=3 uid="uid://dnvittboid2fn"]
+
+[ext_resource type="Texture2D" uid="uid://wb7rhi6axksg" path="res://Sprites/Spells/flame_strip.png" id="1_i73bq"]
+[ext_resource type="Script" uid="uid://e73qtptut3d1" path="res://Scripts/FireFlameLineVfx.cs" id="1_igs27"]
+[ext_resource type="Texture2D" uid="uid://ccsqs5oa8jkjf" path="res://Sprites/Spells/fire_particle.png" id="2_igs27"]
+[ext_resource type="Texture2D" uid="uid://mjcybjvpkqrj" path="res://Sprites/Spells/fire_hit_flare_sheet.png" id="3_3uqtu"]
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_fkmma"]
+particle_flag_disable_z = true
+gravity = Vector3(0, 0, 0)
+color = Color(0.92156863, 0.56078434, 0.050980393, 0.81960785)
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_g2fhp"]
+particle_flag_disable_z = true
+initial_velocity_min = 120.0
+initial_velocity_max = 120.0
+gravity = Vector3(0, 0, 0)
+scale_min = 0.59999996
+scale_max = 0.59999996
+color = Color(1, 0.050980393, 0.11372549, 0.8666667)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_iyapl"]
+atlas = ExtResource("3_3uqtu")
+region = Rect2(32, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_mminj"]
+atlas = ExtResource("3_3uqtu")
+region = Rect2(64, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_es3uu"]
+atlas = ExtResource("3_3uqtu")
+region = Rect2(96, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_8ead8"]
+atlas = ExtResource("3_3uqtu")
+region = Rect2(128, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ao3am"]
+atlas = ExtResource("3_3uqtu")
+region = Rect2(160, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_xgqs1"]
+atlas = ExtResource("3_3uqtu")
+region = Rect2(192, 0, 32, 32)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_g2fhp"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_iyapl")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_mminj")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_es3uu")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_8ead8")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ao3am")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_xgqs1")
+}],
+"loop": false,
+"name": &"default",
+"speed": 13.0
+}]
+
+[node name="FireFlameBeam" type="Node2D"]
+script = ExtResource("1_igs27")
+UseWhip = true
+
+[node name="GlowLine" type="Line2D" parent="."]
+z_index = 10
+width = 25.0
+default_color = Color(1.0538888, 0, 0.19378445, 0.349)
+texture_mode = 1
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+
+[node name="MidLine" type="Line2D" parent="."]
+z_index = 10
+texture_repeat = 2
+width = 16.0
+default_color = Color(0.7764706, 0.29803923, 0.14117648, 0.6745098)
+texture = ExtResource("1_i73bq")
+texture_mode = 1
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+
+[node name="CoreLine" type="Line2D" parent="."]
+z_index = 10
+width = 8.0
+default_color = Color(1, 1, 0.8117647, 0.7411765)
+texture_mode = 1
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+
+[node name="HitParticles" type="GPUParticles2D" parent="."]
+emitting = false
+amount = 30
+texture = ExtResource("2_igs27")
+lifetime = 0.12
+one_shot = true
+explosiveness = 0.9
+randomness = 0.7
+process_material = SubResource("ParticleProcessMaterial_fkmma")
+
+[node name="MuzzleParticles" type="GPUParticles2D" parent="."]
+emitting = false
+amount = 30
+texture = ExtResource("2_igs27")
+lifetime = 0.12
+one_shot = true
+explosiveness = 0.9
+randomness = 0.6
+process_material = SubResource("ParticleProcessMaterial_g2fhp")
+
+[node name="HitFlare" type="AnimatedSprite2D" parent="."]
+sprite_frames = SubResource("SpriteFrames_g2fhp")
+frame = 5
+frame_progress = 1.0

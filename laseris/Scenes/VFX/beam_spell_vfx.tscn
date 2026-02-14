@@ -1,8 +1,22 @@
-[gd_scene load_steps=2 format=3 uid="uid://dgld5kxx6w8i8"]
+[gd_scene load_steps=4 format=3 uid="uid://dgld5kxx6w8i8"]
 
-[ext_resource type="Script" uid="uid://b5w10u202gl2l" path="res://Scripts/VFX/BeamSpellVfx.cs" id="1_jthdp"]
+[ext_resource type="Script" uid="uid://b5w10u202gl2l" path="res://Scripts/VFX/LightBeamVfx.cs" id="1_jthdp"]
+[ext_resource type="Texture2D" uid="uid://n7avc8yu6reo" path="res://Sprites/Spells/light_beam.png" id="2_w8jny"]
+[ext_resource type="Texture2D" uid="uid://foe3gi3j5l33" path="res://Sprites/Spells/light_beam - Copy.png" id="3_4hse7"]
 
 [node name="BeamSpellVfx" type="Node2D"]
 script = ExtResource("1_jthdp")
 
-[node name="BeamSprite" type="AnimatedSprite2D" parent="."]
+[node name="Sprite2D" type="Sprite2D" parent="."]
+visible = false
+texture = ExtResource("2_w8jny")
+region_enabled = true
+region_rect = Rect2(2.678093, 53.159985, 123.10734, 25.780125)
+
+[node name="Line" type="Line2D" parent="."]
+width = 40.0
+texture = ExtResource("3_4hse7")
+texture_mode = 1
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2

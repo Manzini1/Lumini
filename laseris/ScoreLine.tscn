@@ -1,0 +1,50 @@
+[gd_scene load_steps=4 format=3 uid="uid://cxh1ocn8rs6yd"]
+
+[ext_resource type="Script" uid="uid://od1o4jt8ee0l" path="res://Scripts/UI/ScoreLineController.cs" id="1_2geho"]
+[ext_resource type="Shader" uid="uid://7sp4ynflhvr5" path="res://Energy_Fill.gdshader" id="1_2xa0l"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_2geho"]
+shader = ExtResource("1_2xa0l")
+shader_parameter/base_color = Color(0.15, 0.55, 1, 1)
+shader_parameter/glow_color = Color(0.6, 0.9, 1, 1)
+shader_parameter/energy_intensity = 0.6
+shader_parameter/lead_boost = 0.0
+shader_parameter/scroll_speed = 1.8
+shader_parameter/band_freq = 18.0
+shader_parameter/noise_strength = 0.25
+
+[node name="ScoreLine" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_2geho")
+
+[node name="Track" type="ColorRect" parent="."]
+layout_mode = 0
+offset_right = 520.0
+offset_bottom = 2.0
+color = Color(0.21568628, 0.21568628, 0.21568628, 0.1254902)
+
+[node name="FillMask" type="Control" parent="."]
+clip_contents = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Fill" type="ColorRect" parent="FillMask"]
+material = SubResource("ShaderMaterial_2geho")
+layout_mode = 0
+offset_right = 520.0
+offset_bottom = 2.0
+
+[node name="TipGlow" type="ColorRect" parent="."]
+layout_mode = 0
+offset_right = 2.0
+offset_bottom = 2.0
+color = Color(1, 1, 1, 0.5019608)

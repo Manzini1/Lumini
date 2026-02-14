@@ -1,0 +1,13 @@
+[gd_scene load_steps=2 format=3 uid="uid://bmnqol6ly84fs"]
+
+[ext_resource type="FontFile" uid="uid://cb1pgowokm3id" path="res://fonts/magical_neverland/MagicalNeverland.ttf" id="1_2y14a"]
+
+[node name="DeltaLabel" type="Label"]
+offset_right = 40.0
+offset_bottom = 23.0
+theme_override_colors/font_outline_color = Color(0.8901961, 0, 0.3764706, 1)
+theme_override_constants/outline_size = 1
+theme_override_fonts/font = ExtResource("1_2y14a")
+text = "+0"
+horizontal_alignment = 2
+vertical_alignment = 1

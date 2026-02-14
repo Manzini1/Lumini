@@ -1,6 +1,6 @@
 [gd_scene load_steps=5 format=3 uid="uid://demhapwi7gi4m"]
 
-[ext_resource type="Script" uid="uid://owdgb7sl2o40" path="res://Scripts/VFX/ProjectileSpellVfx.cs" id="1_hbdlt"]
+[ext_resource type="Script" uid="uid://owdgb7sl2o40" path="res://Scripts/VFX/ProjectileVfx.cs" id="1_hbdlt"]
 [ext_resource type="PackedScene" uid="uid://cs5fwr1hp3mq0" path="res://Scenes/VFX/Frames/impact.tscn" id="2_yvt6c"]
 [ext_resource type="SpriteFrames" uid="uid://q6gawp0g2jhf" path="res://Scenes/VFX/Frames/impact.tres" id="3_wwjrf"]
 [ext_resource type="SpriteFrames" uid="uid://c0u8qkoqb7tbc" path="res://Scenes/VFX/Frames/combo_fire_earth.tres" id="4_vmp6n"]
