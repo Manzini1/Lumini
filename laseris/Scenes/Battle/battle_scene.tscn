@@ -1,4 +1,4 @@
-[gd_scene load_steps=32 format=3 uid="uid://k77em0ts4tg7"]
+[gd_scene load_steps=31 format=3 uid="uid://k77em0ts4tg7"]
 
 [ext_resource type="Script" uid="uid://coc8w2xsksd0x" path="res://Scripts/Battle/BattleController.cs" id="1_02hj4"]
 [ext_resource type="PackedScene" uid="uid://nvoxx5jrd2g3" path="res://Scenes/Actors/Mage/Mage.tscn" id="2_5mge4"]
@@ -8,25 +8,24 @@
 [ext_resource type="Script" uid="uid://b5o5rt8uxflug" path="res://Scripts/Battle/BeatScheduler.cs" id="4_68j0i"]
 [ext_resource type="Script" uid="uid://dyuemocsthcd8" path="res://Scripts/Battle/TurnManager.cs" id="5_36cr5"]
 [ext_resource type="Script" uid="uid://bdh7m4tsvc1xr" path="res://Scripts/Battle/InputJudge.cs" id="6_6tvrj"]
-[ext_resource type="PackedScene" uid="uid://uwnjrmubkcwf" path="res://ElementAura.tscn" id="7_brxyk"]
+[ext_resource type="PackedScene" path="res://ElementAura.tscn" id="7_brxyk"]
 [ext_resource type="Script" uid="uid://dl7uwh5uj2vlc" path="res://Scripts/Battle/AttackPattern.cs" id="7_ik5sk"]
-[ext_resource type="PackedScene" uid="uid://dskdgkpsg2ad6" path="res://attack_circle.tscn" id="7_sufya"]
+[ext_resource type="PackedScene" path="res://attack_circle.tscn" id="7_sufya"]
 [ext_resource type="Shader" uid="uid://ct01x8c2mt7h5" path="res://Scenes/Battle/glow.gdshader" id="8_n1ain"]
 [ext_resource type="Script" uid="uid://d1y1qdubx4x0p" path="res://Scripts/Battle/FlowMeter.cs" id="8_sufya"]
 [ext_resource type="PackedScene" uid="uid://cjlpsqmplebt7" path="res://Scenes/HUD/hud.tscn" id="9_n1ain"]
-[ext_resource type="PackedScene" uid="uid://bmnqol6ly84fs" path="res://DeltaLabel.tscn" id="10_skgte"]
 [ext_resource type="Texture2D" uid="uid://4lwdexkkbsx8" path="res://Sprites/Backgrounds/TrainingGrounds/tg1.png" id="12_68j0i"]
 [ext_resource type="Script" uid="uid://bf2vsyi1to3sg" path="res://Scripts/Combat/ElementVfxLibrary.cs" id="14_6tvrj"]
-[ext_resource type="PackedScene" uid="uid://btxnac1kjb7dj" path="res://vfx_earth.tscn" id="15_ik5sk"]
-[ext_resource type="PackedScene" uid="uid://coiqukbfdrigo" path="res://FireCone.tscn" id="17_f4hcl"]
+[ext_resource type="PackedScene" path="res://vfx_earth.tscn" id="15_ik5sk"]
+[ext_resource type="PackedScene" path="res://FireCone.tscn" id="17_f4hcl"]
 [ext_resource type="PackedScene" uid="uid://j1sy6xvm5ex7" path="res://Scenes/spells/ice_projectile.tscn" id="17_fm2jp"]
 [ext_resource type="PackedScene" uid="uid://dgld5kxx6w8i8" path="res://Scenes/VFX/beam_spell_vfx.tscn" id="17_n1ain"]
 [ext_resource type="Script" uid="uid://bag1wlqx55i08" path="res://Scenes/Battle/DevResolutionTester.cs" id="18_4pmf7"]
 [ext_resource type="PackedScene" uid="uid://bi5xpys1g0fqy" path="res://Scenes/Attack/Ice/IceSpell1.tscn" id="18_q177b"]
-[ext_resource type="PackedScene" uid="uid://bwd1cr1adudch" path="res://beam_spell_impact.tscn" id="19_fm2jp"]
+[ext_resource type="PackedScene" path="res://beam_spell_impact.tscn" id="19_fm2jp"]
 [ext_resource type="PackedScene" uid="uid://jkccuydy7g0p" path="res://Scenes/spells/fireball_projectile_vfx.tscn" id="19_skgte"]
 [ext_resource type="PackedScene" uid="uid://dyj1rrtspwjo6" path="res://Scenes/Attack/Ice/FireSparks.tscn" id="20_jbiss"]
-[ext_resource type="PackedScene" uid="uid://dnvittboid2fn" path="res://firewhip.tscn" id="21_jbiss"]
+[ext_resource type="PackedScene" path="res://firewhip.tscn" id="21_jbiss"]
 [ext_resource type="Script" uid="uid://cia7rgvindnhk" path="res://Scripts/BattleVfxDirector.cs" id="25_d4k4i"]
 
 [sub_resource type="Resource" id="Resource_36cr5"]
@@ -91,6 +90,9 @@ animation = &"e4"
 [node name="Enemy" parent="World/Characters" instance=ExtResource("3_hopcy")]
 position = Vector2(104, -40)
 
+[node name="GroundPoint" parent="World/Characters/Enemy" index="6"]
+position = Vector2(1476, 802)
+
 [node name="Protection" parent="World/Characters/Enemy" index="8"]
 ChangeEverySeconds = 4.1
 
@@ -102,14 +104,12 @@ visible = false
 [node name="Projectiles" type="Node2D" parent="World"]
 
 [node name="ElementAura" parent="World" instance=ExtResource("7_brxyk")]
-position = Vector2(0, -50)
 scale = Vector2(4, 4)
-AuraOffset = Vector2(0, -2000)
+AuraOffset = Vector2(0, 0)
 FollowLerpSpeed = 12.1
 ColorTransitionSeconds = 0.05
 FlashSeconds = 0.05
 FlashStrength = 0.1
-BodyIntensityBase = 0.12
 BodyAlphaMult = 0.21
 ParticlesAlphaMult = 0.38
 AuraSize = Vector2(400, 500)
@@ -183,10 +183,8 @@ theme_override_font_sizes/font_size = 34
 text = "teste"
 
 [node name="ScoreBarsHUD" parent="HUD/Root" index="15"]
-PlayerLinePath = NodePath("ScoreLine")
-EnemyLinePath = NodePath("EnemyLine")
-DeltaLayerPath = NodePath("DeltaLayer")
-DeltaLabelScene = ExtResource("10_skgte")
+Mode = 1
+FixedMaxScore = 10000
 
 [node name="ScoreLine" parent="HUD/Root/ScoreBarsHUD" index="0"]
 anchors_preset = -1
@@ -199,8 +197,10 @@ anchor_right = 13.21
 
 [node name="DeltaLayer" type="Control" parent="HUD/Root/ScoreBarsHUD" index="2"]
 anchors_preset = 0
-offset_right = 40.0
-offset_bottom = 40.0
+offset_left = 904.0
+offset_top = 820.0
+offset_right = 944.0
+offset_bottom = 860.0
 
 [node name="DamageTotalLabel" type="Label" parent="HUD"]
 visible = false

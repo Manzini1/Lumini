@@ -2,7 +2,7 @@ using Godot;
 
 namespace Game.UI;
 
-public partial class HUDController : CanvasLayer
+public partial class HudController : CanvasLayer
 {
 	private Label _phaseLabel;
 	private ProgressBar _turnBar;

@@ -45,7 +45,7 @@ private DualScoreBarsController _scoreHud;
 		private AttackPattern _pattern;
 		private FlowMeter _flow;
 
-		private HUDController _hud;
+		private HudController _hud;
 		private MageController _mage;
 		private EnemyController _enemy;
 		private Node2D _projectilesParent;
@@ -282,7 +282,7 @@ private DualScoreBarsController _scoreHud;
 			_pattern = GetNodeOrNull<AttackPattern>("Systems/AttackPattern");
 			_flow = GetNodeOrNull<FlowMeter>("Systems/FlowMeter");
 
-			_hud = GetNodeOrNull<HUDController>("HUD");
+			_hud = GetNodeOrNull<HudController>("HUD");
 			_mage = GetNodeOrNull<MageController>("World/Characters/Mage");
 			_enemy = GetNodeOrNull<EnemyController>("World/Characters/Enemy");
 			_projectilesParent = GetNodeOrNull<Node2D>("World/Projectiles");
