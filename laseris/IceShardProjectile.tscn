@@ -1,0 +1,72 @@
+[gd_scene load_steps=12 format=3 uid="uid://booa4ow2b0s8h"]
+
+[ext_resource type="Script" uid="uid://2mgl5w05yxsp" path="res://Scripts/IceShardProjectile.cs" id="1_sa37p"]
+[ext_resource type="Texture2D" uid="uid://be5lvl7u5ixf5" path="res://Sprites/Spells/ice_shard.png" id="1_wqx2u"]
+[ext_resource type="Texture2D" uid="uid://blqtt7d23otjk" path="res://Sprites/Spells/form2.png" id="4_logo6"]
+[ext_resource type="Texture2D" uid="uid://dpgwvmxhqo0i6" path="res://Sprites/Spells/ice_shard_form.png" id="5_uexws"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_gsupr"]
+atlas = ExtResource("4_logo6")
+region = Rect2(0, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_uowhq"]
+atlas = ExtResource("5_uexws")
+region = Rect2(0, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_kmg6w"]
+atlas = ExtResource("5_uexws")
+region = Rect2(128, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ogpob"]
+atlas = ExtResource("4_logo6")
+region = Rect2(128, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_p8qee"]
+atlas = ExtResource("4_logo6")
+region = Rect2(0, 128, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_t2kw5"]
+atlas = ExtResource("5_uexws")
+region = Rect2(128, 128, 128, 128)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_6dhmq"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_gsupr")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_uowhq")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_kmg6w")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ogpob")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_p8qee")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_t2kw5")
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_wqx2u")
+}],
+"loop": false,
+"name": &"Form",
+"speed": 12.0
+}]
+
+[node name="IceShardProjectile" type="Node2D"]
+scale = Vector2(0.2, 0.2)
+script = ExtResource("1_sa37p")
+AnimPath = NodePath("Form")
+SpritePath = NodePath("")
+
+[node name="Form" type="AnimatedSprite2D" parent="."]
+rotation = -2.154501
+sprite_frames = SubResource("SpriteFrames_6dhmq")
+animation = &"Form"
+frame = 6
+frame_progress = 1.0

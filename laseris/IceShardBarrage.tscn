@@ -1,0 +1,17 @@
+[gd_scene load_steps=5 format=3 uid="uid://dffqv8hjogj3v"]
+
+[ext_resource type="Script" uid="uid://dda6g67txsucf" path="res://Scripts/IceShardBarrageController.cs" id="1_lbftr"]
+[ext_resource type="PackedScene" uid="uid://booa4ow2b0s8h" path="res://IceShardProjectile.tscn" id="2_4ne7o"]
+[ext_resource type="AudioStream" uid="uid://dryg2mbw83wsr" path="res://Audio/SFX/release/ice_throw.ogg" id="4_g0ijc"]
+[ext_resource type="AudioStream" uid="uid://d3jm2o8mx6hvw" path="res://Audio/SFX/impact/slash.wav" id="4_ufbvb"]
+
+[node name="IceShardBarrage" type="Node2D"]
+script = ExtResource("1_lbftr")
+ShardScene = ExtResource("2_4ne7o")
+ShardTextures = Array[Texture2D]([])
+BuildUpSec = 0.04
+ArcRadiusMin = 300.0
+ArcRadiusMax = 500.0
+TargetRadius = 30.0
+ShootSfx = ExtResource("4_g0ijc")
+ImpactSfx = ExtResource("4_ufbvb")

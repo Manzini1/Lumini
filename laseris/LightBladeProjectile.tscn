@@ -1,0 +1,17 @@
+[gd_scene load_steps=4 format=3 uid="uid://dke2vikbni2gx"]
+
+[ext_resource type="Script" uid="uid://dik2ifbrrquxm" path="res://Scripts/LightBladeProjectile.cs" id="1_e0on8"]
+[ext_resource type="Texture2D" uid="uid://cd1hpe6fkct3s" path="res://Sprites/Spells/blade4.png" id="2_xlamk"]
+[ext_resource type="AudioStream" uid="uid://d3jm2o8mx6hvw" path="res://Audio/SFX/impact/slash.wav" id="3_1q2ut"]
+
+[node name="LightBladeProjectile" type="Node2D"]
+script = ExtResource("1_e0on8")
+SpritePath = NodePath("Sprite2D")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+rotation = 1.0476968
+scale = Vector2(1.5, 1.5)
+texture = ExtResource("2_xlamk")
+
+[node name="ImpactSfx" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("3_1q2ut")

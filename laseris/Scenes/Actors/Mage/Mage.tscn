@@ -1422,6 +1422,6 @@ animation = &"e6"
 [node name="Marker2D" type="Marker2D" parent="Shield"]
 
 [node name="HitPoint" type="Marker2D" parent="."]
-position = Vector2(16, -64)
+position = Vector2(-528, -48)
 
 [editable path="WeaponSocket/Weapon/StaffBasic"]

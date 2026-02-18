@@ -1,0 +1,133 @@
+[gd_scene load_steps=13 format=3 uid="uid://dmhpjmr5ma42l"]
+
+[ext_resource type="Script" uid="uid://bnff32pkxk57w" path="res://ScoreGainOrbController.cs" id="1_1oty0"]
+[ext_resource type="Shader" uid="uid://dsd14vgo6ww3v" path="res://ScoreGainOrb.gdshader" id="2_h1i0m"]
+[ext_resource type="Texture2D" uid="uid://resj70jrdb3" path="res://Sprites/Sparks/a5ec75b4-483e-4d93-adfc-ae9d362d7506.png" id="3_8hgm7"]
+[ext_resource type="Script" uid="uid://ds45vxqh580ph" path="res://Scripts/ScoreTextFxController.cs" id="3_d6lib"]
+[ext_resource type="FontFile" uid="uid://cb1pgowokm3id" path="res://fonts/magical_neverland/MagicalNeverland.ttf" id="4_5oqgl"]
+[ext_resource type="Shader" uid="uid://d0pmhqmmi8yv6" path="res://Shaders/LabelDeltaShine.gdshader" id="5_mxyfj"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_d6lib"]
+shader = ExtResource("2_h1i0m")
+shader_parameter/core_color = Color(1, 0.95, 0.8, 1)
+shader_parameter/rim_color = Color(0.55, 0.95, 1, 1)
+shader_parameter/intensity = 1.0
+shader_parameter/softness = 0.06
+shader_parameter/halo_size = 0.28
+shader_parameter/shimmer_strength = 0.35
+shader_parameter/shimmer_speed = 2.2
+shader_parameter/shimmer_freq = 10.0
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_8hgm7"]
+particle_flag_disable_z = true
+gravity = Vector3(0, -100, 0)
+scale_min = 0.39999998
+scale_max = 0.39999998
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_mxyfj"]
+particle_flag_disable_z = true
+emission_shape = 1
+emission_sphere_radius = 9.75
+spread = 103.723
+initial_velocity_min = 58.43
+initial_velocity_max = 85.92
+orbit_velocity_min = 9.49949e-08
+orbit_velocity_max = 0.027000096
+gravity = Vector3(0, -100, 0)
+linear_accel_min = -17.870003
+linear_accel_max = -2.060002
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_5ccit"]
+shader = ExtResource("5_mxyfj")
+shader_parameter/is_lead = 0.0
+shader_parameter/lead_boost = 0.0
+shader_parameter/spark_pos = -1.0
+shader_parameter/spark_intensity = 0.0
+shader_parameter/spark_width = 0.035
+shader_parameter/spark_dir = Vector2(0.8, -0.6)
+shader_parameter/ruby_color = Color(0.95, 0.15, 0.22, 1)
+shader_parameter/ir_a = Vector3(0.25, 0.8, 1)
+shader_parameter/ir_b = Vector3(0.95, 0.35, 1)
+shader_parameter/ir_c = Vector3(1, 0.9, 0.25)
+
+[sub_resource type="ViewportTexture" id="ViewportTexture_mxyfj"]
+viewport_path = NodePath("DeltaText/TextViewport")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_mxyfj"]
+shader = ExtResource("5_mxyfj")
+shader_parameter/is_lead = 0.0
+shader_parameter/lead_boost = 0.0
+shader_parameter/spark_pos = -1.0
+shader_parameter/spark_intensity = 0.0
+shader_parameter/spark_width = 0.035
+shader_parameter/spark_dir = Vector2(0.8, -0.6)
+shader_parameter/ruby_color = Color(0.95, 0.15, 0.22, 1)
+shader_parameter/ir_a = Vector3(0.25, 0.8, 1)
+shader_parameter/ir_b = Vector3(0.95, 0.35, 1)
+shader_parameter/ir_c = Vector3(1, 0.9, 0.25)
+
+[node name="ScoreGainOrb" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_1oty0")
+
+[node name="Orb" type="ColorRect" parent="."]
+z_index = 999
+material = SubResource("ShaderMaterial_d6lib")
+layout_mode = 0
+offset_right = 20.0
+offset_bottom = 20.0
+color = Color(0.5137255, 0.24705882, 0.2509804, 0.972549)
+
+[node name="Trail" type="GPUParticles2D" parent="."]
+scale = Vector2(0.4, 0.4)
+amount = 80
+texture = ExtResource("3_8hgm7")
+lifetime = 0.26
+explosiveness = 0.75
+randomness = 0.92
+process_material = SubResource("ParticleProcessMaterial_8hgm7")
+
+[node name="Burst" type="GPUParticles2D" parent="."]
+amount = 80
+texture = ExtResource("3_8hgm7")
+lifetime = 0.12
+explosiveness = 0.89
+randomness = 0.57
+process_material = SubResource("ParticleProcessMaterial_mxyfj")
+
+[node name="DeltaText" type="Control" parent="."]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("3_d6lib")
+
+[node name="TextViewport" type="SubViewport" parent="DeltaText"]
+transparent_bg = true
+
+[node name="MaskLabel" type="Label" parent="DeltaText/TextViewport"]
+offset_right = 40.0
+offset_bottom = 23.0
+theme_override_fonts/font = ExtResource("4_5oqgl")
+theme_override_font_sizes/font_size = 45
+text = "te	"
+
+[node name="Shine" type="TextureRect" parent="DeltaText"]
+material = SubResource("ShaderMaterial_5ccit")
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+texture = SubResource("ViewportTexture_mxyfj")
+
+[node name="BaseLabel" type="Label" parent="DeltaText"]
+material = SubResource("ShaderMaterial_mxyfj")
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 23.0
+theme_override_fonts/font = ExtResource("4_5oqgl")
+theme_override_font_sizes/font_size = 44
+text = "teste"

@@ -1,0 +1,67 @@
+[gd_scene load_steps=9 format=3 uid="uid://boyhl224cs4gf"]
+
+[ext_resource type="Script" uid="uid://clmy8f0l6qqlq" path="res://Scripts/SpawnWisp2D.cs" id="1_2aiet"]
+[ext_resource type="Texture2D" uid="uid://brrckh560ag5i" path="res://Sprites/Spells/wispice.png" id="1_lln0l"]
+[ext_resource type="Texture2D" uid="uid://3g61dyou0dlh" path="res://Sprites/Projectiles/speck_8x8_ice.png" id="2_apj1y"]
+
+[sub_resource type="Gradient" id="Gradient_apj1y"]
+offsets = PackedFloat32Array(0, 0.2848837, 1)
+colors = PackedColorArray(0, 0, 0, 1, 0.75, 0.75, 0.75, 1, 1, 1, 1, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_2aiet"]
+gradient = SubResource("Gradient_apj1y")
+use_hdr = true
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_apj1y"]
+particle_flag_disable_z = true
+emission_shape = 1
+emission_sphere_radius = 10.0
+inherit_velocity_ratio = 55.0
+spread = 100.0
+gravity = Vector3(0, 0, 0)
+damping_min = 10.0
+damping_max = 10.0
+scale_min = 0.55
+scale_max = 0.55
+color_ramp = SubResource("GradientTexture1D_2aiet")
+turbulence_enabled = true
+turbulence_noise_strength = 8.0
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_2aiet"]
+particle_flag_disable_z = true
+emission_shape = 1
+emission_sphere_radius = 8.0
+inherit_velocity_ratio = 110.0
+spread = 180.0
+gravity = Vector3(0, 0, 0)
+damping_min = 6.0000005
+damping_max = 6.0000005
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_apj1y"]
+blend_mode = 1
+
+[node name="SpawnWisp2D" type="Node2D"]
+scale = Vector2(0.3, 0.3)
+script = ExtResource("1_2aiet")
+
+[node name="Wisp" type="GPUParticles2D" parent="."]
+emitting = false
+amount = 28
+texture = ExtResource("1_lln0l")
+lifetime = 0.35000000000000003
+one_shot = true
+explosiveness = 0.9
+randomness = 0.25
+local_coords = true
+process_material = SubResource("ParticleProcessMaterial_apj1y")
+
+[node name="Specks" type="GPUParticles2D" parent="."]
+emitting = false
+texture = ExtResource("2_apj1y")
+one_shot = true
+process_material = SubResource("ParticleProcessMaterial_2aiet")
+
+[node name="Glow" type="Sprite2D" parent="."]
+material = SubResource("CanvasItemMaterial_apj1y")
+scale = Vector2(0.4, 0.4)
+texture = ExtResource("1_lln0l")

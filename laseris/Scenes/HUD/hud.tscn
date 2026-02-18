@@ -1,7 +1,7 @@
-[gd_scene load_steps=35 format=3 uid="uid://cjlpsqmplebt7"]
+[gd_scene load_steps=36 format=3 uid="uid://cjlpsqmplebt7"]
 
 [ext_resource type="PackedScene" uid="uid://c6ke6rhxkcjaw" path="res://Scenes/attack_ring.tscn" id="1_5aai8"]
-[ext_resource type="Script" uid="uid://q3ip6t83kbe7" path="res://Scripts/Controllers/HUDController.cs" id="1_a56j6"]
+[ext_resource type="Script" uid="uid://co4tk0wy6x3gr" path="res://Scripts/Controllers/HUDController.cs" id="1_a56j6"]
 [ext_resource type="PackedScene" uid="uid://dfbvhy3mx0bgs" path="res://Scenes/element_bar.tscn" id="2_a56j6"]
 [ext_resource type="Texture2D" uid="uid://j4rp5d7g3f2m" path="res://Sprites/HUD/attack.png" id="2_buuh3"]
 [ext_resource type="Texture2D" uid="uid://cwqv47tssnqb" path="res://Sprites/HUD/defend.png" id="3_sgblu"]
@@ -29,6 +29,7 @@
 [ext_resource type="Shader" uid="uid://cdt1q6rh1xvri" path="res://Shaders/label_glint.gdshader" id="28_vc458"]
 [ext_resource type="Script" uid="uid://chnh75aru14cs" path="res://Scenes/HUD/DualScoreBarsController.cs" id="29_vb3pr"]
 [ext_resource type="FontFile" uid="uid://cv5awp88npojj" path="res://fonts/starveler/Starveler.ttf" id="29_y2lcl"]
+[ext_resource type="PackedScene" uid="uid://dmhpjmr5ma42l" path="res://ScoreGainOrb.tscn" id="30_6dsnb"]
 [ext_resource type="PackedScene" uid="uid://cxh1ocn8rs6yd" path="res://ScoreLine.tscn" id="30_vb3pr"]
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_buuh3"]
@@ -135,7 +136,13 @@ shader_parameter/sparkle_gate = 0.65
 
 [node name="HUD" type="CanvasLayer"]
 script = ExtResource("1_a56j6")
+EnemyIntentPath = null
+EnemyIntentModeIconPath = null
+EnemyIntentElementIconPath = null
+ElementIconsById = null
 AttackRingScene = ExtResource("1_5aai8")
+RingSize = null
+Padding = null
 
 [node name="Root" type="Control" parent="."]
 layout_mode = 3
@@ -434,6 +441,7 @@ anchors_preset = 0
 offset_right = 40.0
 offset_bottom = 40.0
 script = ExtResource("29_vb3pr")
+GainOrbScene = ExtResource("30_6dsnb")
 
 [node name="ScoreLine" parent="Root/ScoreBarsHUD" instance=ExtResource("30_vb3pr")]
 layout_mode = 1
@@ -441,10 +449,6 @@ offset_left = 64.0
 offset_top = 952.0
 offset_right = 64.0
 offset_bottom = 952.0
-TrackPath = NodePath("Track")
-FillMaskPath = NodePath("FillMask")
-FillPath = NodePath("FillMask/Fill")
-TipGlowPath = NodePath("TipGlow")
 FillFromRight = true
 
 [node name="FillMask" parent="Root/ScoreBarsHUD/ScoreLine" index="1"]
@@ -458,15 +462,29 @@ offset_left = 1240.0
 offset_top = 952.0
 offset_right = 1240.0
 offset_bottom = 952.0
-TrackPath = NodePath("Track")
-FillMaskPath = NodePath("FillMask")
-FillPath = NodePath("FillMask/Fill")
-TipGlowPath = NodePath("TipGlow")
 
 [node name="FillMask" parent="Root/ScoreBarsHUD/EnemyLine" index="1"]
 anchors_preset = -1
 anchor_right = 14.0
 offset_bottom = 5.0
+
+[node name="OrbLayer" type="Control" parent="Root/ScoreBarsHUD"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PlayerGainSpawn" type="Control" parent="Root/ScoreBarsHUD"]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="EnemyGainSpawn" type="Control" parent="Root/ScoreBarsHUD"]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
 
 [editable path="Root/ElementBar"]
 [editable path="Root/ElementHints2/HintLayer/ElementHints"]

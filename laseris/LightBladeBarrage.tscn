@@ -1,0 +1,18 @@
+[gd_scene load_steps=7 format=3 uid="uid://cty4pmdeydepv"]
+
+[ext_resource type="Script" uid="uid://dh056qe7d0a7p" path="res://Scripts/LightBladeBarrage.cs" id="1_uoajn"]
+[ext_resource type="PackedScene" uid="uid://dke2vikbni2gx" path="res://LightBladeProjectile.tscn" id="2_n74ck"]
+[ext_resource type="Texture2D" uid="uid://b8v87nfjgi8fn" path="res://Sprites/Spells/blade1.png" id="3_0cwpy"]
+[ext_resource type="Texture2D" uid="uid://dmm3yfmd1igdt" path="res://Sprites/Spells/blade2.png" id="4_y2bxh"]
+[ext_resource type="Texture2D" uid="uid://crcu2dlgumgod" path="res://Sprites/Spells/blade3.png" id="5_vrf5m"]
+[ext_resource type="Texture2D" uid="uid://cd1hpe6fkct3s" path="res://Sprites/Spells/blade4.png" id="6_mi6cu"]
+
+[node name="LightBladeBarrage" type="Node2D"]
+script = ExtResource("1_uoajn")
+BladeScene = ExtResource("2_n74ck")
+BladeTextures = [ExtResource("3_0cwpy"), ExtResource("4_y2bxh"), ExtResource("5_vrf5m"), ExtResource("6_mi6cu")]
+ArcRadius = 380.0
+PreWarmSeconds = 0.2
+FireInterval = 0.2
+
+[node name="Blades" type="Node2D" parent="."]

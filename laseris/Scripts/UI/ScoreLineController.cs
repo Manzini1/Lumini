@@ -6,7 +6,8 @@ public partial class ScoreLineController : Control
 	[Export] public NodePath FillMaskPath = "FillMask";
 	[Export] public NodePath FillPath = "FillMask/Fill";
 	[Export] public NodePath TipGlowPath = "TipGlow";
-
+	private Tween _tipPulseTween;
+	private Vector2 _tipBaseScale = Vector2.One;
 	// Mago (esquerda): true => cresce do centro pra esquerda
 	// Inimigo (direita): false => cresce do centro pra direita
 	[Export] public bool FillFromRight = false;
@@ -35,6 +36,8 @@ public partial class ScoreLineController : Control
 		_fillMask = GetNodeOrNull<Control>(FillMaskPath);
 		_fill = GetNodeOrNull<CanvasItem>(FillPath);
 		_tipGlow = GetNodeOrNull<ColorRect>(TipGlowPath);
+		if (_tipGlow != null)
+			_tipBaseScale = _tipGlow.Scale;
 
 		if (_fillMask != null)
 		{
@@ -164,4 +167,48 @@ public partial class ScoreLineController : Control
 			_tipGlow.Visible = w > 2;
 		}
 	}
+	public Vector2 GetTipGlobalCenter()
+{
+	// Melhor caso: TipGlow existe e está posicionado na ponta
+	if (_tipGlow != null && GodotObject.IsInstanceValid(_tipGlow))
+	{
+		var r = _tipGlow.GetGlobalRect();
+		return r.Position + r.Size * 0.5f;
+	}
+
+	// Fallback: calcula pela largura e fill atual
+	var my = GetGlobalRect();
+	float fullW = my.Size.X;
+	float w = fullW * _current01;
+
+	float tipX = FillFromRight
+		? (my.Position.X + (fullW - w))
+		: (my.Position.X + w);
+
+	return new Vector2(tipX, my.Position.Y + my.Size.Y * 0.5f);
+}
+
+// Pequeno “punch” quando absorve (opcional, mas fica lindo)
+public void AbsorbPulse(float strength = 1f)
+{
+	if (_tipGlow == null || !GodotObject.IsInstanceValid(_tipGlow)) return;
+
+	// mata pulse anterior (evita acumular)
+	_tipPulseTween?.Kill();
+
+	// garante que o "base" é sempre o mesmo
+	_tipGlow.Scale = _tipBaseScale;
+
+	float s = Mathf.Clamp(strength, 0f, 1.5f);
+	Vector2 up = _tipBaseScale * (1.0f + 0.35f * s);
+
+	_tipPulseTween = CreateTween();
+	_tipPulseTween.SetTrans(Tween.TransitionType.Back);
+	_tipPulseTween.SetEase(Tween.EaseType.Out);
+
+	_tipPulseTween.TweenProperty(_tipGlow, "scale", up, 0.06f);
+	_tipPulseTween.TweenProperty(_tipGlow, "scale", _tipBaseScale, 0.10f);
+}
+
+
 }
