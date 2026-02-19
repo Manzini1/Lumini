@@ -65,7 +65,7 @@ AnimPath = NodePath("Form")
 SpritePath = NodePath("")
 
 [node name="Form" type="AnimatedSprite2D" parent="."]
-rotation = -2.154501
+rotation = -1.7392267
 sprite_frames = SubResource("SpriteFrames_6dhmq")
 animation = &"Form"
 frame = 6

@@ -8,6 +8,11 @@ namespace Game.Vfx
 		[ExportGroup("Scenes/Assets")]
 		[Export] public PackedScene ShardScene;         // IceShardProjectile.tscn
 		[Export] public Texture2D[] ShardTextures;
+		[Signal] public delegate void ShardHitEventHandler(int shardIndex, Vector2 atGlobal);
+
+		private int _expectedHits;
+		private int _hitCount;
+
 
 		[ExportGroup("AAA Wisp (optional)")]
 		[Export] public PackedScene SpawnWispScene;     // SpawnWisp2D.tscn (opcional)
@@ -52,7 +57,7 @@ namespace Game.Vfx
 		[ExportGroup("Feel")]
 		[Export] public float SpawnScaleMin = 0.55f;
 		[Export] public float SpawnScaleMax = 0.95f;
-		[Export] public float RotationJitterDeg = 18f;
+		[Export] public float RotationJitterDeg = 0f;
 
 		[ExportGroup("Optional impact burst")]
 		[Export] public PackedScene ImpactBurstScene;
@@ -118,7 +123,10 @@ namespace Game.Vfx
 
 			SetProcess(false);
 		}
-
+		public override void _EnterTree()
+		{
+			AddToGroup("vfx_ice_barrage");
+		}
 		public void Play(Vector2 from, Vector2 to, float _ignoredTravelSec)
 		{
 			_from = from;
@@ -139,6 +147,8 @@ namespace Game.Vfx
 			ClearOld();
 
 			int count = Mathf.Max(1, TotalShards);
+			_expectedHits = Mathf.Max(1, count);
+			_hitCount = 0;
 			_fireEvery = Mathf.Max(0.004f, FireDuration / count);
 			_fireCursor = 0;
 			_running = true;
@@ -234,11 +244,11 @@ namespace Game.Vfx
 					SpawnImpactBurstAt(at);
 					PlayImpactSfxThrottled();
 
-					SpawnDamageInstanceAt(at, idx);
+					EmitSignal(SignalName.ShardHit, idx, at);
 
-					if (NotifyDamageOnImpact)
-						NotifyDamageReceiver(idx, at);
+					_hitCount++;
 				};
+
 
 				_shards.Add(shard);
 			}
@@ -294,11 +304,11 @@ namespace Game.Vfx
 
 					tw.Parallel().TweenProperty(shard, "global_position", upPos, half);
 					tw.Parallel().TweenProperty(shard, "scale", upScale, half);
-					tw.Parallel().TweenProperty(shard, "rotation", upRot, half);
+					//tw.Parallel().TweenProperty(shard, "rotation", upRot, half);
 
 					tw.Parallel().TweenProperty(shard, "global_position", baseP, half);
 					tw.Parallel().TweenProperty(shard, "scale", baseScale, half);
-					tw.Parallel().TweenProperty(shard, "rotation", baseRot, half);
+				//	tw.Parallel().TweenProperty(shard, "rotation", baseRot, half);
 				}
 
 				_buildTween[shard] = tw;
@@ -367,7 +377,7 @@ namespace Game.Vfx
 				bt.Kill();
 
 			Vector2 targetPos = _target + RandomInCircle(TargetRadius);
-			float rotJit = Mathf.DegToRad(_rng.RandfRange(-RotationJitterDeg, RotationJitterDeg));
+			float rotJit = 0f;
 
 			PlayShootSfxThrottled();
 

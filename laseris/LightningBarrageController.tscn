@@ -1,0 +1,8 @@
+[gd_scene load_steps=3 format=3 uid="uid://ci3elpirh7kda"]
+
+[ext_resource type="Script" uid="uid://5s5b4rw7irhx" path="res://Scripts/LightningBarrageController.cs" id="1_unm7a"]
+[ext_resource type="PackedScene" uid="uid://8xcf5qwgb2v" path="res://LightningStrikeVfx.tscn" id="2_842vh"]
+
+[node name="LightningBarrageController" type="Node2D"]
+script = ExtResource("1_unm7a")
+StrikeScene = ExtResource("2_842vh")

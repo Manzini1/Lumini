@@ -5,26 +5,29 @@
 
 [sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_x3ddb"]
 particle_flag_disable_z = true
-emission_shape = 1
-emission_sphere_radius = 113.19
-direction = Vector3(1, 30, 0)
-spread = 129.725
+emission_shape_scale = Vector3(10, 10, 1)
+emission_shape = 3
+emission_box_extents = Vector3(1, 10, 10)
+direction = Vector3(0, 30, 0)
+spread = 74.725
 initial_velocity_min = -30.0
 initial_velocity_max = 30.0
 angular_velocity_min = -1.6093254e-05
 angular_velocity_max = 4.499984
 radial_velocity_min = 89.82998
 radial_velocity_max = 654.86993
-gravity = Vector3(0, -300, 0)
+gravity = Vector3(0, 100, 0)
 radial_accel_min = -2.2351742e-06
 radial_accel_max = 23.559998
-damping_min = 48.352
-damping_max = 59.707005
-scale_max = 5.0
+damping_min = 26.031002
+damping_max = 37.386
+scale_min = 3.0
+scale_max = 3.0
 scale_over_velocity_min = 0.099999994
 scale_over_velocity_max = 10.0
-color = Color(0.93333334, 0.3372549, 0.36078432, 0.5294118)
-anim_speed_min = -10.0
+color = Color(0.93333334, 0.42352942, 0.5764706, 1)
+anim_speed_min = 1.0
+anim_speed_max = 1.0
 turbulence_noise_strength = 1.45
 
 [node name="FireSparks" type="Node2D"]
@@ -32,11 +35,11 @@ script = ExtResource("1_p7toa")
 
 [node name="P" type="GPUParticles2D" parent="."]
 z_index = 100
-amount = 100
+amount = 59
 texture = ExtResource("2_p7toa")
-lifetime = 5.13
+lifetime = 1.24
 speed_scale = 0.4
-explosiveness = 0.17
+explosiveness = 0.78
 randomness = 0.85
 interpolate = false
 fract_delta = false

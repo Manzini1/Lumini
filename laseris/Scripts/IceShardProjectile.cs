@@ -134,7 +134,7 @@ namespace Game.Vfx
 			}
 
 			float baseRot = (_to - _from).Angle();
-			Rotation = baseRot + rotJitterRad;
+			//Rotation = baseRot + rotJitterRad;
 
 			_flying = true;
 			EnableHover = false;

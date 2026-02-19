@@ -16,7 +16,16 @@ namespace Game.Battle
 
 		[Export] public bool DebugRequirePressToSpawnOnMiss = true;
 		[Export] public bool DebugUsePressedElementForVfx = true;
+		[ExportGroup("Advanced Cast (Ice Barrage Sync Score)")]
+		[Export] public bool IceBarrageScorePerShard = true;
+		private readonly HashSet<ulong> _boundIceBarrages = new();
 
+		// se quiser travar em 52 SEMPRE
+		[Export] public int IceBarrageHits = 52;
+
+		// se o dano total for < 52, não dá pra ter 52 hits >0 sem mudar o total.
+		// com true, ele sobe o total pra pelo menos 52.
+		[Export] public bool IceBarrageForceAtLeastOnePerShard = true;
 		[ExportGroup("Debug Shortcuts")]
 		[Export] public bool DebugEnableAdvancedCastShortcut = true;
 		[Export] public bool DebugAlsoSpawnImpact = true;
@@ -39,7 +48,7 @@ namespace Game.Battle
 		// ------------------------------------------------------------
 		[ExportGroup("Advanced Cast (Ice Barrage Score)")]
 [Export] public bool IceBarrageMultiHitScore = true;
-[Export] public int IceBarrageHits = 52;
+//[Export] public int IceBarrageHits = 52;
 
 // atraso até o 1º hit “contabilizar” (ajuste pra bater com sua animação + viagem)
 [Export] public float IceBarrageFirstHitDelay = 0.78f;
@@ -146,7 +155,7 @@ namespace Game.Battle
 		[ExportGroup("Enemy Indicator (Aura/Circle)")]
 		[Export] public NodePath EnemyIndicatorPath = "World/Vfx/AttackCircle";
 		[Export] public NodePath ElementVfxLibraryPath = "Systems/ElementVfxLibrary";
-
+	
 		[ExportGroup("World VFX")]
 		[Export] public NodePath WorldVfxParentPath = "World/Vfx";
 
@@ -210,6 +219,89 @@ private void StartIceBarragePendingDamage(int totalDamage, int hits)
 
 	if (DebugLogs)
 		GD.Print($"[IceBarrage] Pending damage: total={totalDamage} hits={hits} base={_iceBarrageBasePart} rem={_iceBarrageRemainder}");
+}
+private void BindIceBarrageScoreToVfx(int totalDmg, int tries = 12)
+{
+	// fallback seguro: se não achar o VFX, aplica tudo de uma vez
+	if (_projectilesParent == null || !GodotObject.IsInstanceValid(_projectilesParent))
+	{
+		ApplyPlayerScore(totalDmg, false);
+		return;
+	}
+
+	IceShardBarrageController best = null;
+	ulong bestId = 0;
+
+	// pega o IceBarrage mais recente ainda não bindado
+	foreach (var n in GetTree().GetNodesInGroup("vfx_ice_barrage"))
+	{
+		if (n is not IceShardBarrageController b) continue;
+
+		ulong id = b.GetInstanceId();
+		if (_boundIceBarrages.Contains(id)) continue;
+
+		if (id > bestId)
+		{
+			bestId = id;
+			best = b;
+		}
+	}
+
+	// se ainda não existe (porque spawnou e o node ainda não entrou na tree), retry rapidinho
+	if (best == null)
+	{
+		if (tries <= 0)
+		{
+			ApplyPlayerScore(totalDmg, false);
+			return;
+		}
+
+		GetTree().CreateTimer(0.01f).Timeout += () =>
+		{
+			if (!GodotObject.IsInstanceValid(this)) return;
+			BindIceBarrageScoreToVfx(totalDmg, tries - 1);
+		};
+		return;
+	}
+
+	_boundIceBarrages.Add(bestId);
+
+	int hits = Mathf.Max(1, IceBarrageHits > 0 ? IceBarrageHits : best.TotalShards);
+
+	// garante 52 hits com dano > 0 (se você realmente quer 52 “contando”)
+	if (IceBarrageForceAtLeastOnePerShard && totalDmg < hits)
+		totalDmg = hits;
+
+	int basePart = totalDmg / hits;
+	int rem = totalDmg % hits;
+
+	int cursor = 0;
+	int applied = 0;
+
+	best.ShardHit += (_, __) =>
+	{
+		if (!GodotObject.IsInstanceValid(this)) return;
+		if (cursor >= hits) return;
+
+		int part = basePart + (cursor < rem ? 1 : 0);
+		cursor++;
+		applied += part;
+
+		// isso dispara exatamente os orbs/deltas do DualScoreBarsController
+		ApplyPlayerScore(part, bigHit: false);
+	};
+
+	// (opcional) se quiser garantir que nunca “sobra” dano por alguma inconsistência:
+	// aplica resto depois de um tempo máximo esperado (sem quebrar o sync normal)
+	float maxWait = 2.0f;
+	GetTree().CreateTimer(maxWait).Timeout += () =>
+	{
+		if (!GodotObject.IsInstanceValid(this)) return;
+
+		int rest = totalDmg - applied;
+		if (rest > 0)
+			ApplyPlayerScore(rest, bigHit: false);
+	};
 }
 
 /// <summary>
@@ -934,19 +1026,10 @@ public void OnShardDamage(int shardIndex, Vector2 hitPos)
 			int dmg = Mathf.RoundToInt(PlayerBaseDamage * gradeMult * flowMult);
 			if (flowFullAfterHit && vfxElem == 2) // gelo strong
 			{
-				if (IceBarrageMultiHitScore)
-				{
-					SchedulePlayerScoreMultiHit(
-						dmg,
-						IceBarrageFirstHitDelay,
-						Mathf.Max(1, IceBarrageHits),
-						Mathf.Max(0f, IceBarrageHitInterval)
-					);
-				}
+				if (IceBarrageScorePerShard)
+					BindIceBarrageScoreToVfx(dmg);
 				else
-				{
 					ApplyPlayerScore(dmg, false);
-				}
 
 				_mage.PlayIdle();
 				return;

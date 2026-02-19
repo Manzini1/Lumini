@@ -13,5 +13,6 @@ BuildUpSec = 0.04
 ArcRadiusMin = 300.0
 ArcRadiusMax = 500.0
 TargetRadius = 30.0
+RotationJitterDeg = 0.0
 ShootSfx = ExtResource("4_g0ijc")
 ImpactSfx = ExtResource("4_ufbvb")

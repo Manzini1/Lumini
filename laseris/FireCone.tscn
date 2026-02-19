@@ -1,12 +1,12 @@
 [gd_scene load_steps=9 format=3 uid="uid://coiqukbfdrigo"]
 
 [ext_resource type="Script" uid="uid://bqoekvr1y61h2" path="res://Scripts/FireConeVfx.cs" id="1_8x7mx"]
-[ext_resource type="Shader" uid="uid://bnqcv62pchmpe" path="res://FireCone.gdshader" id="1_mmy0f"]
+[ext_resource type="Shader" uid="uid://cfuyjnkketfg5" path="res://FireConeStrong.gdshader" id="2_34u3f"]
 [ext_resource type="Texture2D" uid="uid://brh6cchw82uig" path="res://Sprites/Projectiles/fire_texture.png" id="3_34u3f"]
 [ext_resource type="Texture2D" uid="uid://dypii1jaydnuq" path="res://Sprites/Projectiles/sparks - Copy.png" id="4_34u3f"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_8x7mx"]
-shader = ExtResource("1_mmy0f")
+shader = ExtResource("2_34u3f")
 shader_parameter/progress = 0.0
 shader_parameter/fade = 1.0
 shader_parameter/dissolve = 0.0
@@ -18,12 +18,17 @@ shader_parameter/noise_scale = 6.0
 shader_parameter/noise_speed = 3.0
 shader_parameter/edge_softness = 0.6
 shader_parameter/heat_warp = 0.06
-shader_parameter/arc_up = 0.0
+shader_parameter/arc_up = 1.0
 shader_parameter/tip_uv = 0.07
 shader_parameter/cap_roundness = 0.85
-shader_parameter/core_color = Color(1, 0.95, 0.6, 1)
-shader_parameter/mid_color = Color(1, 0.55, 0.2, 1)
-shader_parameter/glow_color = Color(1, 0.45, 0.12, 1)
+shader_parameter/rise_uv = 0.12
+shader_parameter/rise_start = 0.6
+shader_parameter/rise_wobble = 0.55
+shader_parameter/rise_asym = 0.22
+shader_parameter/uv_edge_fade = 0.02
+shader_parameter/core_color = Color(1, 0.1882353, 0.34509805, 1)
+shader_parameter/mid_color = Color(1, 0.2901961, 0.2, 1)
+shader_parameter/glow_color = Color(1, 0.21568628, 0.12156863, 1)
 
 [sub_resource type="QuadMesh" id="QuadMesh_7iadu"]
 size = Vector2(200, 80)
@@ -49,6 +54,13 @@ gravity = Vector3(0, 450, 0)
 [node name="FireFlames" type="Node2D"]
 script = ExtResource("1_8x7mx")
 ConeMeshPath = NodePath("MeshInstance2D")
+ConeZIndex = 10
+EndWidthPxBase = 400.0
+EndWidthPxPer100px = 100.0
+ArcUpPx = 200.0
+CoreColor = Color(1, 0.6784314, 0.2784314, 1)
+MidColor = Color(0.8784314, 0.19607843, 0, 1)
+GlowColor = Color(1, 0, 0, 1)
 
 [node name="MeshInstance2D" type="MeshInstance2D" parent="."]
 material = SubResource("ShaderMaterial_8x7mx")

@@ -1,4 +1,4 @@
-[gd_scene load_steps=33 format=3 uid="uid://k77em0ts4tg7"]
+[gd_scene load_steps=35 format=3 uid="uid://k77em0ts4tg7"]
 
 [ext_resource type="Script" uid="uid://coc8w2xsksd0x" path="res://Scripts/Battle/BattleController.cs" id="1_02hj4"]
 [ext_resource type="PackedScene" uid="uid://nvoxx5jrd2g3" path="res://Scenes/Actors/Mage/Mage.tscn" id="2_5mge4"]
@@ -22,12 +22,14 @@
 [ext_resource type="PackedScene" uid="uid://dgld5kxx6w8i8" path="res://Scenes/VFX/beam_spell_vfx.tscn" id="17_n1ain"]
 [ext_resource type="Script" uid="uid://bag1wlqx55i08" path="res://Scenes/Battle/DevResolutionTester.cs" id="18_4pmf7"]
 [ext_resource type="PackedScene" uid="uid://bi5xpys1g0fqy" path="res://Scenes/Attack/Ice/IceSpell1.tscn" id="18_q177b"]
+[ext_resource type="PackedScene" uid="uid://8xcf5qwgb2v" path="res://LightningStrikeVfx.tscn" id="19_3vjj8"]
 [ext_resource type="PackedScene" uid="uid://bwd1cr1adudch" path="res://beam_spell_impact.tscn" id="19_fm2jp"]
 [ext_resource type="PackedScene" uid="uid://jkccuydy7g0p" path="res://Scenes/spells/fireball_projectile_vfx.tscn" id="19_skgte"]
 [ext_resource type="PackedScene" uid="uid://dyj1rrtspwjo6" path="res://Scenes/Attack/Ice/FireSparks.tscn" id="20_jbiss"]
 [ext_resource type="PackedScene" uid="uid://dffqv8hjogj3v" path="res://IceShardBarrage.tscn" id="21_1a3gk"]
 [ext_resource type="PackedScene" uid="uid://dnvittboid2fn" path="res://firewhip.tscn" id="21_jbiss"]
 [ext_resource type="PackedScene" uid="uid://cty4pmdeydepv" path="res://LightBladeBarrage.tscn" id="21_skgte"]
+[ext_resource type="PackedScene" uid="uid://ci3elpirh7kda" path="res://LightningBarrageController.tscn" id="22_40250"]
 [ext_resource type="Script" uid="uid://cia7rgvindnhk" path="res://Scripts/BattleVfxDirector.cs" id="25_d4k4i"]
 
 [sub_resource type="Resource" id="Resource_36cr5"]
@@ -278,8 +280,8 @@ script = ExtResource("8_sufya")
 [node name="ElementVfxLibrary" type="Node" parent="Systems"]
 script = ExtResource("14_6tvrj")
 MageCastAnimByElementId = PackedStringArray("e3", "e3", "e3", "e3", "e3", "e3", "e3")
-CastVfxByElementId = [ExtResource("17_fm2jp"), ExtResource("19_skgte"), ExtResource("17_fm2jp"), ExtResource("17_fm2jp"), ExtResource("17_fm2jp"), ExtResource("17_n1ain"), ExtResource("17_n1ain")]
-AdvancedCastVfxByElementId = [null, ExtResource("17_f4hcl"), ExtResource("21_1a3gk"), null, null, null, ExtResource("21_skgte"), null]
+CastVfxByElementId = [ExtResource("17_fm2jp"), ExtResource("19_skgte"), ExtResource("17_fm2jp"), ExtResource("17_fm2jp"), ExtResource("17_fm2jp"), ExtResource("19_3vjj8"), ExtResource("17_n1ain")]
+AdvancedCastVfxByElementId = [null, ExtResource("17_f4hcl"), ExtResource("21_1a3gk"), null, null, ExtResource("22_40250"), ExtResource("21_skgte"), null]
 ImpactVfxByElementId = [ExtResource("18_q177b"), ExtResource("20_jbiss"), ExtResource("18_q177b"), ExtResource("18_q177b"), ExtResource("18_q177b"), ExtResource("18_q177b"), ExtResource("19_fm2jp"), ExtResource("19_fm2jp")]
 ImpactVfxAlt1ByElementId = [null, null, null, null, null, null, null, ExtResource("21_jbiss")]
 EarthRockScene = ExtResource("15_ik5sk")

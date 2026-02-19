@@ -64,7 +64,7 @@ void fragment(){
     float w = mix(start_width, end_width, uv.x) * width_boost;
 
     float tongue = fbm(vec2(uv.x*noise_scale*0.9 + t*0.9, uv.y*noise_scale*1.3 - t*1.2));
-    w *= (0.80 + 0.55 * tongue);
+    w *= (0.78 + 0.70 * tongue); // mais variação = mais “chama”
 
     float tipN = fbm(vec2(uv.y * noise_scale * 1.2, TIME * noise_speed * 0.6));
     float cut = progress - tip_uv * (0.10 + 0.90 * tipN);
@@ -73,6 +73,8 @@ void fragment(){
     float capT = clamp((cut - uv.x) / max(tip_uv, 1e-4), 0.0, 1.0);
 
     float dy = abs(uv.y - 0.5);
+
+    // borda mais firme ajuda a parecer fogo (menos neblina)
     float edge = smoothstep(w*0.5, w*0.5 - edge_softness, dy);
 
     float wHalf = max(w * 0.5, 1e-4);
@@ -85,15 +87,47 @@ void fragment(){
     float dmask = smoothstep(dissolve, dissolve + 0.25, tongue);
     float alpha = edge * dmask * fade * tipMask;
 
-    float coreMask = smoothstep(0.22, 0.0, dy);
-    float midMask  = smoothstep(0.38, 0.12, dy);
+    // --- “temperatura” ao longo do cone ---
+    float x = clamp(uv.x, 0.0, 1.0);
+    float xHeat = smoothstep(0.05, 0.85, x);
+
+    // núcleo mais “branco quente”
+    float coreMask = smoothstep(0.18, 0.0, dy);
+    float midMask  = smoothstep(0.42, 0.14, dy);
 
     vec3 col = glow_color.rgb;
     col = mix(col, mid_color.rgb, midMask);
     col = mix(col, core_color.rgb, coreMask);
 
-    float heat = smoothstep(0.0, 0.35, uv.x) * (1.0 - smoothstep(0.55, 1.0, uv.x));
-    col *= (1.0 + 0.35 * heat);
+    // hot core boost (dá cara de fogo, não fumaça)
+    float hot = pow(coreMask, 2.6) * (1.0 - 0.55 * x);
+    col += core_color.rgb * hot * 1.35;
+
+    // leve “cool” perto da origem (opcional, mas fica AAA)
+    vec3 coolTint = vec3(0.55, 0.85, 1.0);
+    float cool = (1.0 - smoothstep(0.0, 0.18, x)) * 0.18;
+    col = mix(col, coolTint, cool);
+
+    // redshift no fim (mais laranja/vermelho)
+    vec3 tipTint = vec3(1.0, 0.18, 0.05);
+    float redshift = smoothstep(0.35, 1.0, x) * 0.42;
+    col = mix(col, tipTint, redshift);
+
+    // flicker geral
+    float flick = 0.88 + 0.12 * sin(TIME*14.0 + x*10.0 + tongue*6.0);
+    col *= flick;
+
+    // embers/fiapos (detalhe que mata o “smoke look”)
+    float emberN = fbm(vec2(uv.x*noise_scale*3.2 + t*2.2, uv.y*noise_scale*6.0 - t*3.1));
+    float embers = smoothstep(0.86, 1.0, emberN) * smoothstep(0.10, 0.90, x) * (1.0 - coreMask);
+    col += glow_color.rgb * embers * 1.4;
+    alpha += embers * 0.22;
+
+    // mais presença no meio do cone
+    alpha *= (0.85 + 0.35 * xHeat);
+
+    alpha = clamp(alpha, 0.0, 1.0);
 
     COLOR = vec4(col * intensity, alpha);
 }
+
