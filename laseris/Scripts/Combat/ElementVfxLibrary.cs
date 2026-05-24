@@ -180,11 +180,38 @@ public bool SpawnPlayerCast(int elementId, bool flowFull, Node parent, Vector2 f
 
 	TryAutoPlayInHierarchy(node);
 
-	// tenta Play(from,to,sec)
-	if (node.HasMethod("Play"))
+// depois de instanciar e dar AddChild(node)…
+
+	// ✅ invocação segura (não dá crash se não existir)
+	if (node is ICastVfxPlayable playable)
+	{
+		playable.Play(from, to, travelSec);
+	}
+	else if (node.HasMethod("Play"))
+	{
 		node.Call("Play", from, to, travelSec);
-	else if (node.HasMethod("Launch"))
-		node.Call("Launch", from, to, travelSec);
+	}
+	else if (node.HasMethod("PlaySimple"))
+	{
+		node.Call("PlaySimple", from, to, travelSec);
+	}
+	else if (node.HasMethod("PlayAdvanced"))
+	{
+		node.Call("PlayAdvanced", from, to, travelSec);
+	}
+	else if (node.HasMethod("Fire"))
+	{
+		// alguns VFX usam Fire(to, travelSec)
+		node.Call("Fire", to, travelSec);
+	}
+	else if (node.HasMethod("Start"))
+	{
+		node.Call("Start", from, to, travelSec);
+	}
+	else
+	{
+		GD.PushWarning($"[ElementVfxLibrary] SpawnPlayerCast: '{node.Name}' ({node.GetClass()}) não tem Play/PlaySimple/PlayAdvanced/Fire/Start. Nada foi disparado.");
+	}
 
 	return true;
 }

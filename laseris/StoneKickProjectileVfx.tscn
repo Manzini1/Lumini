@@ -1,0 +1,94 @@
+[gd_scene load_steps=13 format=3 uid="uid://clceh8hi14f1p"]
+
+[ext_resource type="Script" uid="uid://c3sjvt18bpwef" path="res://Scripts/StoneKickProjectileVfx.cs" id="1_ek0ia"]
+[ext_resource type="Texture2D" uid="uid://l6b7nyd0whul" path="res://Sprites/Spells/boulderform.png" id="2_3jyd7"]
+[ext_resource type="PackedScene" uid="uid://cpx67c3ss7jpb" path="res://RockImpact.tscn" id="2_nuvdk"]
+[ext_resource type="Texture2D" uid="uid://dp3rok8iele05" path="res://Sprites/Sparks/rock.png" id="3_02uwr"]
+[ext_resource type="Texture2D" uid="uid://iljupaud80yt" path="res://Sprites/Projectiles/boulder.png" id="3_3jyd7"]
+[ext_resource type="Texture2D" uid="uid://3g61dyou0dlh" path="res://Sprites/Projectiles/speck_8x8_ice.png" id="4_e37wi"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_02uwr"]
+atlas = ExtResource("2_3jyd7")
+region = Rect2(0, 128, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_e37wi"]
+atlas = ExtResource("2_3jyd7")
+region = Rect2(128, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_nuvdk"]
+atlas = ExtResource("2_3jyd7")
+region = Rect2(0, 0, 128, 128)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_42ntl"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_02uwr")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_e37wi")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_nuvdk")
+}],
+"loop": false,
+"name": &"Form",
+"speed": 10.0
+}]
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_e37wi"]
+particle_flag_disable_z = true
+gravity = Vector3(0, 98, 0)
+scale_min = 4.0
+scale_max = 4.0
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_nuvdk"]
+lifetime_randomness = 0.65
+particle_flag_disable_z = true
+emission_shape = 1
+emission_sphere_radius = 73.04
+angle_min = 83.70001
+angle_max = 83.70001
+inherit_velocity_ratio = 0.079
+direction = Vector3(0, 0, 0)
+spread = 108.071
+angular_velocity_min = -58.600014
+angular_velocity_max = -58.600014
+gravity = Vector3(50, -100, 0)
+damping_min = 34.302002
+damping_max = 52.131004
+scale_min = 4.0
+scale_max = 4.0
+scale_over_velocity_min = 93.02
+scale_over_velocity_max = 147.28
+
+[node name="StoneKickProjectileVfx" type="Node2D"]
+script = ExtResource("1_ek0ia")
+DustKickDurationSec = 5.0
+ImpactScene = ExtResource("2_nuvdk")
+
+[node name="FormAnim" type="AnimatedSprite2D" parent="."]
+sprite_frames = SubResource("SpriteFrames_42ntl")
+animation = &"Form"
+
+[node name="Trail" type="GPUParticles2D" parent="."]
+z_index = 10
+amount = 80
+texture = ExtResource("3_02uwr")
+process_material = SubResource("ParticleProcessMaterial_e37wi")
+
+[node name="DustKick" type="GPUParticles2D" parent="."]
+modulate = Color(0.22745098, 0.05882353, 0, 0.20784314)
+z_index = 100
+amount = 80
+texture = ExtResource("4_e37wi")
+lifetime = 3.0
+explosiveness = 1.0
+randomness = 0.27
+process_material = SubResource("ParticleProcessMaterial_nuvdk")
+
+[node name="DustFlight" type="GPUParticles2D" parent="."]
+
+[node name="Rock" type="Sprite2D" parent="."]
+visible = false
+texture = ExtResource("3_3jyd7")

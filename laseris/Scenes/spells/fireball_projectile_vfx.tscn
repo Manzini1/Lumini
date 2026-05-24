@@ -7,6 +7,7 @@
 script = ExtResource("1_1603e")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+scale = Vector2(2, 2)
 sprite_frames = ExtResource("3_ndiw4")
 animation = &"play"
 frame_progress = 0.6226394

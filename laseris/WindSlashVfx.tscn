@@ -1,0 +1,45 @@
+[gd_scene load_steps=6 format=3 uid="uid://dydvrb86w5bxj"]
+
+[ext_resource type="Script" uid="uid://b875lxle8wfsc" path="res://Scripts/WindSlashVfx.cs" id="1_ueclx"]
+[ext_resource type="Shader" uid="uid://3jv3l12utjs0" path="res://Shaders/wind_slash_distort.gdshader" id="2_svvqy"]
+[ext_resource type="Shader" uid="uid://dp0b8ugh16e1u" path="res://Shaders/wind_slash_glow.gdshader" id="3_a3o7m"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_r0w83"]
+shader = ExtResource("2_svvqy")
+shader_parameter/progress = 1.0
+shader_parameter/fade = 1.0
+shader_parameter/distort_strength = 0.01
+shader_parameter/noise_scale = 10.0
+shader_parameter/noise_speed = 3.5
+shader_parameter/arc_center_x = -0.2
+shader_parameter/outer_r = 1.05
+shader_parameter/thickness = 0.28
+shader_parameter/edge_soft = 0.1
+shader_parameter/curve = 0.18
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_bgd3r"]
+shader = ExtResource("3_a3o7m")
+shader_parameter/progress = 1.0
+shader_parameter/fade = 1.0
+shader_parameter/intensity = 1.0
+shader_parameter/glow_color = Color(0.7, 0.95, 1, 1)
+shader_parameter/arc_center_x = -0.2
+shader_parameter/outer_r = 1.05
+shader_parameter/thickness = 0.22
+shader_parameter/edge_soft = 0.1
+shader_parameter/curve = 0.18
+
+[node name="WindSlashVfx" type="Node2D"]
+script = ExtResource("1_ueclx")
+
+[node name="DistortMesh" type="MeshInstance2D" parent="."]
+material = SubResource("ShaderMaterial_r0w83")
+
+[node name="GlowMesh" type="MeshInstance2D" parent="."]
+material = SubResource("ShaderMaterial_bgd3r")
+
+[node name="Debris" type="GPUParticles2D" parent="."]
+
+[node name="Whoosh" type="AudioStreamPlayer" parent="."]
+
+[node name="Impact" type="AudioStreamPlayer" parent="."]

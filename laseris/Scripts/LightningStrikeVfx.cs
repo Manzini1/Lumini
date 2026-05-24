@@ -1,312 +1,301 @@
 using Godot;
 using System;
-using System.Collections.Generic;
-using Godot.Collections;
 
 namespace Game.Vfx
 {
 	public partial class LightningStrikeVfx : Node2D
 	{
 		[ExportGroup("Refs")]
-		[Export] public NodePath GlowLinePath = "BoltGlow";
-		[Export] public NodePath MidLinePath  = "BoltMid";
-		[Export] public NodePath CoreLinePath = "BoltCore";
-		[Export] public NodePath ImpactBurstPath = "ImpactBurst";
-		[Export] public NodePath TopSparksPath   = "TopSparks";
-		[Export] public NodePath FlashPath       = "Flash"; // pode ser Control ou Node2D
+		[Export] public NodePath BoltMeshPath = "BoltMesh";
+		[Export] public NodePath ImpactMeshPath = "ImpactFlash";
 
 		[ExportGroup("Timing")]
-		[Export] public float TelegraphSec = 0.14f;
-		[Export] public float StrikeHoldSec = 0.05f;
+		[Export] public float RevealSec = 0.05f;
+		[Export] public float HoldSec = 0.04f;
 		[Export] public float FadeOutSec = 0.10f;
-		[Export] public int FlickerFrames = 3;
-		[Export] public float FlickerInterval = 0.018f;
 		[Export] public bool QueueFreeOnEnd = true;
 
-		[ExportGroup("Shape")]
-		[Export] public int Iterations = 5;     // 4..6
-		[Export] public float JitterPx = 120f;  // amplitude inicial
-		[Export] public float JitterDecay = 0.55f;
-		[Export] public float EndJitterBias = 0.30f; // mais caos perto do alvo
-		[Export] public float PerpNoise = 1.0f;
+		[ExportGroup("Look")]
+		[Export] public float BoltWidthPx = 14f;          // espessura base
+		[Export] public float WidthMultiplier = 1.0f;     // para deixar mais grosso (barrage usa >1)
+		[Export] public float JitterPx = 18f;             // zig-zag lateral
+		[Export] public float GlowPx = 40f;               // folga pro glow não cortar
+		[Export] public float Softness = 0.08f;           // borda mais dura = mais “raio”
+		[Export] public float NoiseScale = 10f;
+		[Export] public float NoiseSpeed = 9f;
 
-		[ExportGroup("Visual")]
-		[Export] public float GlowAlpha = 0.35f;
-		[Export] public float MidAlpha  = 0.65f;
-		[Export] public float CoreAlpha = 1.00f;
+		[ExportGroup("From Top (force style)")]
+		[Export] public bool ForceFromScreenTop = true;
+		[Export] public float FromXJitter = 30f;
+		[Export] public float SpawnMarginTop = 30f;
 
-		[ExportGroup("Z Layers")]
-		[Export] public bool ForceZLayers = true;
-		[Export] public int BoltZIndex = -20;
-		[Export] public int ImpactZIndex = 20;
+		[ExportGroup("Colors")]
+		[Export] public Color CoreColor = new(0.95f, 0.98f, 1.00f, 1f);
+		[Export] public Color GlowColor = new(0.35f, 0.75f, 1.00f, 1f);
 
-		private Line2D _glow;
-		private Line2D _mid;
-		private Line2D _core;
-
-		private GpuParticles2D _impact;
-		private GpuParticles2D _topSparks;
-
-		private Node _flashNode;
-		private CanvasItem _flashItem;
-
+		private MeshInstance2D _boltMesh;
+		private MeshInstance2D _impactMesh;
+		private QuadMesh _boltQuad;
+		private QuadMesh _impactQuad;
+		private ShaderMaterial _boltMat;
+		private ShaderMaterial _impactMat;
 		private Tween _tw;
 		private readonly RandomNumberGenerator _rng = new();
 
-		private Vector2 _from;
-		private Vector2 _to;
+		private bool _inited;
+
+		private const string BoltShader = @"
+shader_type canvas_item;
+render_mode unshaded, blend_add;
+
+uniform float progress = 1.0;
+uniform float fade = 1.0;
+
+uniform float half_width = 0.03;      // em UV (setado pelo C#)
+uniform float jitter = 0.08;          // em UV (setado pelo C#)
+uniform float softness = 0.08;
+
+uniform float noise_scale = 10.0;
+uniform float noise_speed = 9.0;
+
+uniform vec4 core_color : source_color = vec4(0.95,0.98,1.0,1.0);
+uniform vec4 glow_color : source_color = vec4(0.35,0.75,1.0,1.0);
+
+float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7))) * 43758.5453123); }
+float noise2(vec2 p){
+	vec2 i=floor(p), f=fract(p);
+	float a=hash(i), b=hash(i+vec2(1,0)), c=hash(i+vec2(0,1)), d=hash(i+vec2(1,1));
+	vec2 u=f*f*(3.0-2.0*f);
+	return mix(a,b,u.x) + (c-a)*u.y*(1.0-u.x) + (d-b)*u.x*u.y;
+}
+float fbm(vec2 p){
+	float v=0.0; float a=0.55;
+	for(int i=0;i<4;i++){ v += a*noise2(p); p*=2.02; a*=0.52; }
+	return v;
+}
+
+void fragment(){
+	vec2 uv = UV;
+
+	// anima revelando (topo -> alvo) ao longo do X
+	if (uv.x > progress) discard;
+
+	float t = TIME * noise_speed;
+
+	// linha central “serrilhada”
+	float n = fbm(vec2(uv.x*noise_scale, t*0.22));
+	float n2 = fbm(vec2(uv.x*noise_scale*2.1, -t*0.18));
+	float center = 0.5 + (n - 0.5) * jitter + (n2 - 0.5) * (jitter*0.55);
+
+	float dy = abs(uv.y - center);
+
+	// core e glow
+	float core = smoothstep(half_width, half_width - softness, dy);
+	float glow = smoothstep(half_width*2.8, half_width*2.8 - softness, dy);
+
+	float alpha = max(core, glow*0.55) * fade;
+
+	// evita “quad fantasma”
+	if (alpha < 0.002) discard;
+
+	vec3 col = glow_color.rgb;
+	col = mix(col, core_color.rgb, core);
+
+	// flicker sutil
+	float flick = 0.88 + 0.12 * sin(TIME*18.0 + uv.x*24.0 + n*8.0);
+	col *= flick;
+
+	COLOR = vec4(col, alpha);
+}
+";
+
+		private const string ImpactShader = @"
+shader_type canvas_item;
+render_mode unshaded, blend_add;
+
+uniform float fade = 1.0;
+uniform vec4 core_color : source_color = vec4(0.95,0.98,1.0,1.0);
+uniform vec4 glow_color : source_color = vec4(0.35,0.75,1.0,1.0);
+
+void fragment(){
+	vec2 uv = UV * 2.0 - 1.0; // -1..1
+	float d = length(uv);
+
+	// radial: nada de quadrado
+	float glow = smoothstep(1.0, 0.0, d);
+	float core = smoothstep(0.35, 0.0, d);
+
+	float a = (glow*0.65 + core*0.85) * fade;
+	if (a < 0.002) discard;
+
+	vec3 col = glow_color.rgb * glow;
+	col = mix(col, core_color.rgb, core);
+
+	COLOR = vec4(col, a);
+}
+";
 
 		public override void _Ready()
 		{
 			_rng.Randomize();
-
-			_glow = GetNodeOrNull<Line2D>(GlowLinePath);
-			_mid  = GetNodeOrNull<Line2D>(MidLinePath);
-			_core = GetNodeOrNull<Line2D>(CoreLinePath);
-
-			_impact = GetNodeOrNull<GpuParticles2D>(ImpactBurstPath);
-			_topSparks = GetNodeOrNull<GpuParticles2D>(TopSparksPath);
-
-			_flashNode = GetNodeOrNull<Node>(FlashPath);
-			_flashItem = _flashNode as CanvasItem;
-
-			TopLevel = true;
-
-			ApplyZ();
-			SetVisibleAll(false);
 		}
 
-		private void ApplyZ()
+		// ✅ compat com chamadas diretas
+		public void Play(Vector2 from, Vector2 to)
 		{
-			if (!ForceZLayers) return;
-
-			ApplyZOne(_glow, BoltZIndex);
-			ApplyZOne(_mid,  BoltZIndex);
-			ApplyZOne(_core, BoltZIndex);
-
-			ApplyZOne(_impact, ImpactZIndex);
-			ApplyZOne(_topSparks, ImpactZIndex);
-
-			// Flash normalmente por cima do impacto
-			ApplyZOne(_flashItem, ImpactZIndex + 5);
+			Play(from, to, RevealSec);
 		}
 
-		private void ApplyZOne(CanvasItem ci, int z)
+		// ✅ COMPAT com ElementVfxLibrary: Call("Play", from, to, travelSec)
+		public void Play(Vector2 from, Vector2 to, float travelSec)
 		{
-			if (ci == null) return;
-			ci.ZAsRelative = false;
-			ci.ZIndex = z;
-		}
+			EnsureInit();
 
-		public void Play(Vector2 fromGlobal, Vector2 toGlobal)
-		{
-			_from = fromGlobal;
-			_to = toGlobal;
-
-			_tw?.Kill();
-			SetVisibleAll(true);
-
-			// 1) Telegraph fraquinho (linha reta)
-			DrawTelegraphLine();
-
-			float tele = Mathf.Max(0f, TelegraphSec);
-			GetTree().CreateTimer(Mathf.Max(0.001f, tele)).Timeout += () =>
+			Vector2 realFrom = from;
+			if (ForceFromScreenTop)
 			{
-				if (!GodotObject.IsInstanceValid(this)) return;
-				StrikeNowWithFlicker();
-			};
-		}
-
-		private void DrawTelegraphLine()
-		{
-			var pts = new List<Vector2> { _from, _to };
-			ApplyToLines(pts, alphaMul: 0.25f);
-			StopParticles();
-			SetFlash(0f);
-		}
-
-		private void StrikeNowWithFlicker()
-		{
-			// impacto
-			if (_impact != null)
-			{
-				_impact.GlobalPosition = _to;
-				_impact.Emitting = true;
+				float topY = GetTopOfScreenWorldY() - Mathf.Max(0f, SpawnMarginTop);
+				float x = to.X + _rng.RandfRange(-FromXJitter, FromXJitter);
+				realFrom = new Vector2(x, topY);
 			}
 
-			// sparks no topo
-			if (_topSparks != null)
-			{
-				_topSparks.GlobalPosition = _from;
-				_topSparks.Emitting = true;
-			}
+			AlignBoltBetween(realFrom, to);
+			PlaceImpactAt(to);
 
-			// flash curtinho no alvo
-			SetFlash(1f);
-			GetTree().CreateTimer(0.04f).Timeout += () =>
-			{
-				if (GodotObject.IsInstanceValid(this)) SetFlash(0f);
-			};
-
-			// primeira geração
-			var mainPts = BuildBoltPoints(_from, _to);
-			ApplyToLines(mainPts, alphaMul: 1.0f);
-
-			// flicker: regenera algumas vezes
-			int flick = Mathf.Max(0, FlickerFrames);
-			for (int i = 1; i < flick; i++)
-			{
-				float d = i * Mathf.Max(0.001f, FlickerInterval);
-				GetTree().CreateTimer(d).Timeout += () =>
-				{
-					if (!GodotObject.IsInstanceValid(this)) return;
-					var pts = BuildBoltPoints(_from, _to);
-					ApplyToLines(pts, alphaMul: 1.0f);
-				};
-			}
-
-			// hold + fade
-			float hold = Mathf.Max(0.0f, StrikeHoldSec);
-			GetTree().CreateTimer(hold).Timeout += () =>
-			{
-				if (!GodotObject.IsInstanceValid(this)) return;
-				StartFadeOut();
-			};
+			StartTween(Mathf.Max(0.01f, travelSec), HoldSec, FadeOutSec);
 		}
 
-		private void StartFadeOut()
+		private void EnsureInit()
 		{
-			_tw?.Kill();
+			if (_inited) return;
+
+			_boltMesh = GetNodeOrNull<MeshInstance2D>(BoltMeshPath);
+			if (_boltMesh == null)
+			{
+				_boltMesh = new MeshInstance2D { Name = "BoltMesh" };
+				AddChild(_boltMesh);
+			}
+
+			_impactMesh = GetNodeOrNull<MeshInstance2D>(ImpactMeshPath);
+			if (_impactMesh == null)
+			{
+				_impactMesh = new MeshInstance2D { Name = "ImpactFlash" };
+				AddChild(_impactMesh);
+			}
+
+			_boltQuad = new QuadMesh();
+			_impactQuad = new QuadMesh();
+
+			_boltMesh.Mesh = _boltQuad;
+			_impactMesh.Mesh = _impactQuad;
+
+			_boltMat = new ShaderMaterial { Shader = new Shader { Code = BoltShader } };
+			_impactMat = new ShaderMaterial { Shader = new Shader { Code = ImpactShader } };
+
+			_boltMesh.Material = _boltMat;
+			_impactMesh.Material = _impactMat;
+
+			_boltMat.SetShaderParameter("core_color", CoreColor);
+			_boltMat.SetShaderParameter("glow_color", GlowColor);
+			_boltMat.SetShaderParameter("noise_scale", NoiseScale);
+			_boltMat.SetShaderParameter("noise_speed", NoiseSpeed);
+			_boltMat.SetShaderParameter("softness", Softness);
+
+			_impactMat.SetShaderParameter("core_color", CoreColor);
+			_impactMat.SetShaderParameter("glow_color", GlowColor);
+
+			// Z default (ajuste se precisar)
+			_boltMesh.ZAsRelative = false;
+			_boltMesh.ZIndex = 5;
+			_impactMesh.ZAsRelative = false;
+			_impactMesh.ZIndex = 8;
+
+			_inited = true;
+		}
+
+		private void AlignBoltBetween(Vector2 from, Vector2 to)
+		{
+			Vector2 dir = to - from;
+			float len = Mathf.Max(4f, dir.Length());
+			Vector2 n = dir / len;
+
+			GlobalPosition = (from + to) * 0.5f;
+			GlobalRotation = n.Angle();
+
+			float wPx = Mathf.Max(2f, BoltWidthPx * WidthMultiplier);
+			float halfW = wPx * 0.5f;
+
+			// altura do QUAD: largura + jitter + glow (pra nunca cortar)
+			float heightPx = (halfW + JitterPx + GlowPx) * 2f;
+			_boltQuad.Size = new Vector2(len, heightPx);
+			_boltMesh.Position = Vector2.Zero;
+			_boltMesh.Rotation = 0f;
+
+			// converte PX -> UV (relativo à altura do quad)
+			float halfWidthUv = Mathf.Clamp(halfW / heightPx, 0.002f, 0.18f);
+			float jitterUv = Mathf.Clamp(JitterPx / heightPx, 0.0f, 0.35f);
+
+			_boltMat.SetShaderParameter("half_width", halfWidthUv);
+			_boltMat.SetShaderParameter("jitter", jitterUv);
+		}
+
+		private void PlaceImpactAt(Vector2 atGlobal)
+		{
+			// impacto “local” dentro do mesmo Node2D (pra não precisar node extra)
+			// converte atGlobal -> local do strike (porque o root está no meio do bolt)
+			Vector2 local = ToLocal(atGlobal);
+
+			float size = Mathf.Max(24f, (BoltWidthPx * WidthMultiplier) * 6.0f);
+			_impactQuad.Size = new Vector2(size, size);
+
+			_impactMesh.Position = local;
+			_impactMesh.Rotation = 0f;
+		}
+
+		private void StartTween(float reveal, float hold, float fadeOut)
+		{
+			if (_tw != null && GodotObject.IsInstanceValid(_tw)) _tw.Kill();
+
+			_boltMat.SetShaderParameter("progress", 0f);
+			_boltMat.SetShaderParameter("fade", 1f);
+			_impactMat.SetShaderParameter("fade", 0f);
+
 			_tw = CreateTween();
 
-			float fo = Mathf.Max(0.01f, FadeOutSec);
+			_tw.TweenMethod(Callable.From<float>(v => _boltMat.SetShaderParameter("progress", v)), 0f, 1f, reveal)
+				.SetTrans(Tween.TransitionType.Quad).SetEase(Tween.EaseType.Out);
 
-			FadeLine(_glow, fo);
-			FadeLine(_mid,  fo);
-			FadeLine(_core, fo);
+			// flash do impacto curto
+			_tw.Parallel().TweenMethod(Callable.From<float>(v => _impactMat.SetShaderParameter("fade", v)), 0f, 1f, Mathf.Min(0.03f, reveal))
+				.SetTrans(Tween.TransitionType.Quad).SetEase(Tween.EaseType.Out);
 
-			if (_flashItem != null)
-				_tw.Parallel().TweenProperty(_flashItem, "modulate:a", 0f, fo);
+			if (hold > 0.001f)
+				_tw.TweenInterval(hold);
+
+			float fo = Mathf.Max(0.01f, fadeOut);
+
+			_tw.Parallel().TweenMethod(Callable.From<float>(v => _boltMat.SetShaderParameter("fade", v)), 1f, 0f, fo)
+				.SetTrans(Tween.TransitionType.Quad).SetEase(Tween.EaseType.In);
+
+			_tw.Parallel().TweenMethod(Callable.From<float>(v => _impactMat.SetShaderParameter("fade", v)), 1f, 0f, fo)
+				.SetTrans(Tween.TransitionType.Quad).SetEase(Tween.EaseType.In);
 
 			if (QueueFreeOnEnd)
-				_tw.Finished += () =>
-				{
-					if (GodotObject.IsInstanceValid(this)) QueueFree();
-				};
+				_tw.Finished += () => { if (GodotObject.IsInstanceValid(this)) QueueFree(); };
 		}
 
-		private void FadeLine(Line2D line, float fo)
+		private float GetTopOfScreenWorldY()
 		{
-			if (line == null) return;
-			float a0 = line.Modulate.A;
-			_tw.Parallel().TweenProperty(line, "modulate:a", 0f, fo).From(a0);
-		}
+			var vp = GetViewport();
+			if (vp == null) return -1000f;
 
-		private void StopParticles()
-		{
-			if (_impact != null) _impact.Emitting = false;
-			if (_topSparks != null) _topSparks.Emitting = false;
-		}
+			Rect2 rectPx = vp.GetVisibleRect();
+			Transform2D inv = vp.GetCanvasTransform().AffineInverse();
 
-		private void SetFlash(float a)
-		{
-			if (_flashItem == null) return;
+			Vector2 w0 = inv * rectPx.Position;
+			Vector2 w1 = inv * (rectPx.Position + rectPx.Size);
 
-			var m = _flashItem.Modulate;
-			m.A = Mathf.Clamp(a, 0f, 1f);
-			_flashItem.Modulate = m;
-			_flashItem.Visible = m.A > 0.001f;
-
-			// ✅ posiciona no alvo de forma compatível com Control ou Node2D
-			if (_flashNode is Node2D n2) n2.GlobalPosition = _to;
-			else if (_flashNode is Control c) c.GlobalPosition = _to;
-		}
-
-		private void SetVisibleAll(bool v)
-		{
-			if (_glow != null) _glow.Visible = v;
-			if (_mid  != null) _mid.Visible  = v;
-			if (_core != null) _core.Visible = v;
-
-			if (_impact != null) _impact.Visible = v;
-			if (_topSparks != null) _topSparks.Visible = v;
-
-			if (_flashItem != null) _flashItem.Visible = v;
-		}
-
-		private void ApplyToLines(List<Vector2> globalPts, float alphaMul)
-{
-	if (globalPts == null || globalPts.Count < 2) return;
-
-	void SetPoints(Line2D line, float a)
-	{
-		if (line == null) return;
-
-		line.ClearPoints();
-		for (int i = 0; i < globalPts.Count; i++)
-			line.AddPoint(line.ToLocal(globalPts[i]));
-
-		var m = line.Modulate;
-		m.A = Mathf.Clamp(a, 0f, 1f);
-		line.Modulate = m;
-	}
-
-	SetPoints(_glow, GlowAlpha * alphaMul);
-	SetPoints(_mid,  MidAlpha  * alphaMul);
-	SetPoints(_core, CoreAlpha * alphaMul);
-}
-
-		private void SetAlpha(CanvasItem ci, float a)
-		{
-			if (ci == null) return;
-			var m = ci.Modulate;
-			m.A = Mathf.Clamp(a, 0f, 1f);
-			ci.Modulate = m;
-		}
-
-		private List<Vector2> BuildBoltPoints(Vector2 a, Vector2 b)
-		{
-			var pts = new List<Vector2> { a, b };
-
-			Vector2 dir = (b - a);
-			float len = Mathf.Max(1f, dir.Length());
-			Vector2 n = dir / len;
-			Vector2 perp = new Vector2(-n.Y, n.X) * PerpNoise;
-
-			float amp = Mathf.Max(0f, JitterPx);
-
-			int iters = Mathf.Max(1, Iterations);
-			for (int it = 0; it < iters; it++)
-			{
-				var next = new List<Vector2>(pts.Count * 2);
-
-				for (int i = 0; i < pts.Count - 1; i++)
-				{
-					Vector2 p0 = pts[i];
-					Vector2 p1 = pts[i + 1];
-					next.Add(p0);
-
-					Vector2 mid = (p0 + p1) * 0.5f;
-
-					// bias pra ficar mais “furioso” perto do alvo
-					float t = (i + 0.5f) / Mathf.Max(1f, (pts.Count - 1f));
-					float endBias = 1f + EndJitterBias * t;
-
-					float s = _rng.RandfRange(-1f, 1f) * amp * endBias;
-					mid += perp * s;
-
-					next.Add(mid);
-				}
-
-				next.Add(pts[pts.Count - 1]);
-				pts = next;
-
-				amp *= Mathf.Clamp(JitterDecay, 0.1f, 0.95f);
-			}
-
-			pts[0] = a;
-			pts[pts.Count - 1] = b;
-			return pts;
+			return Mathf.Min(w0.Y, w1.Y);
 		}
 	}
 }

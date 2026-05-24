@@ -64,6 +64,13 @@ namespace Game.Battle
 		[Export] public int LightBarrageHits = 4;
 		[Export] public float LightBarrageFirstHitDelay = 0.18f;
 		[Export] public float LightBarrageHitInterval = 0.08f;
+		[ExportGroup("Advanced Cast (Lightning Barrage Score)")]
+		[Export] public bool LightningBarrageScorePerStrike = true;
+
+		// se o dano total for baixo, a gente reduz o número de hits pra não ter “hit 0”
+		[Export] public int LightningBarrageHitsOverride = -1;
+
+		private readonly HashSet<ulong> _boundLightningBarrages = new();
 
 		[ExportGroup("Enemy Aura Draw")]
 		[Export] public int EnemyAuraZIndex = -10;
@@ -199,6 +206,82 @@ private int _iceBarrageCursor;
 private int _iceBarrageBasePart;
 private int _iceBarrageRemainder;
 private double _iceBarrageExpireAtSec;
+private void BindLightningBarrageScoreToVfx(int totalDmg, int tries = 12)
+{
+	if (totalDmg <= 0)
+		return;
+
+	LightningBarrageController best = null;
+	ulong bestId = 0;
+
+	foreach (var n in GetTree().GetNodesInGroup("vfx_lightning_barrage"))
+	{
+		if (n is not LightningBarrageController b) continue;
+
+		ulong id = b.GetInstanceId();
+		if (_boundLightningBarrages.Contains(id)) continue;
+
+		if (id > bestId)
+		{
+			bestId = id;
+			best = b;
+		}
+	}
+
+	if (best == null)
+	{
+		if (tries <= 0)
+		{
+			ApplyPlayerScore(totalDmg, false);
+			return;
+		}
+
+		GetTree().CreateTimer(0.01f).Timeout += () =>
+		{
+			if (!GodotObject.IsInstanceValid(this)) return;
+			BindLightningBarrageScoreToVfx(totalDmg, tries - 1);
+		};
+		return;
+	}
+
+	_boundLightningBarrages.Add(bestId);
+
+	int hits = (LightningBarrageHitsOverride > 0) ? LightningBarrageHitsOverride : best.Strikes;
+	hits = Mathf.Max(1, hits);
+
+	// mantém o total igual: se dano < hits, reduz hits pra evitar part=0
+	if (totalDmg < hits)
+		hits = Mathf.Max(1, totalDmg);
+
+	int basePart = totalDmg / hits;
+	int rem = totalDmg % hits;
+
+	int cursor = 0;
+	int applied = 0;
+
+	best.StrikeHit += (_, __) =>
+	{
+		if (!GodotObject.IsInstanceValid(this)) return;
+		if (cursor >= hits) return;
+
+		int part = basePart + (cursor < rem ? 1 : 0);
+		cursor++;
+		applied += part;
+
+		if (part > 0)
+			ApplyPlayerScore(part, bigHit: false);
+	};
+
+	// safety: garante que nada fica “sobrando”
+	GetTree().CreateTimer(2.0f).Timeout += () =>
+	{
+		if (!GodotObject.IsInstanceValid(this)) return;
+
+		int rest = totalDmg - applied;
+		if (rest > 0)
+			ApplyPlayerScore(rest, bigHit: false);
+	};
+}
 
 // chama quando você decide que o dano do gelo strong vai vir pelos shards
 private void StartIceBarragePendingDamage(int totalDamage, int hits)
@@ -1019,11 +1102,23 @@ public void OnShardDamage(int shardIndex, Vector2 hitPos)
 			}
 
 			AddFlowFromGrade(grade);
+			// ... depois de calcular dmg
+			
 
 			float gradeMult = (grade == JudgementGrade.Perfect) ? 1.0f : PlayerGoodDamageMultiplier;
 			float flowMult = _flow.GetSkillDamageMultiplier(predictedStacks);
 
 			int dmg = Mathf.RoundToInt(PlayerBaseDamage * gradeMult * flowMult);
+			if (flowFullAfterHit && vfxElem == 5)
+			{
+				if (LightningBarrageScorePerStrike)
+					BindLightningBarrageScoreToVfx(dmg);
+				else
+					ApplyPlayerScore(dmg, false);
+
+				_mage.PlayIdle();
+				return;
+			}
 			if (flowFullAfterHit && vfxElem == 2) // gelo strong
 			{
 				if (IceBarrageScorePerShard)
@@ -1090,6 +1185,59 @@ public void OnShardDamage(int shardIndex, Vector2 hitPos)
 			if (reduceBySeconds > 0)
 				_turnManager.ReduceCurrentTurnEnd(reduceBySeconds);
 		}
+		private void ForceSimpleCast(int elementId)
+{
+	Vector2 from = GetMageCastGlobal();
+	Vector2 hit = GetEnemyVfxCenterGlobal();
+
+	float travel = Mathf.Max(0.01f, PlayerProjectileToHitSeconds);
+
+	// ✅ força SIMPLE
+	if (_vfx != null)
+	{
+		_vfx.PlayPlayerCast(elementId, flowFull: false, travelSec: travel);
+	}
+	else
+	{
+		if (_vfxLib != null)
+		{
+			if (_vfxLib.HasMethod("SpawnPlayerCast"))
+				_vfxLib.Call("SpawnPlayerCast", elementId, false, _projectilesParent ?? this, from, hit, travel);
+			else if (_vfxLib.HasMethod("SpawnCastProjectile"))
+				_vfxLib.Call("SpawnCastProjectile", elementId, _projectilesParent ?? this, from, hit, travel);
+		}
+	}
+
+	// ✅ debug dmg/score opcional
+		if (DebugShortcutAppliesDamageAndScore)
+		{
+			int dmg;
+			if (DebugShortcutDamageOverride > 0)
+			{
+				dmg = DebugShortcutDamageOverride;
+			}
+			else
+			{
+				// simple: usa flow atual (não “max”)
+				int stacks = (_flow != null) ? _flow.Stacks : 0;
+				float flowMult = (_flow != null) ? _flow.GetSkillDamageMultiplier(stacks) : 1f;
+				dmg = Mathf.RoundToInt(PlayerBaseDamage * 1.0f * flowMult);
+			}
+
+			ApplyPlayerScore(dmg, false);
+		}
+
+		if (DebugAlsoSpawnImpact)
+		{
+			GetTree().CreateTimer(travel).Timeout += () =>
+			{
+				if (!GodotObject.IsInstanceValid(this)) return;
+
+				if (_vfx != null) _vfx.PlayImpactOnEnemy(elementId);
+				else _vfxLib?.SpawnAttackImpactRandom(elementId, GetNodeOrNull<Node>(WorldVfxParentPath) ?? this, hit);
+			};
+		}
+	}
 
 		// ---------------- Debug Shortcut ----------------
 		public override void _UnhandledInput(InputEvent @event)
@@ -1097,7 +1245,14 @@ public void OnShardDamage(int shardIndex, Vector2 hitPos)
 			if (!DebugEnableAdvancedCastShortcut) return;
 			if (@event is not InputEventKey k) return;
 			if (!k.Pressed || k.Echo) return;
-			if (!k.CtrlPressed) return;
+			_mage.PlayRandomAttackAnim();	
+			// ✅ Ctrl = advanced (mantém)
+			bool wantAdvanced = k.CtrlPressed;
+
+			// ✅ Alt = simple (mas evita AltGr = Ctrl+Alt)
+			bool wantSimple = k.AltPressed && !k.CtrlPressed;
+
+			if (!wantAdvanced && !wantSimple) return;
 
 			int elem = k.Keycode switch
 			{
@@ -1113,10 +1268,11 @@ public void OnShardDamage(int shardIndex, Vector2 hitPos)
 
 			if (elem < 1) return;
 
-			ForceAdvancedCast(elem);
+			if (wantAdvanced) ForceAdvancedCast(elem);
+			else ForceSimpleCast(elem);
+
 			GetViewport().SetInputAsHandled();
 		}
-
 		private void ForceAdvancedCast(int elementId)
 		{
 			Vector2 from = GetMageCastGlobal();

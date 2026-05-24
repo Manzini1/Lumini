@@ -1,4 +1,4 @@
-[gd_scene load_steps=147 format=3 uid="uid://nvoxx5jrd2g3"]
+[gd_scene load_steps=151 format=3 uid="uid://nvoxx5jrd2g3"]
 
 [ext_resource type="Script" uid="uid://bjjosu35fjeao" path="res://Scripts/Actors/MageController.cs" id="1_5q2c3"]
 [ext_resource type="PackedScene" uid="uid://co5x0fbf3oqya" path="res://damage_pop_up.tscn" id="2_2swa2"]
@@ -12,20 +12,20 @@
 [ext_resource type="Texture2D" uid="uid://v4aqjbye3gqh" path="res://Sprites/Characters/lumina/stun_slap2.png" id="7_4p1us"]
 [ext_resource type="Texture2D" uid="uid://bopu8iyysy7p0" path="res://Sprites/Characters/lumina/defend7.png" id="7_6watt"]
 [ext_resource type="Texture2D" uid="uid://ca62b6inib7pw" path="res://Sprites/Characters/lumina/cast1.png" id="7_e5r2i"]
+[ext_resource type="Texture2D" uid="uid://0qsw3ynjyire" path="res://Sprites/Characters/lumina/spinkick2.png" id="7_l52vb"]
 [ext_resource type="PackedScene" uid="uid://w5otm2rakkmj" path="res://Scenes/Weapons/StaffBasic.tscn" id="7_rlrpk"]
 [ext_resource type="Texture2D" uid="uid://dm7nw013gw6yt" path="res://Sprites/Characters/lumina/cast8.png" id="7_ujaek"]
 [ext_resource type="Texture2D" uid="uid://cmd4wysh17jtx" path="res://Sprites/Characters/lumina/defend1.png" id="8_2swa2"]
 [ext_resource type="Texture2D" uid="uid://b24wmx1tdah3l" path="res://Sprites/Characters/lumina/stunned23.png" id="8_ff2e1"]
 [ext_resource type="Texture2D" uid="uid://cw30tkngarx45" path="res://Sprites/Characters/lumina/cast6.png" id="8_nrb6k"]
-[ext_resource type="Texture2D" uid="uid://c77twokdrbhep" path="res://Sprites/Characters/lumina/cast3.png" id="9_48q6w"]
 [ext_resource type="Texture2D" uid="uid://ekvnxiwoai67" path="res://Sprites/Characters/lumina/rock_boulder_stomp.png" id="9_e2aiw"]
 [ext_resource type="Texture2D" uid="uid://cpqh71cteb3ub" path="res://Sprites/Characters/lumina/defend4.png" id="9_mn0r7"]
 [ext_resource type="Texture2D" uid="uid://b0eiiak7414te" path="res://Sprites/Characters/lumina/cast4.png" id="10_svbe3"]
 [ext_resource type="Texture2D" uid="uid://ck70idiq2nabk" path="res://Sprites/Characters/lumina/defend_5.png" id="10_ylkhn"]
 [ext_resource type="Texture2D" uid="uid://cg4q2iu0b7c83" path="res://Sprites/Characters/lumina/cast7.png" id="11_mjdc7"]
-[ext_resource type="Texture2D" uid="uid://bvv5lb4737iys" path="res://Sprites/Characters/lumina/cast9.png" id="11_nrb6k"]
 [ext_resource type="Texture2D" uid="uid://b4xp51wv7es7s" path="res://Sprites/Shields/shield_mage/lightning.png" id="11_v63oi"]
 [ext_resource type="Texture2D" uid="uid://46dri5ciq7ce" path="res://Sprites/Characters/lumina/defend6.png" id="12_gv5yp"]
+[ext_resource type="Texture2D" uid="uid://di5hq015u8eix" path="res://Sprites/Characters/lumina/spin2.png" id="12_mjdc7"]
 [ext_resource type="Texture2D" uid="uid://ctx87yok26kps" path="res://Sprites/Shields/shield_mage/light_form.png" id="12_v63oi"]
 [ext_resource type="Texture2D" uid="uid://b2u6tw063dlig" path="res://Sprites/Shields/shield_mage/fire.png" id="13_sf15w"]
 [ext_resource type="Texture2D" uid="uid://b64do1mvhqpe4" path="res://Sprites/Shields/shield_mage/ice.png" id="14_e2aiw"]
@@ -77,6 +77,22 @@ region = Rect2(128, 128, 128, 128)
 atlas = ExtResource("3_3b1lc")
 region = Rect2(0, 0, 130, 132)
 
+[sub_resource type="AtlasTexture" id="AtlasTexture_8hunr"]
+atlas = ExtResource("7_l52vb")
+region = Rect2(0, 0, 256, 256)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_yohem"]
+atlas = ExtResource("7_l52vb")
+region = Rect2(256, 0, 256, 256)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_birav"]
+atlas = ExtResource("7_l52vb")
+region = Rect2(0, 256, 256, 256)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_rhcxi"]
+atlas = ExtResource("7_l52vb")
+region = Rect2(256, 256, 256, 256)
+
 [sub_resource type="AtlasTexture" id="AtlasTexture_k7qrx"]
 atlas = ExtResource("7_e5r2i")
 region = Rect2(0, 0, 128, 128)
@@ -110,19 +126,19 @@ atlas = ExtResource("8_nrb6k")
 region = Rect2(128, 128, 128, 128)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_s3w8k"]
-atlas = ExtResource("9_48q6w")
+atlas = ExtResource("7_ujaek")
 region = Rect2(0, 0, 128, 128)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_vhpuy"]
-atlas = ExtResource("9_48q6w")
+atlas = ExtResource("7_ujaek")
 region = Rect2(128, 0, 128, 128)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_xdjlu"]
-atlas = ExtResource("9_48q6w")
+atlas = ExtResource("7_ujaek")
 region = Rect2(0, 128, 128, 128)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_bvm4k"]
-atlas = ExtResource("9_48q6w")
+atlas = ExtResource("7_ujaek")
 region = Rect2(128, 128, 128, 128)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_7deus"]
@@ -142,20 +158,20 @@ atlas = ExtResource("10_svbe3")
 region = Rect2(128, 128, 128, 128)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_tsi8e"]
-atlas = ExtResource("11_nrb6k")
-region = Rect2(0, 0, 128, 128)
+atlas = ExtResource("12_mjdc7")
+region = Rect2(0, 0, 256, 256)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_a1ptt"]
-atlas = ExtResource("11_nrb6k")
-region = Rect2(0, 128, 128, 128)
+atlas = ExtResource("12_mjdc7")
+region = Rect2(256, 0, 256, 256)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_ned0c"]
-atlas = ExtResource("11_nrb6k")
-region = Rect2(128, 0, 128, 128)
+atlas = ExtResource("12_mjdc7")
+region = Rect2(0, 256, 256, 256)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_3wxvr"]
-atlas = ExtResource("11_nrb6k")
-region = Rect2(128, 128, 128, 128)
+atlas = ExtResource("12_mjdc7")
+region = Rect2(256, 256, 256, 256)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_ogbgj"]
 atlas = ExtResource("11_mjdc7")
@@ -478,6 +494,23 @@ animations = [{
 }, {
 "frames": [{
 "duration": 1.0,
+"texture": SubResource("AtlasTexture_8hunr")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_yohem")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_birav")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_rhcxi")
+}],
+"loop": false,
+"name": &"KickRock",
+"speed": 7.0
+}, {
+"frames": [{
+"duration": 1.0,
 "texture": SubResource("AtlasTexture_k7qrx")
 }, {
 "duration": 1.0,
@@ -525,7 +558,7 @@ animations = [{
 }],
 "loop": false,
 "name": &"cast3",
-"speed": 9.0
+"speed": 8.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -559,7 +592,7 @@ animations = [{
 }],
 "loop": false,
 "name": &"cast5",
-"speed": 8.0
+"speed": 10.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -1376,7 +1409,7 @@ sprite_frames = SubResource("SpriteFrames_csqk0")
 animation = &"idle"
 
 [node name="VfxCast" type="Marker2D" parent="."]
-position = Vector2(712, 760)
+position = Vector2(120, -32)
 
 [node name="WeaponSocket" type="Marker2D" parent="."]
 position = Vector2(482, 703)

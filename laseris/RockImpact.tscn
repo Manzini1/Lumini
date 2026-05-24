@@ -1,0 +1,33 @@
+[gd_scene load_steps=4 format=3 uid="uid://cpx67c3ss7jpb"]
+
+[ext_resource type="Script" uid="uid://bbewww8s2abrp" path="res://Scripts/StoneImpactVfx.cs" id="1_ioos4"]
+[ext_resource type="Texture2D" uid="uid://dp3rok8iele05" path="res://Sprites/Sparks/rock.png" id="1_v2aaf"]
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_v2aaf"]
+particle_flag_disable_z = true
+emission_shape = 1
+emission_sphere_radius = 42.82
+direction = Vector3(100, 100, 100)
+spread = 168.158
+initial_velocity_max = 511.43
+gravity = Vector3(0, 0, 0)
+linear_accel_min = -71.43
+linear_accel_max = 66.85999
+scale_min = 0.39999998
+scale_max = 0.39999998
+
+[node name="Node2D" type="Node2D"]
+script = ExtResource("1_ioos4")
+
+[node name="GroundDust" type="GPUParticles2D" parent="."]
+
+[node name="Debris" type="GPUParticles2D" parent="."]
+emitting = false
+amount = 200
+texture = ExtResource("1_v2aaf")
+one_shot = true
+explosiveness = 1.0
+randomness = 0.65
+process_material = SubResource("ParticleProcessMaterial_v2aaf")
+
+[node name="ShockRing" type="AnimatedSprite2D" parent="."]

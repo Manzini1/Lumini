@@ -1,0 +1,44 @@
+[gd_scene load_steps=5 format=3 uid="uid://1w37j120ld14"]
+
+[ext_resource type="Script" uid="uid://crl3boplohet7" path="res://Scripts/EarthFistVfx.cs" id="1_5lnnm"]
+[ext_resource type="Texture2D" uid="uid://chywl0pi0h8h" path="res://Sprites/Spells/earth_fist - Copy (2).png" id="2_4w4ed"]
+[ext_resource type="Texture2D" uid="uid://dp3rok8iele05" path="res://Sprites/Sparks/rock.png" id="3_h3gng"]
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_xxmyx"]
+particle_flag_disable_z = true
+emission_shape = 1
+emission_sphere_radius = 42.82
+direction = Vector3(100, 100, 100)
+spread = 86.052
+initial_velocity_max = 511.43
+gravity = Vector3(0, 1000, 0)
+linear_accel_min = -71.43
+linear_accel_max = 66.85999
+scale_min = 0.56
+scale_max = 0.56
+
+[node name="EarthFistVfx" type="Node2D"]
+scale = Vector2(3, 3)
+script = ExtResource("1_5lnnm")
+DebrisImpactPath = NodePath("Debris")
+SpawnHeightPx = 300.0
+LingerSec = 0.02
+PunchDownPx = 24.0
+ReboundSec = 0.2
+ShakeAmpPx = 10.0
+
+[node name="Fist" type="Sprite2D" parent="."]
+rotation = 1.5707964
+texture = ExtResource("2_4w4ed")
+
+[node name="Shadow" type="Sprite2D" parent="."]
+
+[node name="Debris" type="GPUParticles2D" parent="."]
+modulate = Color(1, 0.45490196, 0.38039216, 1)
+emitting = false
+amount = 200
+texture = ExtResource("3_h3gng")
+one_shot = true
+explosiveness = 1.0
+randomness = 0.65
+process_material = SubResource("ParticleProcessMaterial_xxmyx")
